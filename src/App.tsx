@@ -1,12 +1,11 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
+import Navbar from './components/Navbar'
 
 function App() {
   return (
     <div className="App">
-      <h1>
+      <Navbar isSignedIn={false} />
+      <h1 style={{color: 'blue', margin: '20px'}}>
         This is a title.
       </h1>
     </div>

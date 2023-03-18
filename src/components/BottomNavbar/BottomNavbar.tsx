@@ -6,9 +6,10 @@ import Paper from '@mui/material/Paper';
 import HomeIcon from '@mui/icons-material/Home';
 import SportsTennisIcon from '@mui/icons-material/SportsTennis';
 import PeopleIcon from '@mui/icons-material/People';
+import ForumIcon from '@mui/icons-material/Forum';
 import LeaderboardIcon from '@mui/icons-material/Leaderboard';
 import { useMediaQuery } from '@mui/material';
-import Button from '@mui/material/Button';
+import { Link } from 'react-router-dom';
 
 const settings = ['Profile', 'Settings', 'Sign out'];
 
@@ -20,51 +21,62 @@ const style = {
   marginBottom: '10px',
 }
 
-function BottomNavbar(props: any) {
-  const isSignedIn = props.isSignedIn;
-  const current = props.current;
-
+function BottomNavbar() {
   const mobileScreen = useMediaQuery('(max-width: 600px');
-  const showLeaderboard = useMediaQuery('(min-width:350px)');
+  const smallIcons = useMediaQuery('(max-width: 350px');
 
-  const [value, setValue] = React.useState(0);
+  const iconSize = smallIcons ? 'small' : 'medium';
+
+  const [value, setValue] = React.useState(window.location.pathname);
   const ref = React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-  }, [value]);
-
-  const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
-
-  const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorElUser(event.currentTarget);
-  };
-
-  const handleCloseUserMenu = () => {
-    setAnchorElUser(null);
-  };
 
   return (
     <Box ref={ref} sx={{
       fontSize: '1rem',
     }}>
-      {mobileScreen && 
-      <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }} elevation={3}>
-        <BottomNavigation
-          showLabels
-          value={value}
-          onChange={(event, newValue) => {
-            setValue(newValue);
-          }}
-        >
-          <BottomNavigationAction label="Home" icon={<HomeIcon />} />
-          <BottomNavigationAction label="Play" icon={<SportsTennisIcon />} />
-          {/* {showLeaderboard && */}
-            <BottomNavigationAction label="Leaderboard" icon={<LeaderboardIcon />} />
-          {/* } */}
-          <BottomNavigationAction label="Social" icon={<PeopleIcon />} />
-        </BottomNavigation>
-      </Paper>
-}
+      {mobileScreen &&
+        <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }} elevation={3}>
+          <BottomNavigation
+            showLabels
+            value={value}
+            onChange={(event, newValue) => {
+              setValue(newValue);
+            }}
+          >
+            <BottomNavigationAction
+              component={Link}
+              to="/home"
+              label="Home"
+              value={"/home"}
+              icon={<HomeIcon fontSize={iconSize} />}
+            />
+
+            <BottomNavigationAction
+              component={Link}
+              to="/play"
+              label="Play"
+              value={"/play"}
+              icon={<SportsTennisIcon fontSize={iconSize} />}
+            />
+
+            <BottomNavigationAction
+              component={Link}
+              to="/leaderboard"
+              label="Leaderboard"
+              value={"/leaderboard"}
+              icon={<LeaderboardIcon fontSize={iconSize} />}
+            />
+
+            <BottomNavigationAction
+              component={Link}
+              to="/chat"
+              label="Chat"
+              value={"/chat"}
+              icon={<ForumIcon fontSize={iconSize} />}
+            />
+          </BottomNavigation>
+        </Paper>
+      }
     </Box>
   );
 }

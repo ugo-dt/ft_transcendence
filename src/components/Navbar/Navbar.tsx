@@ -12,13 +12,16 @@ import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import SportsTennisIcon from '@mui/icons-material/SportsTennis';
 import { useMediaQuery } from '@mui/material';
+import { Link } from 'react-router-dom';
+import PeopleIcon from '@mui/icons-material/People';
+import ForumIcon from '@mui/icons-material/Forum';
 
 const pages = ['Home', 'Play', 'Profile', 'Leaderboard'];
-const more_pages = ['Social'];
+const more_pages = ['Friends', 'Messages'];
 const settings = ['Settings', 'Sign out'];
 
 const style = {
-  backgroundColor: "white",
+  backgroundColor: "#ffffff",
   textColor: "black",
   accentColor: "black",
   boxShadow: "0 0 8px 2px rgb(0, 0, 0, 0.8)",
@@ -55,17 +58,18 @@ const navLinks = (routes: string[], flexGrow: number) => {
     >
       {routes.map((route) => (
         <Button
-          LinkComponent={"a"}
-          href={'/' + route.toLowerCase()}
+          // LinkComponent={"a"}
+          // href={'/' + route.toLowerCase()}
           key={route}
           sx={{
-            paddingLeft: '1rem',
-            paddingRight: '1rem',
-            my: 1, color: style.textColor,
-            display: 'block',
+            paddingLeft: '0.5rem',
+            paddingRight: '0.5rem',
+            color: style.textColor,
           }}
         >
-          {route}
+          <Link style={{ all: 'inherit' }} to={'/' + route.toLowerCase()}>
+            {route}
+          </Link>
         </Button>
       ))}
     </Box>
@@ -133,12 +137,12 @@ interface NavbarProps {
   isSignedIn: boolean
 }
 
-function Navbar({isSignedIn}: NavbarProps) {
+function Navbar({ isSignedIn }: NavbarProps) {
   const mobileScreen = useMediaQuery('(max-width: 600px');
 
   return (
     <>
-      <AppBar position="static" sx={{
+      <AppBar className="Navbar" position="static" sx={{
         backgroundColor: style.backgroundColor,
         color: style.textColor,
         boxShadow: style.boxShadow,
@@ -147,10 +151,33 @@ function Navbar({isSignedIn}: NavbarProps) {
       >
         <Container maxWidth="xl">
           <Toolbar disableGutters>
-              {logo()}
-              {!mobileScreen && navLinks(pages, 1)}
-              {!mobileScreen && navLinks(more_pages, 0)}
-              {avatarButton(isSignedIn)}
+            {logo()}
+            {!mobileScreen && navLinks(pages, 1)}
+            <PeopleIcon
+              htmlColor={style.accentColor}
+              fontSize='large'
+              sx={{
+                display: 'flex',
+                marginLeft: 'auto',
+                marginRight: '10px',
+              }}
+              component={Link}
+              to={"/friends"}
+            />
+            <ForumIcon
+              component={Link}
+              to={"/messages"}
+              htmlColor={style.accentColor}
+              fontSize='large'
+              sx={{
+                display: 'flex',
+                marginLeft: 'auto',
+                marginRight: '10px',
+              }}
+            />
+
+            {/* {!mobileScreen && navLinks(more_pages, 0)} */}
+            {avatarButton(isSignedIn)}
           </Toolbar>
         </Container>
       </AppBar>

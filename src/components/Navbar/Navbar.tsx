@@ -17,7 +17,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import ForumIcon from '@mui/icons-material/Forum';
 
 const pages = ['Home', 'Play', 'Profile', 'Leaderboard'];
-const more_pages = ['Friends', 'Messages'];
+const social = ['Friends', 'Messages'];
 const settings = ['Settings', 'Sign out'];
 
 const style = {
@@ -49,13 +49,7 @@ const logo = () => {
  */
 const navLinks = (routes: string[], flexGrow: number) => {
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        color: style.accentColor,
-        flexGrow: flexGrow,
-      }}
-    >
+    <>
       {routes.map((route) => (
         <Button
           // LinkComponent={"a"}
@@ -72,7 +66,7 @@ const navLinks = (routes: string[], flexGrow: number) => {
           </Link>
         </Button>
       ))}
-    </Box>
+    </>
   );
 }
 
@@ -87,12 +81,7 @@ const avatarButton = (isSignedIn: boolean) => {
   };
 
   return (
-    <Box sx={{
-      color: style.accentColor,
-      marginLeft: 'auto',
-      flexGrow: 0,
-    }}
-    >
+    <>
       <Tooltip title="Account">
         <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
           <Avatar alt="" /* src="/static/images/avatar/2.jpg" */ />
@@ -116,20 +105,25 @@ const avatarButton = (isSignedIn: boolean) => {
       >
         {(isSignedIn && // Signed in ...
           settings.map((setting) => (
-            <MenuItem
-              LinkComponent={"a"}
-              href={'/' + setting.toLowerCase()}
-              key={setting}
-              onClick={handleCloseUserMenu}>
-              <Typography textAlign="center">{setting}</Typography>
+            <MenuItem sx={{ padding: '0px' }} key={setting} onClick={handleCloseUserMenu}>
+              <Typography textAlign="center">
+                <Link
+                  to={'/' + setting.toLowerCase().replaceAll(" ", "")}
+                  style={{ all: 'inherit', padding: '10px' }}
+                >
+                  {setting}
+                </Link>
+              </Typography>
             </MenuItem>
           ))) ||  // ... or signed out
-          <MenuItem onClick={handleCloseUserMenu}>
-            <Typography textAlign="center">{"Sign in"}</Typography>
+          <MenuItem sx={{ padding: '0px' }} onClick={handleCloseUserMenu}>
+            <Typography textAlign="center">
+              <Link to={'/signin'} style={{ all: 'inherit', padding: '10px' }}>Sign in</Link>
+            </Typography>
           </MenuItem>
         }
       </Menu>
-    </Box>
+    </>
   );
 }
 
@@ -138,46 +132,25 @@ interface NavbarProps {
 }
 
 function Navbar({ isSignedIn }: NavbarProps) {
-  const mobileScreen = useMediaQuery('(max-width: 600px');
+  const mobileScreen = useMediaQuery('(max-width: 750px');
 
   return (
     <>
-      <AppBar className="Navbar" position="static" sx={{
+      <AppBar position="static" sx={{
         backgroundColor: style.backgroundColor,
         color: style.textColor,
         boxShadow: style.boxShadow,
         marginBottom: style.marginBottom,
+        maxHeight: '4rem',
+        display: 'flex',
       }}
       >
         <Container maxWidth="xl">
           <Toolbar disableGutters>
-            {logo()}
-            {!mobileScreen && navLinks(pages, 1)}
-            <PeopleIcon
-              htmlColor={style.accentColor}
-              fontSize='large'
-              sx={{
-                display: 'flex',
-                marginLeft: 'auto',
-                marginRight: '10px',
-              }}
-              component={Link}
-              to={"/friends"}
-            />
-            <ForumIcon
-              component={Link}
-              to={"/messages"}
-              htmlColor={style.accentColor}
-              fontSize='large'
-              sx={{
-                display: 'flex',
-                marginLeft: 'auto',
-                marginRight: '10px',
-              }}
-            />
-
-            {/* {!mobileScreen && navLinks(more_pages, 0)} */}
-            {avatarButton(isSignedIn)}
+            <Box sx={{ all: 'inherit', flexGrow: 0 }}>{logo()}</Box>
+            <Box sx={{ all: 'inherit', display: 'flex' }}>{!mobileScreen && navLinks(pages, 1)}</Box>
+            <Box sx={{ all: 'inherit', marginLeft: 'auto', display: 'flex' }}>{!mobileScreen && navLinks(social, 0)}</Box>
+            <Box sx={{ marginLeft: mobileScreen ? 'auto' : 0 }}>{avatarButton(isSignedIn)}</Box>
           </Toolbar>
         </Container>
       </AppBar>

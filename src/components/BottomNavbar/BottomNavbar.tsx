@@ -22,7 +22,7 @@ const style = {
 }
 
 function BottomNavbar() {
-  const mobileScreen = useMediaQuery('(max-width: 600px');
+  const mobileScreen = useMediaQuery('(max-width: 750px');
   const smallIcons = useMediaQuery('(max-width: 350px');
 
   const iconSize = smallIcons ? 'small' : 'medium';

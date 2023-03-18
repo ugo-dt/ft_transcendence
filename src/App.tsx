@@ -10,6 +10,7 @@ import Leaderboard from './routes/Leaderboard'
 import Profile from './routes/Profile'
 import Account from './routes/Account'
 import NotFound from './routes/NotFound'
+import SignIn from './routes/SignIn'
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="home" element={<Home />} />
+        <Route path="signin" element={<SignIn />} />
         <Route path="play" element={<Game />} />
         <Route path="messages" element={<Chat />} />
         <Route path="friends" element={<Friends />} />

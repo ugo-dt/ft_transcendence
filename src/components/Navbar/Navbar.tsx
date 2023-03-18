@@ -56,12 +56,18 @@ const navLinks = (routes: string[], flexGrow: number) => {
           // href={'/' + route.toLowerCase()}
           key={route}
           sx={{
-            paddingLeft: '0.5rem',
-            paddingRight: '0.5rem',
             color: style.textColor,
+            padding: 0,
           }}
         >
-          <Link style={{ all: 'inherit' }} to={'/' + route.toLowerCase()}>
+          <Link
+            style={{ 
+              all: 'inherit',
+              padding: '0.5rem',
+              paddingBottom: '1rem',
+              paddingTop: '1rem' }}
+              to={'/' + route.toLowerCase()}
+            >
             {route}
           </Link>
         </Button>

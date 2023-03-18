@@ -15,7 +15,7 @@ import SignIn from './routes/SignIn'
 function App() {
   return (
     <div className="App">
-      <Navbar isSignedIn={true}/>
+      <Navbar isSignedIn={false}/>
 
       <Routes>
         <Route path="/" element={<Home />} />

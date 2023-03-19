@@ -13,11 +13,9 @@ import MenuItem from '@mui/material/MenuItem';
 import SportsTennisIcon from '@mui/icons-material/SportsTennis';
 import { useMediaQuery } from '@mui/material';
 import { Link } from 'react-router-dom';
-import PeopleIcon from '@mui/icons-material/People';
-import ForumIcon from '@mui/icons-material/Forum';
 
 const pages = ['Home', 'Play', 'Profile', 'Leaderboard'];
-const social = ['Friends', 'Messages'];
+const social = ['Friends', 'Chat'];
 const settings = ['Settings', 'Sign out'];
 
 const style = {
@@ -66,7 +64,7 @@ const navLinks = (routes: string[], flexGrow: number) => {
               padding: '0.5rem',
               paddingBottom: '1rem',
               paddingTop: '1rem' }}
-              to={'/' + route.toLowerCase()}
+              to={(route === "Home") ? '/' : "/" + route.toLowerCase()}
             >
             {route}
           </Link>

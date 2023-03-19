@@ -1,7 +1,7 @@
 // Home page
 //
 // Users should be able to:
-//  Start a game (with matchmaking or with a friend)
+//  Start a game
 //
 //  
 

@@ -10,7 +10,12 @@ import "./style/Game.css"
 function Game() {
 	return (
     <div className="Game">
-      <h1>game</h1>
+      <h1>Play vs:</h1>
+      <button>rank</button>
+      <br/>
+      <button>bot</button>
+      <br/>
+      <button>friend</button>
     </div>
 	);
 }

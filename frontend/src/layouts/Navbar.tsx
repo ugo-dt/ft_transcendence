@@ -19,7 +19,7 @@ const social = ['Friends', 'Messages'];
  * @param flexGrow flex-grow css attribute for this group of routes.
  * @returns 
  */
-const navLinks = (routes: string[], flexGrow: number) => {
+const navLinks = (routes: string[]) => {
   return (
     <>
       {routes.map((route) => (
@@ -28,7 +28,6 @@ const navLinks = (routes: string[], flexGrow: number) => {
     </>
   );
 }
-
 
 const style = {
   backgroundColor: "#ffffff",

@@ -19,7 +19,7 @@ const useBall = (
   _pos: Vec2 = { x: BALL_DEFAULT_POS_X, y: BALL_DEFAULT_POS_Y },
   _velocity: Vec2 = { x: BALL_VELOCITY_X, y: BALL_VELOCITY_Y },
   _color: string = "white"
-): [IBall, any, any, any, any, any] => {
+): [IBall, any, any, any, any, any, any] => {
   const [radius, setRadius]: [number, any] = useState(_radius);
   const [x, setX]: [number, any] = useState(_pos.x);
   const [y, setY]: [number, any] = useState(_pos.y);
@@ -62,13 +62,26 @@ const useBall = (
     context.fill();
   }
 
+  function resetBall() {
+    setVelocityX(BALL_VELOCITY_X);
+    setVelocityY(BALL_VELOCITY_Y);
+    setX(BALL_DEFAULT_POS_X);
+    setY(BALL_DEFAULT_POS_Y);
+  }
+
   return [{
     radius: radius,
     pos: { x: x, y: y },
     velocity: { x: velocityX, y: velocityY },
     color: color
   },
-    moveBall, drawBall, setRadius, setColor, (__x: number, __y: number) => {setX(__x); setY(__y)}];
+    moveBall,
+    drawBall,
+    setRadius,
+    setColor,
+    (__x: number, __y: number) => {setX(__x); setY(__y)},
+    resetBall,
+  ];
 }
 
 export default useBall;

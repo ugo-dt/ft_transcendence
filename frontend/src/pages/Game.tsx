@@ -36,12 +36,7 @@ export interface GameProps {
 
 function Game({ player1, player2 }: GameProps) {
   const params = useParams();
-  const [gameState, handleKeyDown, handleKeyUp, handleClick, resetGame] = usePong();
-  
-  useEffect(() => {
-    console.log(params);
-    
-  }, []);
+  const [gameState, resetGame] = usePong();
 
   return (
     <>
@@ -56,12 +51,10 @@ function Game({ player1, player2 }: GameProps) {
           alignItems: 'center',
         }}
       >
+        <h3>{player1.name} vs {player2.name}</h3>
         <canvas id="canvas"
           width={CANVAS_WIDTH}
           height={CANVAS_HEIGHT}
-          onKeyDown={handleKeyDown}
-          onKeyUp={handleKeyUp}
-          onClick={handleClick}
           style={{
             overflow: 'hidden',
             padding: '10px',

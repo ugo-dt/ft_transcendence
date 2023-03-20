@@ -1,14 +1,14 @@
+import { useEffect, useState } from "react";
 import { IPaddle, IBall, IGameState, IPlayer } from "../types";
 import useBall from "../hooks/useBall";
 import usePaddle from "../hooks/usePaddle";
-import { CANVAS_HEIGHT, CANVAS_WIDTH, CANVAS_NET_COLOR, CANVAS_NET_GAP, TARGET_FPS, PADDLE_LEFT_POS_X, PADDLE_RIGHT_POS_X } from "../constants";
-import { useEffect, useState } from "react";
+import { CANVAS_HEIGHT, CANVAS_WIDTH, CANVAS_NET_COLOR, CANVAS_NET_GAP, TARGET_FPS, PADDLE_LEFT_POS_X, PADDLE_RIGHT_POS_X, BALL_DEFAULT_POS_X, BALL_DEFAULT_POS_Y } from "../constants";
 
-const usePong = (): [IGameState, any, any, any, any] => {
-  const [pause, setPause]: [boolean, any] = useState(true);
-  const [ball, moveBall, drawBall, setBallRadius, setBallColor, setBallPosition]: [IBall, any, any, any, any, any] = useBall(true);
-  const [leftPaddle, moveLeftPaddle, drawLeftPaddle, setLeftPaddleMovingUp, setLeftPaddleMovingDown]: [IPaddle, any, any, any, any] = usePaddle(PADDLE_LEFT_POS_X);
-  const [rightPaddle, moveRightPaddle, drawRightPaddle, setRightPaddleMovingUp, setRightPaddleMovingDown]: [IPaddle, any, any, any, any] = usePaddle(PADDLE_RIGHT_POS_X);
+const usePong = (): [IGameState, any] => {
+  const [pause, setPause] = useState(true);
+  const [ball, moveBall, drawBall, setBallRadius, setBallColor, setBallPosition, resetBall] = useBall(true);
+  const [leftPaddle, moveLeftPaddle, drawLeftPaddle, setLeftPaddleMovingUp, setLeftPaddleMovingDown] = usePaddle(PADDLE_LEFT_POS_X);
+  const [rightPaddle, moveRightPaddle, drawRightPaddle, setRightPaddleMovingUp, setRightPaddleMovingDown] = usePaddle(PADDLE_RIGHT_POS_X);
   
   let canvas: HTMLCanvasElement;
   let context: CanvasRenderingContext2D;
@@ -23,58 +23,74 @@ const usePong = (): [IGameState, any, any, any, any] => {
   function drawGame() {
       context.fillStyle = "black";
       context.fillRect(0, 0, CANVAS_WIDTH / 2, CANVAS_HEIGHT);
+
       context.fillStyle = "black";
       context.fillRect(CANVAS_WIDTH / 2, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-      drawNet();
 
+      drawNet();
       drawBall(context);
       drawLeftPaddle(context);
       drawRightPaddle(context);
   }
 
-  function handleClick() {
-    setPause(!pause);
-  }
-
   const handleKeyDown = (event: any) => {
-    if (event.key === ' ')
-      setPause(!pause)
+    if (event.key === ' ') {      
+      setPause((pause) => !pause);
+    }
+
+    // Left paddle
     if (event.key === "z" || event.key === "Z" || event.key === "w" || event.key === "W") {
       setLeftPaddleMovingUp(true);
     }
     if (event.key === "s" || event.key === "S") {
       setLeftPaddleMovingDown(true);
     }
+
+    // Right paddle
     if (event.key === "ArrowUp") {
       setRightPaddleMovingUp(true);
     }
     if (event.key === "ArrowDown") {
       setRightPaddleMovingDown(true);
     }
-    // console.log('User pressed: ', event.key);
+    // console.log("User pressed: '" + event.key + "'");
   };
 
   const handleKeyUp = (event: any) => {
+    // Left paddle
     if (event.key === "z" || event.key === "Z" || event.key === "w" || event.key === "W") {
       setLeftPaddleMovingUp(false);
     }
     if (event.key === "s" || event.key === "S") {
       setLeftPaddleMovingDown(false);
     }
+
+    // Right paddle
     if (event.key === "ArrowUp") {
       setRightPaddleMovingUp(false);
     }
     if (event.key === "ArrowDown") {
       setRightPaddleMovingDown(false);
     }
-    // console.log('User released: ', event.key);
+    // console.log("User released: '" + event.key + "'");
   };
 
   const resetGame = () => {
     setPause(true);
+    resetBall();
   }
 
   useEffect(() => {
+    document.addEventListener("keydown", handleKeyDown)
+    document.addEventListener("keyup", handleKeyUp)
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("keyup", handleKeyUp);
+    };
+  }, [])
+
+  useEffect(() => {    
     canvas = document.getElementById("canvas") as HTMLCanvasElement
     context = canvas.getContext("2d") as CanvasRenderingContext2D;
     let timeId: number;
@@ -87,8 +103,8 @@ const usePong = (): [IGameState, any, any, any, any] => {
         moveLeftPaddle();
         moveRightPaddle();
       }
-    }, 1000 / TARGET_FPS);
       drawGame();
+    }, 1000 / TARGET_FPS);
 
     return (() => {
       clearInterval(timeId);
@@ -104,10 +120,7 @@ const usePong = (): [IGameState, any, any, any, any] => {
       },
       pause: pause,
     },
-    handleKeyDown,
-    handleKeyUp,
-    handleClick,
-    resetGame,
+    () => {resetGame()},
   ]);
 }
 

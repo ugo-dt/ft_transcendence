@@ -1,0 +1,50 @@
+h1{
+  text-align: center;
+  font-size: xxx-large;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+.playModes {
+  margin-top: 20%;
+  display: flex;
+  gap: 10%;
+  justify-content: center;
+  vertical-align: middle;
+  user-select: none;
+}
+
+.gameModeTitle {
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  text-align: center;
+}
+
+.modules {
+  background-color: rgb(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 300px;
+  height: 100px;
+  border: solid;
+  border-width: 2px;
+  border-color: black;
+  cursor: pointer;
+  box-shadow:
+    1px 1px #010101,
+    2px 2px #010101,
+    3px 3px #010101,
+    4px 4px #010101,
+    5px 5px #010101,
+    6px 6px #010101;
+}
+
+.modules:hover {
+  background-color: rgb(0, 0, 0, 0.2);
+  -webkit-transform: translateX(-3px);
+  transform: translateX(-3px);
+  transition: .5s ease;
+}
+
+.moduleImage {
+  margin-right: 5px;
+}

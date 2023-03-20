@@ -6,4 +6,5 @@ export interface IGameState {
     left: IPaddle;
     right: IPaddle;
   };
+  pause: boolean,
 }

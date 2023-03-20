@@ -1,15 +1,15 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, useNavigate } from "react-router-dom";
 import App from "./App";
 
 import Account from "./pages/Account";
 import Chat from "./pages/Chat";
 import Friends from "./pages/Friends";
 import Game from "./pages/Game";
+import Play from "./pages/Play";
 import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
 import Rankings from "./pages/Rankings";
-import Settings from "./pages/Settings";
 import SignIn from "./pages/SignIn";
 
 const router = createBrowserRouter([
@@ -36,7 +36,7 @@ const router = createBrowserRouter([
       },
       {
         path: "play",
-        element: <Game />
+        element: <Play />,
       },
       {
         path: "messages",
@@ -59,8 +59,19 @@ const router = createBrowserRouter([
         element: <Account />
       },
       {
-        path: 'settings'
-      },
+        path: "game",
+        element: <Game player1={{ id: 0, name: "Duke", avatar: undefined }}
+                       player2={{id: 1, name: "King", avatar: undefined }}
+                />,
+        children: [
+          {
+            path: ':id',
+            element: <Game player1={{ id: 0, name: "Duke", avatar: undefined }}
+                       player2={{id: 1, name: "King", avatar: undefined }}
+                      />,
+          },
+        ]
+      }
     ]
   }
 ])

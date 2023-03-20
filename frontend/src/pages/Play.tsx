@@ -1,12 +1,9 @@
-// Play page
-//
-// Play
-//  Ranked
-//  Invite a friend
-//  Against the computer
+import SportsTennisIcon from '@mui/icons-material/SportsTennis';
+import ComputerIcon from '@mui/icons-material/Computer';
+import GroupIcon from '@mui/icons-material/Group';
+import "./style/Play.css"
 
-import { redirect, useNavigate } from "react-router";
-import router from "../router";
+import { useNavigate } from "react-router";
 import { IPlayer } from "../types";
 
 function Play() {
@@ -21,21 +18,36 @@ function Play() {
     name: "King",
     avatar: undefined,
   };
-
-  function startGame() {
-    navigate("/game/" + player1.id + player2.id);
+  
+  function startRankedGame() {
   }
 
-	return (
-    <div className="Play">
-      <h1>Play Pong</h1>
-      <button>Play online</button>
-      <br/>
-      <button onClick={startGame}>Computer</button>
-      <br/>
-      <button>Play a friend</button>
-    </div>
-	);
+  function startCasualGame() {
+  }
+
+  function startComputerGame() {
+    navigate("/game/computer");
+  }
+
+  return (
+	<div className="gamePage">
+		{/* <h1>Play:</h1> */}
+		<div className="playModes">
+			<div className="modules" role="button" onClick={startRankedGame}>
+				<SportsTennisIcon fontSize="large" sx={{ margin: '20px' }} />
+				<h2>Online</h2>
+			</div>
+			<div className="modules" role="button" onClick={startComputerGame}>
+				<ComputerIcon fontSize="large" sx={{ margin: '20px' }} />
+				<h2>Computer</h2>
+			</div>
+			<div className="modules" role="button" onClick={startCasualGame}>
+				<GroupIcon fontSize="large" sx={{ margin: '20px' }} />
+				<h2>Invite a friend</h2>
+			</div>
+		</div>
+	</div>
+);
 }
 
 export default Play;

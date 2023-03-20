@@ -265,6 +265,7 @@ import React from "react";
 
 // export default Navbar;
 
+import "./style/Navbar.css"
 import { NavLink } from "react-router-dom";
 import BasicMenu from "../components/BasicMenu";
 
@@ -286,7 +287,7 @@ function Navbar({ isSignedIn }: NavbarProps) {
         ))
       }
       <NavLink className={"NavLink nav-right"} to="/friends">Friends</NavLink>
-      <NavLink className="NavLink" to="/messages">Messages</NavLink>
+      <NavLink className="NavLink nav-right" to="/messages">Messages</NavLink>
       {
         (isSignedIn &&
           <div tabIndex={0}>

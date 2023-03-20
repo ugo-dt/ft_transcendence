@@ -9,7 +9,7 @@ function Account() {
 	return (
     <div className="Account">
 		  <h1>
-        This is the Account page.
+        This is the Account settings page.
       </h1>
     </div>
 	);

@@ -4,7 +4,13 @@ import useBall from "../hooks/useBall";
 import usePaddle from "../hooks/usePaddle";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, CANVAS_NET_COLOR, CANVAS_NET_GAP, TARGET_FPS, PADDLE_LEFT_POS_X, PADDLE_RIGHT_POS_X, BALL_DEFAULT_POS_X, BALL_DEFAULT_POS_Y } from "../constants";
 
-const usePong = (): [IGameState, any] => {
+// customization ideas:
+// 
+// ball slowly gets smaller over time
+// ball slowly gets faster after each collision
+// different map color (maybe one for each player? maybe player gets to choose their color?)
+
+const usePong = (): [IGameState, any, any, any, any, any, any] => {
   const [pause, setPause] = useState(true);
   const [ball, moveBall, drawBall, setBallRadius, setBallColor, setBallPosition, resetBall] = useBall(true);
   const [leftPaddle, moveLeftPaddle, drawLeftPaddle, setLeftPaddleMovingUp, setLeftPaddleMovingDown] = usePaddle(PADDLE_LEFT_POS_X);
@@ -33,62 +39,10 @@ const usePong = (): [IGameState, any] => {
       drawRightPaddle(context);
   }
 
-  const handleKeyDown = (event: any) => {
-    if (event.key === ' ') {      
-      setPause((pause) => !pause);
-    }
-
-    // Left paddle
-    if (event.key === "z" || event.key === "Z" || event.key === "w" || event.key === "W") {
-      setLeftPaddleMovingUp(true);
-    }
-    if (event.key === "s" || event.key === "S") {
-      setLeftPaddleMovingDown(true);
-    }
-
-    // Right paddle
-    if (event.key === "ArrowUp") {
-      setRightPaddleMovingUp(true);
-    }
-    if (event.key === "ArrowDown") {
-      setRightPaddleMovingDown(true);
-    }
-    // console.log("User pressed: '" + event.key + "'");
-  };
-
-  const handleKeyUp = (event: any) => {
-    // Left paddle
-    if (event.key === "z" || event.key === "Z" || event.key === "w" || event.key === "W") {
-      setLeftPaddleMovingUp(false);
-    }
-    if (event.key === "s" || event.key === "S") {
-      setLeftPaddleMovingDown(false);
-    }
-
-    // Right paddle
-    if (event.key === "ArrowUp") {
-      setRightPaddleMovingUp(false);
-    }
-    if (event.key === "ArrowDown") {
-      setRightPaddleMovingDown(false);
-    }
-    // console.log("User released: '" + event.key + "'");
-  };
-
   const resetGame = () => {
     setPause(true);
     resetBall();
   }
-
-  useEffect(() => {
-    document.addEventListener("keydown", handleKeyDown)
-    document.addEventListener("keyup", handleKeyUp)
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.removeEventListener("keyup", handleKeyUp);
-    };
-  }, [])
 
   useEffect(() => {    
     canvas = document.getElementById("canvas") as HTMLCanvasElement
@@ -120,7 +74,12 @@ const usePong = (): [IGameState, any] => {
       },
       pause: pause,
     },
-    () => {resetGame()},
+    setLeftPaddleMovingUp,
+    setLeftPaddleMovingDown,
+    setRightPaddleMovingUp,
+    setRightPaddleMovingDown,
+    setPause,
+    resetGame,
   ]);
 }
 

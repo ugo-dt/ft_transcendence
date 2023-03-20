@@ -1,4 +1,4 @@
-import { createBrowserRouter, useNavigate } from "react-router-dom";
+import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
 
 import Account from "./pages/Account";
@@ -55,7 +55,7 @@ const router = createBrowserRouter([
         element: <Profile />
       },
       {
-        path: "account",
+        path: "settings",
         element: <Account />
       },
       {

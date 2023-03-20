@@ -1,8 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { IBall, Vec2 } from "../types";
 import { BALL_DEFAULT_POS_X, BALL_DEFAULT_POS_Y, BALL_RADIUS, BALL_VELOCITY_X, BALL_VELOCITY_Y, CANVAS_HEIGHT, CANVAS_WIDTH } from "../constants";
-
-//{radius: 10, pos: {x: 325, y: 240}, velocity: {x: 1, y: 1}, color: "white"});
 
 /**
  * 
@@ -63,6 +61,7 @@ const useBall = (
   }
 
   function resetBall() {
+    setRadius(BALL_RADIUS);
     setVelocityX(BALL_VELOCITY_X);
     setVelocityY(BALL_VELOCITY_Y);
     setX(BALL_DEFAULT_POS_X);

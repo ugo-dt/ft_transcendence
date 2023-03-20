@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { IPaddle, Vec2 } from "../types";
 import { CANVAS_HEIGHT, PADDLE_DEFAULT_POS_Y, PADDLE_HEIGHT, PADDLE_SPEED, PADDLE_WIDTH } from "../constants";
 

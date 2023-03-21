@@ -1,10 +1,8 @@
-import { IBall, IPaddle } from "../types";
+import { IBall, IPaddle, IPlayer } from "../types";
 
 export interface IGameState {
-  ball: IBall;
-  paddles: {
-    left: IPaddle;
-    right: IPaddle;
-  };
+  ball: IBall,
+  leftPlayer: IPlayer,
+  rightPlayer: IPlayer,
   pause: boolean,
 }

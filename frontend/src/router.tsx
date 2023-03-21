@@ -60,15 +60,11 @@ const router = createBrowserRouter([
       },
       {
         path: "game",
-        element: <Game player1={{ id: 0, name: "Duke", avatar: undefined }}
-                       player2={{id: 1, name: "King", avatar: undefined }}
-                />,
+        element: <Game />,
         children: [
           {
             path: ':id',
-            element: <Game player1={{ id: 0, name: "Duke", avatar: undefined }}
-                       player2={{id: 1, name: "King", avatar: undefined }}
-                      />,
+            element: <Game />,
           },
         ]
       }

@@ -7,17 +7,7 @@ import { useNavigate } from "react-router";
 import { IPlayer } from "../types";
 
 function Play() {
-  let navigate = useNavigate();
-  const player1: IPlayer = {
-    id: 0,
-    name: "Duke",
-    avatar: undefined,
-  };
-  const player2: IPlayer = {
-    id: 1,
-    name: "King",
-    avatar: undefined,
-  };
+  const navigate = useNavigate();
   
   function startRankedGame() {
   }
@@ -26,7 +16,21 @@ function Play() {
   }
 
   function startComputerGame() {
-    navigate("/game/computer");
+    const leftPlayerData: IPlayer = {
+      id: 0,
+      name: "Duke",
+      avatar: null,
+      isLeft: true,
+      isCpu: false,
+    };
+    const rightPlayerData: IPlayer = {
+      id: 1,
+      name: "King",
+      avatar: null,
+      isLeft: false,
+      isCpu: true,
+    };
+    navigate("/game/computer", { state: {leftPlayerData, rightPlayerData} });
   }
 
   return (

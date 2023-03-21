@@ -22,7 +22,9 @@ h1{
 
 .modules {
   margin: 5px;
-  background-color: rgb(0, 0, 0, 0);
+  background-color: white;
+  /* background-image: linear-gradient(rgba(255, 255, 255,0), white); */
+  transition: background-color 1s;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -39,11 +41,11 @@ h1{
     4px 4px #010101,
     5px 5px #010101,
     6px 6px #010101;
-    transition: .2s ease;
+  transition: .2s ease;
 }
 
 .modules:hover {
-  background-color: rgb(0, 0, 0, 0.1);
+  background-color: rgba(0, 0, 0, 0.1);
   -webkit-transform: translateX(-3px);
   transform: translateX(-3px);
   transition: .5s ease;

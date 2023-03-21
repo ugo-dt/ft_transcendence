@@ -68,12 +68,13 @@ const useBall = (
     setY(BALL_DEFAULT_POS_Y);
   }
 
-  return [{
-    radius: radius,
-    pos: { x: x, y: y },
-    velocity: { x: velocityX, y: velocityY },
-    color: color
-  },
+  return [
+    {
+      radius: radius,
+      pos: { x: x, y: y },
+      velocity: { x: velocityX, y: velocityY },
+      color: color
+    },
     moveBall,
     drawBall,
     setRadius,

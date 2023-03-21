@@ -45,7 +45,7 @@ const usePaddle = (
     movingUp: movingUp,
     movingDown: movingDown
   },
-    movePaddle, drawPaddle, setMovingUp, setMovingDown];
+    movePaddle, drawPaddle, setMovingDown, setMovingUp];
 }
 
 export default usePaddle;

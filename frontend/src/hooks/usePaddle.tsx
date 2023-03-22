@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { IPaddle, Vec2 } from "../types";
 import { CANVAS_HEIGHT, PADDLE_DEFAULT_POS_Y, PADDLE_HEIGHT, PADDLE_SPEED, PADDLE_WIDTH } from "../constants";
+import Canvas from "../components/Canvas";
 
 const usePaddle = (
   _x: number,
@@ -8,7 +9,7 @@ const usePaddle = (
   _width: number = PADDLE_WIDTH,
   _height: number = PADDLE_HEIGHT,
   _color: string = "white"
-): [IPaddle, any, any, any, any] => {
+): [IPaddle, any, any, any, any, any] => {
   const [x, setX]: [number, any] = useState(_x);
   const [y, setY]: [number, any] = useState(_y);
   const [width, setWidth]: [number, any] = useState(_width);
@@ -31,10 +32,8 @@ const usePaddle = (
     }
   }
 
-  function drawPaddle(context: CanvasRenderingContext2D) {
-    context.strokeStyle = color;
-    context.fillStyle = color;
-    context.fillRect(x, y, width, height);
+  function drawPaddle(canvas: Canvas) {
+    canvas.drawRect(x, y, width, height, color);
   }
 
   return [{
@@ -45,7 +44,11 @@ const usePaddle = (
     movingUp: movingUp,
     movingDown: movingDown
   },
-    movePaddle, drawPaddle, setMovingDown, setMovingUp];
+    movePaddle,
+    drawPaddle,
+    setMovingDown,
+    setMovingUp,
+    setY];
 }
 
 export default usePaddle;

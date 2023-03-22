@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { IBall, Vec2 } from "../types";
-import { BALL_DEFAULT_POS_X, BALL_DEFAULT_POS_Y, BALL_RADIUS, BALL_VELOCITY_X, BALL_VELOCITY_Y, CANVAS_HEIGHT, CANVAS_WIDTH } from "../constants";
+import { IBall, IPaddle, Vec2 } from "../types";
+import { BALL_DEFAULT_POS_X, BALL_DEFAULT_POS_Y, BALL_DEFAULT_SPEED, BALL_MAX_STARTING_ANGLE, BALL_RADIUS, BALL_VELOCITY_X, BALL_VELOCITY_Y, CANVAS_HEIGHT, CANVAS_WIDTH, PADDLE_WIDTH } from "../constants";
+import Canvas from "../components/Canvas";
 
 /**
  * 
@@ -15,15 +16,55 @@ const useBall = (
   _sideWalls: boolean,
   _radius: number = BALL_RADIUS,
   _pos: Vec2 = { x: BALL_DEFAULT_POS_X, y: BALL_DEFAULT_POS_Y },
-  _velocity: Vec2 = { x: BALL_VELOCITY_X, y: BALL_VELOCITY_Y },
+  _speed: number = BALL_DEFAULT_SPEED,
+  _velocity: Vec2 = { x: BALL_VELOCITY_X, y: BALL_VELOCITY_Y() },
   _color: string = "white"
-): [IBall, any, any, any, any, any, any] => {
+): [IBall, any, any, any, any, any, any, any] => {
   const [radius, setRadius]: [number, any] = useState(_radius);
   const [x, setX]: [number, any] = useState(_pos.x);
   const [y, setY]: [number, any] = useState(_pos.y);
-  const [velocityX, setVelocityX]: [number, any] = useState(BALL_VELOCITY_X);
-  const [velocityY, setVelocityY]: [number, any] = useState(BALL_VELOCITY_Y);
+  const [speed, setSpeed]: [number, any] = useState(_speed)
+  const [velocityX, setVelocityX]: [number, any] = useState(_velocity.x);
+  const [velocityY, setVelocityY]: [number, any] = useState(_velocity.y);
   const [color, setColor]: [string, any] = useState("white");
+  const [hidden, setHidden]: [boolean, any] = useState(false);
+  const [startVelocityGoesLeft, setstartVelocityGoesLeft]: [boolean, any] = useState(false);
+  const [canCollideLeft, setCanCollideLeft]: [boolean, any] = useState(false);
+
+  function calculateBallAngle(paddle: IPaddle, isLeft: boolean) {
+    if ((isLeft && !canCollideLeft) || (!isLeft && canCollideLeft)) {
+      return ;
+    }
+  
+    setCanCollideLeft(!isLeft);
+
+    let collidePoint = (y - (paddle.pos.y + paddle.height / 2));
+    collidePoint = collidePoint / (paddle.height / 2);
+    let angleRad = (Math.PI / 4) * collidePoint;
+
+    let direction = (isLeft ? 1 : -1);
+
+    setVelocityX(speed * Math.cos(angleRad) * direction);
+    setVelocityY(speed * Math.sin(angleRad));
+    setSpeed(speed + 0.1);
+  }
+
+  function ballCollidesWith(paddle: IPaddle) {
+    const p = {
+      left: paddle.pos.x,
+      right: paddle.pos.x + paddle.width,
+      top: paddle.pos.y,
+      bottom: paddle.pos.y + paddle.height,
+    }
+    const b = {
+      left: x - radius,
+      right: x + radius,
+      top: y - radius,
+      bottom: y + radius,
+    }
+
+    return b.right > p.left && b.top < p.bottom && b.left < p.right && b.bottom > p.top;
+  }
 
   function moveBall() {
     if (_sideWalls) {
@@ -38,6 +79,7 @@ const useBall = (
         return;
       }
     }
+
     if (y < 0 + radius && velocityY < 0) {
       setVelocityY(-velocityY);
       setY(y - velocityY);
@@ -52,20 +94,32 @@ const useBall = (
     setY(y + velocityY);
   }
 
-  function drawBall(context: CanvasRenderingContext2D) {
-    context.fillStyle = color;
-    context.beginPath();
-    context.arc(x, y, radius, 0, Math.PI * 2, true);
-    context.closePath();
-    context.fill();
+  function drawBall(canvas: Canvas) {
+    if (hidden) {
+      return ;
+    }
+    canvas.drawCircle(x, y, radius, color);
   }
 
   function resetBall() {
+    setHidden(true);
     setRadius(BALL_RADIUS);
-    setVelocityX(BALL_VELOCITY_X);
-    setVelocityY(BALL_VELOCITY_Y);
+    setSpeed(BALL_DEFAULT_SPEED);
+    setVelocityX(0);
+    setVelocityY(0);
     setX(BALL_DEFAULT_POS_X);
     setY(BALL_DEFAULT_POS_Y);
+    setTimeout(() => {
+      setHidden(false);
+      
+      // alternate starting direction
+      setVelocityX(startVelocityGoesLeft ? BALL_VELOCITY_X : -BALL_VELOCITY_X);
+      setstartVelocityGoesLeft(!startVelocityGoesLeft);
+      setCanCollideLeft(!startVelocityGoesLeft);
+
+      // set random angle
+      setVelocityY(BALL_VELOCITY_Y());
+    }, 450);
   }
 
   return [
@@ -78,8 +132,9 @@ const useBall = (
     moveBall,
     drawBall,
     setRadius,
-    setColor,
     (__x: number, __y: number) => {setX(__x); setY(__y)},
+    ballCollidesWith,
+    calculateBallAngle,
     resetBall,
   ];
 }

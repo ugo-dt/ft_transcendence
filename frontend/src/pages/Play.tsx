@@ -21,14 +21,16 @@ function Play() {
       name: "Duke",
       avatar: null,
       isLeft: true,
-      isCpu: false,
+      isCom: false,
+      score: 0,
     };
     const rightPlayerData: IPlayer = {
       id: 1,
       name: "King",
       avatar: null,
       isLeft: false,
-      isCpu: true,
+      isCom: true,
+      score: 0,
     };
     navigate("/game/computer", { state: {leftPlayerData, rightPlayerData} });
   }

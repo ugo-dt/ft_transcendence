@@ -5,6 +5,7 @@ export interface IPlayer {
 	name: string,
 	avatar: string | null,
 	isLeft: boolean,
-	isCpu: boolean,
-	paddle?: IPaddle | null,
+	isCom: boolean,
+	paddle?: IPaddle,
+	score: number;
 }

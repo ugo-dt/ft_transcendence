@@ -24,48 +24,50 @@
  */
 
 import { Navigate, useLocation } from "react-router";
-import usePong from "../hooks/usePong";
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../constants";
+import Pong from "../layouts/Pong";
+import { useEffect } from "react";
+import { io } from "socket.io-client";
+
+const Test = () => {
+  async function connect() {
+    // const socket = io("http://localhost:3000/pong");
+    // console.log("connected");
+
+    const post = await fetch("http://localhost:3000/pong").then((res) => res.text());
+    console.log(post);
+  }
+
+  useEffect(() => {
+    connect();
+  }, []);
+
+  return (
+    <h1>test socket</h1>
+  );
+}
 
 function Game() {
   const location = useLocation();
-
+  
   // Users should not be able to navigate to '/game' by themselves
   if (!location.state) {
     return (
       <Navigate replace to={"/play"} />
-    );
-  }
+      );
+    }  
 
-  const { leftPlayerData, rightPlayerData } = location.state; // props
-  const [gameState, resetGame] = usePong("canvas", leftPlayerData, rightPlayerData);
+  const { leftPlayerData, rightPlayerData } = location.state;
 
   return (
     <>
-      <div className="Game"
-        style={{
-          userSelect: 'none',
-          border: 0,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
-        <h3>{gameState.leftPlayer.name} vs {gameState.rightPlayer.name}</h3>
-        <canvas id="canvas"
-          width={CANVAS_WIDTH}
-          height={CANVAS_HEIGHT}
-          style={{
-            // border: '10px solid white',
-            overflow: 'hidden',
-            padding: '10px',
-          }}
-        >
-          Your browser does not support the HTML 5 Canvas.
-        </canvas>
-        <button style={{ padding: '10px' }} onClick={resetGame}>Reset</button>
-        {gameState.pause && <h2>paused</h2>}
-      </div>
+      <Test />
+      {/* <div className="Game" style={{
+        display: 'flex',
+        justifyContent: 'center',
+        boxSizing: 'border-box',
+      }}>
+        <Pong leftPlayerData={leftPlayerData} rightPlayerData={rightPlayerData} debug={true} />
+      </div> */}
     </>
   );
 }

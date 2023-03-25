@@ -1,6 +1,14 @@
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../constants";
+
 class Canvas {
 	public context: CanvasRenderingContext2D | null;
   constructor(context: CanvasRenderingContext2D | null) {this.context = context}
+
+  public clear() {
+    if (this.context) {
+      this.context.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    }
+  }
 
 	public drawRect(x: number, y: number, w: number, h: number, color: string) {
     if (this.context) {
@@ -22,9 +30,13 @@ class Canvas {
 
   public drawText(text: string, x: number, y: number, color: string) {
     if (this.context) {
+      this.context.strokeStyle = 'black';
+      this.context.lineWidth = 8;
+      this.context.strokeText(text, x, y);
       this.context.fillStyle = color;
       this.context.font = "bold 68px Courier New";
       this.context.fillText(text, x, y);
+      this.context.lineWidth = 0;
     }
   }
 }

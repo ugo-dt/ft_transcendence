@@ -10,6 +10,17 @@ function Play() {
   const navigate = useNavigate();
   
   function startRankedGame() {
+    const playerData: IPlayer = {
+      id: 0,
+      name: "Player 1",
+      avatar: null,
+      isLeft: true,
+      isCom: false,
+      score: 0,
+      keyboardState: null,
+      backgroundColor: "black",
+    };
+    navigate("/game/ranked", { state: {playerData} });
   }
 
   function startCasualGame() {
@@ -18,19 +29,23 @@ function Play() {
   function startComputerGame() {
     const leftPlayerData: IPlayer = {
       id: 0,
-      name: "Duke",
+      name: "Player 1",
       avatar: null,
       isLeft: true,
       isCom: false,
       score: 0,
+      keyboardState: null,
+      backgroundColor: "black",
     };
     const rightPlayerData: IPlayer = {
       id: 1,
-      name: "King",
+      name: "Player 2",
       avatar: null,
       isLeft: false,
       isCom: true,
       score: 0,
+      keyboardState: null,
+      backgroundColor: "black",
     };
     navigate("/game/computer", { state: {leftPlayerData, rightPlayerData} });
   }

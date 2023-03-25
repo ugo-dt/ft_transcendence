@@ -6,7 +6,7 @@
 
 import { useEffect, useState } from "react";
 import { useKeyState } from "use-key-state";
-import { CANVAS_HEIGHT, CANVAS_NET_COLOR, CANVAS_NET_GAP, CANVAS_WIDTH, TARGET_FPS } from "../constants";
+import { CANVAS_FOREGROUND_COLOR, CANVAS_HEIGHT, CANVAS_NET_COLOR, CANVAS_NET_GAP, CANVAS_WIDTH, TARGET_FPS } from "../constants";
 import { IGameState, IPlayer } from "../types";
 import useBall from "../hooks/useBall";
 import usePlayer from "./usePlayer";
@@ -16,81 +16,87 @@ const usePong = (
   canvasElementId: string,
   leftPlayerData: IPlayer,
   rightPlayerData: IPlayer,
-): [IGameState, any] => {
-  const [pause, setPause] = useState(true);
-  const [ball, moveBall, drawBall, setBallRadius, setBallPosition, ballCollidesWith, calculateBallAngle, resetBall] = useBall(false);
+  debug: boolean = false,
+): [IGameState, any, any, any, any] => {
+  const [pause, setPause] = useState(debug);
+  const [ball, moveBall, drawBall, checkBallCollisions, resetBall, setBallActive, setBallPause] = useBall(false);
   const [leftPlayer, moveLeftPaddle, drawLeftPaddle, setLeftScore] = usePlayer(leftPlayerData);
-  const [rightPlayer, moveRightPaddle, drawRightPaddle, setRightScore] = usePlayer(rightPlayerData);
-  const {space} = useKeyState({space: 'space'});
-  const [canvas, setCanvas] = useState(new Canvas(null));
+  const [rightPlayer, moveRightPaddle, drawRightPaddle, setRightScore, setRightIsCom] = usePlayer(rightPlayerData);
+  const [canvas] = useState(new Canvas(null));
 
+  function _drawBackground() {
+    canvas.clear();
+    canvas.drawRect(0, 0, CANVAS_WIDTH / 2, CANVAS_HEIGHT, leftPlayer.backgroundColor);
+    canvas.drawRect(CANVAS_WIDTH / 2, 0, CANVAS_WIDTH, CANVAS_HEIGHT, rightPlayer.backgroundColor);
+
+    for (let i = 7.5; i < CANVAS_HEIGHT; i += CANVAS_NET_GAP) {
+      canvas.drawRect(CANVAS_WIDTH / 2 - 5, i, 10, 15, CANVAS_NET_COLOR);
+    }
+  }
+
+  function _drawScore() {
+    canvas.drawText(leftPlayer.score.toString(), CANVAS_WIDTH / 4, CANVAS_HEIGHT / 5, CANVAS_FOREGROUND_COLOR);
+    canvas.drawText(rightPlayer.score.toString(), 3 * CANVAS_WIDTH / 4, CANVAS_HEIGHT / 5, CANVAS_FOREGROUND_COLOR);
+  }
+
+  function _render() {
+    _drawBackground();
+    _drawScore();
+    drawLeftPaddle(canvas);
+    drawRightPaddle(canvas);
+    drawBall(canvas);
+  }
+
+  function _scorePoint() {
+    setBallActive(false);
+    if (ball.pos.x > CANVAS_WIDTH) {
+      setLeftScore(leftPlayer.score + 1);
+    }
+    else {
+      setRightScore(rightPlayer.score + 1);
+    }
+  }
+
+  function _updatePlayers() {
+    moveLeftPaddle(ball.velocity.x, ball.pos.y);
+    moveRightPaddle(ball.velocity.x, ball.pos.y);
+  }
+
+  function _updateBall() {
+    moveBall();
+    if (ball.active && (ball.pos.x > CANVAS_WIDTH || ball.pos.x < 0)) {
+      _scorePoint();
+      setTimeout(() => {
+        resetBall();
+      }, 450);
+    }
+    checkBallCollisions(leftPlayer.paddle, rightPlayer.paddle);
+  }
+
+  function update() {
+    if (!pause) {
+      _updatePlayers();
+      _updateBall();    
+    }
+    _render();
+  }
+  
   function resetGame() {
     resetBall();
     setLeftScore(0);
     setRightScore(0);
   }
 
-  function ballCollides() {
-    return (ballCollidesWith(leftPlayer.paddle!) || ballCollidesWith(rightPlayer.paddle!));
-  }
-
-  function drawBackground() {
-    canvas.drawRect(0, 0, CANVAS_WIDTH / 2, CANVAS_HEIGHT, "black");
-    canvas.drawRect(CANVAS_WIDTH / 2, 0, CANVAS_WIDTH, CANVAS_HEIGHT, "black");
-
-    for (var i: number = 0; i < CANVAS_HEIGHT; i += CANVAS_NET_GAP) {
-      canvas.drawRect(CANVAS_WIDTH / 2 - 6, i + 8, 10, 15, CANVAS_NET_COLOR);
-    }
-  }
-
-  function render() {
-    drawBackground();
-    canvas.drawText(leftPlayer.score.toString(), CANVAS_WIDTH / 4, CANVAS_HEIGHT / 5, "white");
-    canvas.drawText(rightPlayer.score.toString(), 3 * CANVAS_WIDTH / 4, CANVAS_HEIGHT / 5, "white");
-    drawLeftPaddle(canvas);
-    drawRightPaddle(canvas);
-    drawBall(canvas);
-  }
-
-  function update() {
-    if (space.down) {
-      setPause(!pause);
-    }
-    if (!pause) {
-      moveBall();
-      moveLeftPaddle(ball.velocity.x, ball.pos.y);
-      moveRightPaddle(ball.velocity.x, ball.pos.y);
-      if (ball.pos.x > CANVAS_WIDTH) {
-        setLeftScore(leftPlayer.score + 1);
-        resetBall();
-      }
-      else if (ball.pos.x < 0) {
-        setRightScore(rightPlayer.score + 1);
-        resetBall();
-      }
-      else if (ballCollides()) {
-        console.log("collides");
-        if (ball.pos.x < CANVAS_WIDTH / 2) {
-          calculateBallAngle(leftPlayer.paddle, true);
-        }
-        else {
-          calculateBallAngle(rightPlayer.paddle, false);
-        }
-      }
-    }
-    render();
-  }
-  
   useEffect(() => {
     canvas.context = (document.getElementById(canvasElementId) as HTMLCanvasElement).getContext("2d") as CanvasRenderingContext2D;
-    render();
+    _render();
   }, []);
-  
-  useEffect(() => {   
+
+  useEffect(() => {
     const interval = setInterval(() => {
       update();
     }, 1000 / TARGET_FPS);
-    
+
     return () => clearInterval(interval);
   }, [update, pause, ball, leftPlayer, rightPlayer]);
 
@@ -102,6 +108,9 @@ const usePong = (
       pause: pause,
     },
     resetGame,
+    setPause,
+    setBallPause,
+    setRightIsCom,
   ]);
 }
 

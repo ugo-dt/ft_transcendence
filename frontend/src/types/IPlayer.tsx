@@ -1,3 +1,4 @@
+import { KeyStateQuery } from "use-key-state";
 import { IPaddle } from "./IPaddle";
 
 export interface IPlayer {
@@ -7,5 +8,7 @@ export interface IPlayer {
 	isLeft: boolean,
 	isCom: boolean,
 	paddle?: IPaddle,
-	score: number;
+	score: number,
+	keyboardState: KeyStateQuery | null,
+	backgroundColor: string,
 }

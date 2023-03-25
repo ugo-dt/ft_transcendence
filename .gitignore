@@ -1,4 +1,10 @@
+.gitignore
+.vscode
+
 .parcel-cache
 
 dist
 node_modules
+
+# ponggame.org
+ponggame

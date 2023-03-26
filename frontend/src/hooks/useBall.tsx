@@ -21,7 +21,7 @@ const useBall = (
   _pos: Vec2 = { x: BALL_DEFAULT_POS_X, y: BALL_DEFAULT_POS_Y },
   _speed: number = BALL_DEFAULT_SPEED,
   _velocity: Vec2 = { x: BALL_VELOCITY_X, y: BALL_VELOCITY_Y() },
-  _color: string = colors[0],
+  _color: string = "white",
   _active: boolean = true,
 ): [IBall, any, any, any, any, any, any] => {
   const [x, setX]: [number, any] = useState(_pos.x);
@@ -162,7 +162,6 @@ const useBall = (
 
     // set random angle
     setVelocityY(BALL_VELOCITY_Y());
-    setActive(true);
   }
 
   return [

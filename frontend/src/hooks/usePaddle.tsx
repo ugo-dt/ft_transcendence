@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { IPaddle, Vec2 } from "../types";
-import { CANVAS_FOREGROUND_COLOR, CANVAS_HEIGHT, PADDLE_DEFAULT_POS_Y, PADDLE_HEIGHT, PADDLE_SPEED, PADDLE_WIDTH } from "../constants";
+import { IPaddle } from "../types";
+import { CANVAS_FOREGROUND_COLOR, CANVAS_HEIGHT, PADDLE_DEFAULT_POS_Y, PADDLE_HEIGHT, PADDLE_WIDTH } from "../constants";
 import Canvas from "../components/Canvas";
 
 const usePaddle = (
@@ -9,20 +9,13 @@ const usePaddle = (
   _width: number = PADDLE_WIDTH,
   _height: number = PADDLE_HEIGHT,
   _color: string = CANVAS_FOREGROUND_COLOR,
-): [IPaddle, any, any, any, any, any] => {
+): [IPaddle, any, any, any, any] => {
   const [y, setY]: [number, any] = useState(_y);
-  const [movingUp, setMovingUp]: [boolean, any] = useState(false);
-  const [movingDown, setMovingDown]: [boolean, any] = useState(false);
+  const [velocityY, setVelocityY]: [number, any] = useState(0);
 
   function movePaddle() {
-    if (movingDown) {
-      if (movingUp) { return ; }
-      if (y + PADDLE_HEIGHT < CANVAS_HEIGHT) {
-        setY(y + PADDLE_SPEED);
-      }
-    }
-    if (movingUp && y > 0) {
-      setY(y - PADDLE_SPEED);
+    if (y + velocityY >= 0 && y + velocityY <= CANVAS_HEIGHT - PADDLE_HEIGHT) {
+      setY(y + velocityY);
     }
   }
 
@@ -35,14 +28,13 @@ const usePaddle = (
     width: _width,
     height: _height,
     color: _color,
-    movingUp: movingUp,
-    movingDown: movingDown
+    velocityY: velocityY,
   },
     movePaddle,
     drawPaddle,
-    setMovingDown,
-    setMovingUp,
-    setY];
+    setY,
+    setVelocityY,
+  ];
 }
 
 export default usePaddle;

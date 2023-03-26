@@ -22,6 +22,6 @@ export const PADDLE_LEFT_POS_X: number = 20;
 export const PADDLE_RIGHT_POS_X: number = 615;
 export const PADDLE_WIDTH: number = 15;
 export const PADDLE_HEIGHT: number = 80;
-export const PADDLE_SPEED: number = 12;
+export const PADDLE_VELOCITY: number = 10;
 export const PADDLE_COLOR: string = CANVAS_FOREGROUND_COLOR;
 export const PADDLE_DEFAULT_POS_Y: number = CANVAS_HEIGHT / 2 - PADDLE_HEIGHT / 2;

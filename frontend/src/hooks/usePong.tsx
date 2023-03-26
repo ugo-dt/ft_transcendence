@@ -1,11 +1,9 @@
 // customization ideas:
 // 
 // ball slowly gets smaller over time
-// ball slowly gets faster after each collision
 // different map color (maybe one for each player? maybe player gets to choose their color?)
 
 import { useEffect, useState } from "react";
-import { useKeyState } from "use-key-state";
 import { CANVAS_FOREGROUND_COLOR, CANVAS_HEIGHT, CANVAS_NET_COLOR, CANVAS_NET_GAP, CANVAS_WIDTH, TARGET_FPS } from "../constants";
 import { IGameState, IPlayer } from "../types";
 import useBall from "../hooks/useBall";
@@ -48,7 +46,6 @@ const usePong = (
   }
 
   function _scorePoint() {
-    setBallActive(false);
     if (ball.pos.x > CANVAS_WIDTH) {
       setLeftScore(leftPlayer.score + 1);
     }
@@ -65,9 +62,11 @@ const usePong = (
   function _updateBall() {
     moveBall();
     if (ball.active && (ball.pos.x > CANVAS_WIDTH || ball.pos.x < 0)) {
+      setBallActive(false);
       _scorePoint();
       setTimeout(() => {
         resetBall();
+        setBallActive(true);
       }, 450);
     }
     checkBallCollisions(leftPlayer.paddle, rightPlayer.paddle);

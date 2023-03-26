@@ -1,26 +1,22 @@
+import WifiIcon from '@mui/icons-material/Wifi';
+import WifiOutlinedIcon from '@mui/icons-material/WifiOutlined';
 import SportsTennisIcon from '@mui/icons-material/SportsTennis';
 import ComputerIcon from '@mui/icons-material/Computer';
+import TvIcon from '@mui/icons-material/Tv';
 import GroupIcon from '@mui/icons-material/Group';
+import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
 import "./style/Play.css"
 
 import { useNavigate } from "react-router";
 import { IPlayer } from "../types";
+import { CANVAS_BACKGROUND_COLOR } from '../constants';
 
 function Play() {
   const navigate = useNavigate();
   
   function startRankedGame() {
-    const playerData: IPlayer = {
-      id: 0,
-      name: "Player 1",
-      avatar: null,
-      isLeft: true,
-      isCom: false,
-      score: 0,
-      keyboardState: null,
-      backgroundColor: "black",
-    };
-    navigate("/game/ranked", { state: {playerData} });
+    alert('Unimplemented yet');
+    // navigate("/game/ranked", { state: {playerData} });
   }
 
   function startCasualGame() {
@@ -29,42 +25,51 @@ function Play() {
   function startComputerGame() {
     const leftPlayerData: IPlayer = {
       id: 0,
-      name: "Player 1",
+      name: "",
       avatar: null,
       isLeft: true,
       isCom: false,
       score: 0,
       keyboardState: null,
-      backgroundColor: "black",
+      backgroundColor: CANVAS_BACKGROUND_COLOR,
     };
     const rightPlayerData: IPlayer = {
       id: 1,
-      name: "Player 2",
+      name: "Computer",
       avatar: null,
       isLeft: false,
       isCom: true,
       score: 0,
       keyboardState: null,
-      backgroundColor: "black",
+      backgroundColor: CANVAS_BACKGROUND_COLOR,
     };
     navigate("/game/computer", { state: {leftPlayerData, rightPlayerData} });
   }
 
   return (
-	<div className="gamePage">
-		{/* <h1>Play:</h1> */}
+	<div className="gamePage" style={{ display: 'flex', flexDirection: 'column'}}>
+		<h1>Play Pong</h1>
 		<div className="playModes">
 			<div className="modules" role="button" onClick={startRankedGame}>
-				<SportsTennisIcon fontSize="large" sx={{ margin: '20px' }} />
-				<h2>Online</h2>
+				<SportsTennisIcon className='icon tennis' fontSize="large" />
+        <div>
+          <h2>Online</h2>
+          <h5>Compete with someone of <br/> similar skill</h5>
+        </div>
 			</div>
 			<div className="modules" role="button" onClick={startComputerGame}>
-				<ComputerIcon fontSize="large" sx={{ margin: '20px' }} />
-				<h2>Computer</h2>
+				<TvIcon className='icon tv' fontSize="large" />
+				<div>
+          <h2>Computer</h2>
+          <h5>Challenge a bot</h5>
+        </div>
 			</div>
 			<div className="modules" role="button" onClick={startCasualGame}>
-				<GroupIcon fontSize="large" sx={{ margin: '20px' }} />
-				<h2>Invite a friend</h2>
+				<PeopleOutlineIcon className='icon people' fontSize="large" />
+        <div>
+          <h2>Play a friend</h2>
+          <h5>Invite a friend to a casual game</h5>
+        </div>
 			</div>
 		</div>
 	</div>

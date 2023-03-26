@@ -60,14 +60,13 @@ function Game() {
 
   return (
     <>
-      <Test />
-      {/* <div className="Game" style={{
+      <div className="Game" style={{
         display: 'flex',
         justifyContent: 'center',
         boxSizing: 'border-box',
       }}>
-        <Pong leftPlayerData={leftPlayerData} rightPlayerData={rightPlayerData} debug={true} />
-      </div> */}
+        <Pong leftPlayerData={leftPlayerData} rightPlayerData={rightPlayerData} debug={false} />
+      </div>
     </>
   );
 }

@@ -77,8 +77,8 @@ const usePong = (
   }
 
   function _updatePlayers() {
-    moveLeftPaddle(ball.pos);
-    moveRightPaddle(ball.pos);
+    moveLeftPaddle(ball.pos, __demoMode_());
+    moveRightPaddle(ball.pos, __demoMode_());
   }
 
   function _updateBall() {

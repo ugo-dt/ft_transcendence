@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { IBall, IPaddle, Vec2 } from "../types";
-import { BALL_DEFAULT_POS_X, BALL_DEFAULT_POS_Y, BALL_DEFAULT_SPEED, BALL_DEFAULT_RADIUS, BALL_VELOCITY_X, BALL_VELOCITY_Y, CANVAS_DEFAULT_WIDTH } from "../constants";
+import { BALL_DEFAULT_SPEED, BALL_DEFAULT_RADIUS, BALL_VELOCITY_Y, CANVAS_DEFAULT_WIDTH } from "../constants";
 import Canvas from "../components/Canvas";
 
 /**
@@ -20,7 +20,7 @@ const useBall = (
   _pos: Vec2 = { x: canvas.width / 2, y: canvas.height / 2 },
   _speed: number = canvas.width / (CANVAS_DEFAULT_WIDTH / BALL_DEFAULT_SPEED),
   _velocity: Vec2 = { x: _speed * Math.cos(Math.PI * 4) * 1, y: BALL_VELOCITY_Y() },
-  _color: string = "red",
+  _color: string = "white",
   _active: boolean = true,
 ): [IBall, any, any, any, any, any, any] => {
   const [x, setX] = useState(_pos.x);
@@ -40,9 +40,14 @@ const useBall = (
   function __top_() { return y - _radius; }
   function __bottom_() { return y + _radius; }
 
+  function _isInPaddleNextFrame(paddle: IPaddle) {
+    return __left_() + velocityX <= paddle.pos.x + paddle.width && __right_() + velocityX >= paddle.pos.x
+      && __top_() + velocityY <= paddle.pos.y + paddle.height && __bottom_() + velocityY >= paddle.pos.y;
+  }
+
   function _isInPaddle(paddle: IPaddle) {
-    return __left_() < paddle.pos.x + paddle.width && __right_() > paddle.pos.x
-      && __top_() < paddle.pos.y + paddle.height && __bottom_() > paddle.pos.y;
+    return __left_() <= paddle.pos.x + paddle.width && __right_() >= paddle.pos.x
+      && __top_() <= paddle.pos.y + paddle.height && __bottom_() >= paddle.pos.y;
   }
 
   function _calculateBallAngle(paddle: IPaddle, isLeft: boolean, c: number) {
@@ -61,7 +66,8 @@ const useBall = (
     else {
       setVelocityX(speed * Math.cos(angleRad) * direction);
       setVelocityY(speed * Math.sin(angleRad));
-      setSpeed(speed + 0.1);
+      if (speed < 15)
+        setSpeed(speed + 0.1);
     }
   }
 
@@ -69,7 +75,7 @@ const useBall = (
     if (paddle && _isInPaddle(paddle)) {
       // right paddle
       if (velocityX > 0) {
-        if (__right_() > paddle.pos.x + paddle.width / 2) {
+        if (__right_() >= paddle.pos.x + paddle.width / 2) {
           if (__bottom_() <= paddle.pos.y + paddle.height / 2 && velocityY > 0) {
             return 1;
           }
@@ -82,7 +88,7 @@ const useBall = (
       }
       // left paddle
       else {
-        if (__left_() < paddle.pos.x + paddle.width / 2) {
+        if (__left_() <= paddle.pos.x + paddle.width / 2) {
           if (__bottom_() <= paddle.pos.y + paddle.height / 2 && velocityY > 0) {
             return 1;
           }
@@ -92,6 +98,18 @@ const useBall = (
           return 3; // this doesnt work when speed increases
         }
         return 2;
+      }
+    }
+    if (velocityX < 0) {
+      if (_isInPaddleNextFrame(paddle)) {
+        setX(paddle.pos.x + paddle.width + _radius);
+        return (2);
+      }
+    }
+    else {
+      if (_isInPaddleNextFrame(paddle)) {
+        setX(paddle.pos.x - _radius);
+        return (2);
       }
     }
     return (0);
@@ -161,8 +179,7 @@ const useBall = (
     setstartVelocityGoesLeft(!startVelocityGoesLeft);
 
     // set random angle
-    // setVelocityY(BALL_VELOCITY_Y());
-    setVelocityY(0);
+    setVelocityY(BALL_VELOCITY_Y());
   }
 
   return [

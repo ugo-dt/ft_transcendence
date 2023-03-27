@@ -13,7 +13,7 @@ export const CANVAS_DEFAULT_NET_COLOR: string = CANVAS_DEFAULT_FOREGROUND_COLOR;
 export const CANVAS_DEFAULT_NET_GAP: number = CANVAS_DEFAULT_HEIGHT / 16;
 
 /* Ball */
-export const BALL_DEFAULT_RADIUS: number = 8;
+export const BALL_DEFAULT_RADIUS: number = 7;
 export const BALL_DEFAULT_POS_X: number = CANVAS_DEFAULT_WIDTH / 2;
 export const BALL_DEFAULT_POS_Y: number = CANVAS_DEFAULT_HEIGHT / 2;
 export const BALL_VELOCITY_X: number = 1;

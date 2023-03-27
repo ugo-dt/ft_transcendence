@@ -15,8 +15,21 @@ const usePlayer = (
   const keyboardState = useKeyState().keyStateQuery;
   const paddleVelocity = canvas.height / (CANVAS_DEFAULT_HEIGHT / PADDLE_DEFAULT_VELOCITY);
 
-  function computerMovePaddle(ballPos: Vec2) {
+  function computerMovePaddle(ballPos: Vec2, demo: boolean) {
     let f = 0.16;
+
+    if (demo) {
+      if (_player.isLeft) {
+        if (ballPos.x > canvas.width - canvas.width / 6) {
+          return ;
+        }
+      }
+      else {
+        if (ballPos.x < canvas.width / 6)
+          return ;
+      }
+      f = 0.1;
+    }
 
     let c = Paddle.pos.y + (ballPos.y - (Paddle.pos.y + Paddle.height / 2)) * f;
     if (c >= 0 && c <= canvas.height - Paddle.height) {

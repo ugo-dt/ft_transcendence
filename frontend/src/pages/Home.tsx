@@ -77,7 +77,9 @@ function Home() {
 
   return (
     <div className="Home">
-      <h1>Play Pong</h1>
+      <div className="home-title">
+        <h1>Play Pong</h1>
+      </div>
       <div className="home-section">
         <section>
           <Pong

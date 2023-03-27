@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { IPlayer } from "../types";
+import { IPlayer, Vec2 } from "../types";
 import usePaddle from "./usePaddle";
-import { CANVAS_DEFAULT_HEIGHT } from "../constants";
+import { CANVAS_DEFAULT_HEIGHT, PADDLE_DEFAULT_VELOCITY } from "../constants";
 import { useKeyState } from "use-key-state";
 import Canvas from "../components/Canvas";
 
@@ -13,20 +13,12 @@ const usePlayer = (
   const [score, setScore] = useState(_player.score);
   const [Paddle, movePaddle, drawPaddle, setPaddlePosition, setPaddleVelocityY] = usePaddle(canvas, _player.isLeft);
   const keyboardState = useKeyState().keyStateQuery;
+  const paddleVelocity = canvas.height / (CANVAS_DEFAULT_HEIGHT / PADDLE_DEFAULT_VELOCITY);
 
-  function computerMovePaddle(ball_velocity_x: number, ball_y: number, isDemo: boolean) {
+  function computerMovePaddle(ballPos: Vec2) {
     let f = 0.16;
 
-    if (isDemo) {
-      if (_player.isLeft && ball_velocity_x > 0) {
-        return ;
-      }
-      else if (!_player.isLeft && ball_velocity_x < 0) {
-        return ;
-      }
-      f = 0.10;
-    }
-    let c = Paddle.pos.y + (ball_y - (Paddle.pos.y + Paddle.height / 2)) * f;
+    let c = Paddle.pos.y + (ballPos.y - (Paddle.pos.y + Paddle.height / 2)) * f;
     if (c >= 0 && c <= canvas.height - Paddle.height) {
       setPaddlePosition(c);
     }
@@ -39,11 +31,11 @@ const usePlayer = (
           setPaddleVelocityY(0);
         }
         else {
-          setPaddleVelocityY(-Paddle.velocityY);
+          setPaddleVelocityY(-paddleVelocity);
         }
       }
       else if (keyboardState.pressed('s')) {
-        setPaddleVelocityY(Paddle.velocityY);
+        setPaddleVelocityY(paddleVelocity);
       }
       else {
         setPaddleVelocityY(0);
@@ -56,11 +48,11 @@ const usePlayer = (
           setPaddleVelocityY(0);
         }
         else {
-          setPaddleVelocityY(-Paddle.velocityY);
+          setPaddleVelocityY(-paddleVelocity);
         }
       }
       else if (keyboardState.pressed('down')) {
-        setPaddleVelocityY(Paddle.velocityY);
+        setPaddleVelocityY(paddleVelocity);
       }
       else {
         setPaddleVelocityY(0);

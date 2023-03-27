@@ -1,6 +1,6 @@
 import usePong from "../hooks/usePong";
 import { IGameState, IPlayer } from "../types";
-import { CANVAS_DEFAULT_HEIGHT, CANVAS_DEFAULT_WIDTH, DEBUG_MODE } from "../constants";
+import { CANVAS_DEFAULT_HEIGHT, CANVAS_DEFAULT_WIDTH, DEBUG_MODE, NORMAL_MODE } from "../constants";
 import { useEffect, useState } from "react";
 import { useKeyState } from "use-key-state";
 
@@ -62,6 +62,7 @@ const PongDebug = ({
 
             <div style={{ padding: '5px', borderBottom: '1px solid black' }}>
               <h4>{gameState.leftPlayer.name + ((gameState.leftPlayer.isCom && " (COM)") || " (Human)")}</h4>
+              <h5>x: {gameState.leftPlayer.paddle!.pos.x.toFixed(2)}</h5>
               <h5>y: {gameState.leftPlayer.paddle!.pos.y.toFixed(2)}</h5>
               <h5>velocity y: {gameState.leftPlayer.paddle!.velocityY}</h5>
               <h5>id: {gameState.leftPlayer.id}</h5>
@@ -74,6 +75,7 @@ const PongDebug = ({
               <button onClick={() => setRightIsCom(!gameState.rightPlayer.isCom)}>
                 {((gameState.rightPlayer.isCom && "Set as Human") || "Set as COM")}
               </button>
+              <h5>x: {gameState.rightPlayer.paddle!.pos.x.toFixed(2)}</h5>
               <h5>y: {gameState.rightPlayer.paddle!.pos.y.toFixed(2)}</h5>
               <h5>velocity y: {gameState.rightPlayer.paddle?.velocityY}</h5>
               <h5>id: {gameState.rightPlayer.id}</h5>
@@ -90,21 +92,21 @@ const PongDebug = ({
 interface PongProps {
   canvasWidth?: number,
   canvasHeight?: number,
+  mode: string,
   leftPlayerData: IPlayer,
   rightPlayerData: IPlayer,
-  mode: string,
 }
 
 const Pong = ({
   canvasWidth = CANVAS_DEFAULT_WIDTH,
   canvasHeight = CANVAS_DEFAULT_HEIGHT,
+  mode = NORMAL_MODE,
   leftPlayerData,
   rightPlayerData,
-  mode
 }: PongProps) => {
   function __debugMode_(): boolean { return (mode === DEBUG_MODE); }
   const [canvas, setCanvas]: [Canvas, any] = useState(new Canvas(canvasWidth, canvasHeight, null));
-  const [gameState, resetGame, setPause, setBallPause, setRightIsCom] = usePong(canvas, leftPlayerData, rightPlayerData, mode);
+  const [gameState, resetGame, setPause, setBallPause, setRightIsCom] = usePong(canvas, mode, leftPlayerData, rightPlayerData);
   const { space } = useKeyState({ space: 'space' });
 
   useEffect(() => {

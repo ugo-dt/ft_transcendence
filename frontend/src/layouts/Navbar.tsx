@@ -269,7 +269,7 @@ import "./style/Navbar.css"
 import { NavLink } from "react-router-dom";
 import BasicMenu from "../components/BasicMenu";
 
-const mainRoutes = ["Home", "Play", "Profile", "Rankings"];
+const mainRoutes = ["Home", "Profile", "Rankings"];
 const menuItems = ["Settings", "Sign out"];
 
 interface NavbarProps {

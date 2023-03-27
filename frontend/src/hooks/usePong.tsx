@@ -4,7 +4,7 @@
 // different map color (maybe one for each player? maybe player gets to choose their color?)
 
 import { useEffect, useState } from "react";
-import { CANVAS_DEFAULT_FOREGROUND_COLOR, CANVAS_DEFAULT_NET_COLOR, CANVAS_DEFAULT_NET_GAP, DEBUG_MODE, DEMO_MODE, NORMAL_MODE, TARGET_FPS } from "../constants";
+import { CANVAS_DEFAULT_BACKGROUND_COLOR, CANVAS_DEFAULT_FOREGROUND_COLOR, CANVAS_DEFAULT_NET_COLOR, CANVAS_DEFAULT_NET_GAP, DEBUG_MODE, DEMO_MODE, NORMAL_MODE, TARGET_FPS } from "../constants";
 import { IGameState, IPlayer } from "../types";
 import useBall from "../hooks/useBall";
 import usePlayer from "./usePlayer";
@@ -13,14 +13,32 @@ import Canvas from "../components/Canvas";
 
 const usePong = (
   canvas: Canvas,
-  leftPlayerData: IPlayer,
-  rightPlayerData: IPlayer,
-  mode: string = NORMAL_MODE,
+  mode: string,
+  leftPlayerData: IPlayer = {
+    id: 0,
+    name: "",
+    avatar: null,
+    isLeft: true,
+    isCom: false,
+    score: 0,
+    keyboardState: null,
+    backgroundColor: CANVAS_DEFAULT_BACKGROUND_COLOR,
+  },
+  rightPlayerData: IPlayer = {
+    id: 1,
+    name: "Computer",
+    avatar: null,
+    isLeft: false,
+    isCom: true,
+    score: 0,
+    keyboardState: null,
+    backgroundColor: CANVAS_DEFAULT_BACKGROUND_COLOR,
+  },
 ): [IGameState, any, any, any, any] => {
   function __debugMode_(): boolean { return (mode === DEBUG_MODE); }
   function __demoMode_(): boolean { return (mode === DEMO_MODE); }
   const [pause, setPause] = useState(__debugMode_());
-  const [ball, moveBall, drawBall, checkBallCollisions, resetBall, setBallActive, setBallPause] = useBall(false);
+  const [ball, moveBall, drawBall, checkBallCollisions, resetBall, setBallActive, setBallPause] = useBall(canvas, false);
   const [leftPlayer, moveLeftPaddle, drawLeftPaddle, setLeftScore] = usePlayer(canvas, leftPlayerData);
   const [rightPlayer, moveRightPaddle, drawRightPaddle, setRightScore, setRightIsCom] = usePlayer(canvas, rightPlayerData);
 
@@ -59,15 +77,17 @@ const usePong = (
   }
 
   function _updatePlayers() {
-    moveLeftPaddle(ball.velocity.x, ball.pos.y, __demoMode_());
-    moveRightPaddle(ball.velocity.x, ball.pos.y, __demoMode_());
+    moveLeftPaddle(ball.pos);
+    moveRightPaddle(ball.pos);
   }
 
   function _updateBall() {
     moveBall();
     if (ball.active && (ball.pos.x > canvas.width || ball.pos.x < 0)) {
       setBallActive(false);
-      _scorePoint();
+      if (!__demoMode_()) {
+        _scorePoint();
+      }
       setTimeout(() => {
         resetBall();
         setBallActive(true);

@@ -27,7 +27,7 @@ import { Navigate, useLocation } from "react-router";
 import Pong from "../layouts/Pong";
 import { useEffect } from "react";
 import { io } from "socket.io-client";
-import { NORMAL_MODE, DEBUG_MODE, DEMO_MODE } from "../constants";
+import { DEBUG_MODE, DEMO_MODE, NORMAL_MODE } from "../constants";
 
 const Test = () => {
   async function connect() {

@@ -1,10 +1,11 @@
 import usePong from "../hooks/usePong";
 import { IGameState, IPlayer } from "../types";
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../constants";
+import { CANVAS_DEFAULT_HEIGHT, CANVAS_DEFAULT_WIDTH, DEBUG_MODE } from "../constants";
 import { useEffect, useState } from "react";
 import { useKeyState } from "use-key-state";
 
 import "./style/Pong.css"
+import Canvas from "../components/Canvas";
 
 interface DebugProps {
   gameState: IGameState,
@@ -87,26 +88,42 @@ const PongDebug = ({
 }
 
 interface PongProps {
+  canvasWidth?: number,
+  canvasHeight?: number,
   leftPlayerData: IPlayer,
   rightPlayerData: IPlayer,
-  debug: boolean,
+  mode: string,
 }
 
-const Pong = ({ leftPlayerData, rightPlayerData, debug }: PongProps) => {
-  const [gameState, resetGame, setPause, setBallPause, setRightIsCom] = usePong("canvas", leftPlayerData, rightPlayerData, debug);
+const Pong = ({
+  canvasWidth = CANVAS_DEFAULT_WIDTH,
+  canvasHeight = CANVAS_DEFAULT_HEIGHT,
+  leftPlayerData,
+  rightPlayerData,
+  mode
+}: PongProps) => {
+  function __debugMode_(): boolean { return (mode === DEBUG_MODE); }
+  const [canvas, setCanvas]: [Canvas, any] = useState(new Canvas(canvasWidth, canvasHeight, null));
+  const [gameState, resetGame, setPause, setBallPause, setRightIsCom] = usePong(canvas, leftPlayerData, rightPlayerData, mode);
   const { space } = useKeyState({ space: 'space' });
 
   useEffect(() => {
-    if (space.down) {
-      if (window.location.pathname === "/game/computer")
+    const canvasElement = document.getElementById("canvas") as HTMLCanvasElement;
+    canvas.context = canvasElement.getContext("2d") as CanvasRenderingContext2D;
+  }, []);
+
+  useEffect(() => {
+    if (window.location.pathname === "/game/computer") {
+      if (space.down) {
         setPause(!gameState.pause);
+      }
     }
   }, [space]);
 
   return (
     <>
       {
-        debug && <PongDebug
+        __debugMode_() && <PongDebug
           gameState={gameState}
           resetGame={resetGame}
           setPause={setPause}
@@ -116,19 +133,21 @@ const Pong = ({ leftPlayerData, rightPlayerData, debug }: PongProps) => {
         />
       }
 
-      <div className="gameArea" style={{
-        userSelect: 'none',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-      }}>
-        <h3>{gameState.leftPlayer.name} vs {gameState.rightPlayer.name}</h3>
-        <canvas id="canvas" width={CANVAS_WIDTH} height={CANVAS_HEIGHT}>
+      <div
+        className="gameArea"
+        style={{
+          userSelect: 'none',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
+        <canvas id="canvas" width={canvasWidth} height={canvasHeight}>
           Your browser does not support the HTML 5 Canvas.
         </canvas>
         {
           gameState.pause &&
-          <div className="pauseText" style={{textAlign: 'center'}}>
+          <div className="pauseText" style={{ textAlign: 'center' }}>
             <h3>Paused</h3>
             <p>Press Space to resume</p>
           </div>

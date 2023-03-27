@@ -27,6 +27,7 @@ import { Navigate, useLocation } from "react-router";
 import Pong from "../layouts/Pong";
 import { useEffect } from "react";
 import { io } from "socket.io-client";
+import { NORMAL_MODE, DEBUG_MODE, DEMO_MODE } from "../constants";
 
 const Test = () => {
   async function connect() {
@@ -49,7 +50,7 @@ const Test = () => {
 function Game() {
   const location = useLocation();
   
-  // Users should not be able to navigate to '/game' by themselves
+  // Users should not be able to navigate to '/game' by themselves.
   if (!location.state) {
     return (
       <Navigate replace to={"/play"} />
@@ -65,7 +66,11 @@ function Game() {
         justifyContent: 'center',
         boxSizing: 'border-box',
       }}>
-        <Pong leftPlayerData={leftPlayerData} rightPlayerData={rightPlayerData} debug={false} />
+        <Pong
+          leftPlayerData={leftPlayerData}
+          rightPlayerData={rightPlayerData}
+          mode={DEBUG_MODE}
+        />
       </div>
     </>
   );

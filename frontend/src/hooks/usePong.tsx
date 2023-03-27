@@ -4,49 +4,53 @@
 // different map color (maybe one for each player? maybe player gets to choose their color?)
 
 import { useEffect, useState } from "react";
-import { CANVAS_FOREGROUND_COLOR, CANVAS_HEIGHT, CANVAS_NET_COLOR, CANVAS_NET_GAP, CANVAS_WIDTH, TARGET_FPS } from "../constants";
+import { CANVAS_DEFAULT_FOREGROUND_COLOR, CANVAS_DEFAULT_NET_COLOR, CANVAS_DEFAULT_NET_GAP, DEBUG_MODE, DEMO_MODE, NORMAL_MODE, TARGET_FPS } from "../constants";
 import { IGameState, IPlayer } from "../types";
 import useBall from "../hooks/useBall";
 import usePlayer from "./usePlayer";
 import Canvas from "../components/Canvas";
 
+
 const usePong = (
-  canvasElementId: string,
+  canvas: Canvas,
   leftPlayerData: IPlayer,
   rightPlayerData: IPlayer,
-  debug: boolean = false,
+  mode: string = NORMAL_MODE,
 ): [IGameState, any, any, any, any] => {
-  const [pause, setPause] = useState(debug);
+  function __debugMode_(): boolean { return (mode === DEBUG_MODE); }
+  function __demoMode_(): boolean { return (mode === DEMO_MODE); }
+  const [pause, setPause] = useState(__debugMode_());
   const [ball, moveBall, drawBall, checkBallCollisions, resetBall, setBallActive, setBallPause] = useBall(false);
-  const [leftPlayer, moveLeftPaddle, drawLeftPaddle, setLeftScore] = usePlayer(leftPlayerData);
-  const [rightPlayer, moveRightPaddle, drawRightPaddle, setRightScore, setRightIsCom] = usePlayer(rightPlayerData);
-  const [canvas] = useState(new Canvas(null));
+  const [leftPlayer, moveLeftPaddle, drawLeftPaddle, setLeftScore] = usePlayer(canvas, leftPlayerData);
+  const [rightPlayer, moveRightPaddle, drawRightPaddle, setRightScore, setRightIsCom] = usePlayer(canvas, rightPlayerData);
 
   function _drawBackground() {
     canvas.clear();
-    canvas.drawRect(0, 0, CANVAS_WIDTH / 2, CANVAS_HEIGHT, leftPlayer.backgroundColor);
-    canvas.drawRect(CANVAS_WIDTH / 2, 0, CANVAS_WIDTH, CANVAS_HEIGHT, rightPlayer.backgroundColor);
+    canvas.drawRect(0, 0, canvas.width / 2, canvas.height, leftPlayer.backgroundColor);
+    canvas.drawRect(canvas.width / 2, 0, canvas.width, canvas.height, rightPlayer.backgroundColor);
 
-    for (let i = 7.5; i < CANVAS_HEIGHT; i += CANVAS_NET_GAP) {
-      canvas.drawRect(CANVAS_WIDTH / 2 - 5, i, 10, 15, CANVAS_NET_COLOR);
+    for (let i = 7.5; i < canvas.height; i += CANVAS_DEFAULT_NET_GAP) {
+      canvas.drawRect(canvas.width / 2 - 5, i, 10, 15, CANVAS_DEFAULT_NET_COLOR);
     }
   }
 
   function _drawScore() {
-    canvas.drawText(leftPlayer.score.toString(), CANVAS_WIDTH / 4, CANVAS_HEIGHT / 5, CANVAS_FOREGROUND_COLOR);
-    canvas.drawText(rightPlayer.score.toString(), 3 * CANVAS_WIDTH / 4, CANVAS_HEIGHT / 5, CANVAS_FOREGROUND_COLOR);
+    canvas.drawText(leftPlayer.score.toString(), canvas.width / 4, canvas.height / 5, CANVAS_DEFAULT_FOREGROUND_COLOR);
+    canvas.drawText(rightPlayer.score.toString(), 3 * canvas.width / 4, canvas.height / 5, CANVAS_DEFAULT_FOREGROUND_COLOR);
   }
 
   function _render() {
     _drawBackground();
-    _drawScore();
+    if (!__demoMode_()) {
+      _drawScore();
+    }
     drawLeftPaddle(canvas);
     drawRightPaddle(canvas);
     drawBall(canvas);
   }
 
   function _scorePoint() {
-    if (ball.pos.x > CANVAS_WIDTH) {
+    if (ball.pos.x > canvas.width) {
       setLeftScore(leftPlayer.score + 1);
     }
     else {
@@ -55,13 +59,13 @@ const usePong = (
   }
 
   function _updatePlayers() {
-    moveLeftPaddle(ball.velocity.x, ball.pos.y);
-    moveRightPaddle(ball.velocity.x, ball.pos.y);
+    moveLeftPaddle(ball.velocity.x, ball.pos.y, __demoMode_());
+    moveRightPaddle(ball.velocity.x, ball.pos.y, __demoMode_());
   }
 
   function _updateBall() {
     moveBall();
-    if (ball.active && (ball.pos.x > CANVAS_WIDTH || ball.pos.x < 0)) {
+    if (ball.active && (ball.pos.x > canvas.width || ball.pos.x < 0)) {
       setBallActive(false);
       _scorePoint();
       setTimeout(() => {
@@ -75,7 +79,7 @@ const usePong = (
   function update() {
     if (!pause) {
       _updatePlayers();
-      _updateBall();    
+      _updateBall();
     }
     _render();
   }
@@ -87,7 +91,6 @@ const usePong = (
   }
 
   useEffect(() => {
-    canvas.context = (document.getElementById(canvasElementId) as HTMLCanvasElement).getContext("2d") as CanvasRenderingContext2D;
     _render();
   }, []);
 

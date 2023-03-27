@@ -9,7 +9,7 @@ import "./style/Play.css"
 
 import { useNavigate } from "react-router";
 import { IPlayer } from "../types";
-import { CANVAS_BACKGROUND_COLOR } from '../constants';
+import { CANVAS_DEFAULT_BACKGROUND_COLOR } from '../constants';
 
 function Play() {
   const navigate = useNavigate();
@@ -31,7 +31,7 @@ function Play() {
       isCom: false,
       score: 0,
       keyboardState: null,
-      backgroundColor: CANVAS_BACKGROUND_COLOR,
+      backgroundColor: CANVAS_DEFAULT_BACKGROUND_COLOR,
     };
     const rightPlayerData: IPlayer = {
       id: 1,
@@ -41,7 +41,7 @@ function Play() {
       isCom: true,
       score: 0,
       keyboardState: null,
-      backgroundColor: CANVAS_BACKGROUND_COLOR,
+      backgroundColor: CANVAS_DEFAULT_BACKGROUND_COLOR,
     };
     navigate("/game/computer", { state: {leftPlayerData, rightPlayerData} });
   }

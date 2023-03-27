@@ -1,33 +1,37 @@
 import { useState } from "react";
 import { IPaddle } from "../types";
-import { CANVAS_FOREGROUND_COLOR, CANVAS_HEIGHT, PADDLE_DEFAULT_POS_Y, PADDLE_HEIGHT, PADDLE_WIDTH } from "../constants";
+import { CANVAS_DEFAULT_HEIGHT, CANVAS_DEFAULT_WIDTH, PADDLE_DEFAULT_COLOR } from "../constants";
 import Canvas from "../components/Canvas";
 
 const usePaddle = (
-  _x: number,
-  _y: number = PADDLE_DEFAULT_POS_Y,
-  _width: number = PADDLE_WIDTH,
-  _height: number = PADDLE_HEIGHT,
-  _color: string = CANVAS_FOREGROUND_COLOR,
+  canvas: Canvas,
+  _isLeft: boolean,
 ): [IPaddle, any, any, any, any] => {
-  const [y, setY]: [number, any] = useState(_y);
-  const [velocityY, setVelocityY]: [number, any] = useState(0);
+  const [x, setX]: [number, any] = useState(_isLeft ? canvas.width / (CANVAS_DEFAULT_WIDTH / 20) : canvas.width / (CANVAS_DEFAULT_WIDTH / 615));
+  const [y, setY]: [number, any] = useState(canvas.height / 2 - (canvas.height / (CANVAS_DEFAULT_HEIGHT / 80)));
+  const [width, setWidth]: [number, any] = useState(canvas.width / (CANVAS_DEFAULT_WIDTH / 15));
+  const [height, setHeight]: [number, any] = useState(canvas.height / (CANVAS_DEFAULT_HEIGHT / 80));
+  const [color, setColor]: [string, any] = useState(PADDLE_DEFAULT_COLOR);
+  const [velocityY, setVelocityY]: [number, any] = useState(canvas.height / (CANVAS_DEFAULT_HEIGHT / 10));
 
   function movePaddle() {
-    if (y + velocityY >= 0 && y + velocityY <= CANVAS_HEIGHT - PADDLE_HEIGHT) {
+    if (y + velocityY >= 0 && y + velocityY <= canvas.height - height) {
       setY(y + velocityY);
     }
   }
 
-  function drawPaddle(canvas: Canvas) {
-    canvas.drawRect(_x, y, _width, _height, _color);
+  function drawPaddle() {
+    canvas.drawRect(x, y, width, height, color);
   }
 
   return [{
-    pos: { x: _x, y: y },
-    width: _width,
-    height: _height,
-    color: _color,
+    pos: {
+      x: x,
+      y: y
+    },
+    width: width,
+    height: height,
+    color: color,
     velocityY: velocityY,
   },
     movePaddle,

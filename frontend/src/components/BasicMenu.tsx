@@ -1,9 +1,9 @@
 import * as React from 'react';
-import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import { Link, NavLink } from 'react-router-dom';
-import { People } from '@mui/icons-material';
+import { NavLink } from 'react-router-dom';
+
+import "./style/BasicMenu.css"
 
 interface NavbarMenuProps {
   buttonText?: string,
@@ -23,8 +23,28 @@ export default function BasicMenu({ buttonText = "", items = [] }: NavbarMenuPro
 
   return (
     <div style={{cursor: 'pointer'}} tabIndex={0}>
-      <div onClick={(event: any) => handleClick(event)} className="NavLink">{buttonText}</div>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          flexWrap: 'nowrap'
+        }}
+        className="NavLink button-text"
+        onClick={(event: any) => handleClick(event)}
+      >
+        {buttonText}
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+          focusable="false"
+          viewBox="0 0 24 24"
+          className="down-arrow-text-icon"
+        >
+          <path d="M12,16c-0.3,0-0.5-0.1-0.7-0.3l-6-6c-0.4-0.4-0.4-1,0-1.4s1-0.4,1.4,0l5.3,5.3l5.3-5.3c0.4-0.4,1-0.4,1.4,0s0.4,1,0,1.4l-6,6C12.5,15.9,12.3,16,12,16z"></path>
+        </svg>
+      </div>
       <Menu
+        className='basic-menu'
         id="basic-menu"
         anchorEl={anchorEl}
         open={open}
@@ -36,7 +56,7 @@ export default function BasicMenu({ buttonText = "", items = [] }: NavbarMenuPro
           items.map((item) => (
             <MenuItem
               key={item}
-              component={Link}
+              component={NavLink}
               to={'/' + item.toLowerCase()}
               onClick={handleClose}
             >

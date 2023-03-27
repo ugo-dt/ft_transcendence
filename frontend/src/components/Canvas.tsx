@@ -1,12 +1,19 @@
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../constants";
+import { CANVAS_DEFAULT_HEIGHT, CANVAS_DEFAULT_WIDTH } from "../constants";
 
 class Canvas {
+  public width: number;
+  public height: number;
 	public context: CanvasRenderingContext2D | null;
-  constructor(context: CanvasRenderingContext2D | null) {this.context = context}
+
+  constructor(width: number, height: number, context: CanvasRenderingContext2D | null) {
+    this.width = width;
+    this.height = height;
+    this.context = context;
+  }
 
   public clear() {
     if (this.context) {
-      this.context.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      this.context.clearRect(0, 0, CANVAS_DEFAULT_WIDTH, CANVAS_DEFAULT_HEIGHT);
     }
   }
 

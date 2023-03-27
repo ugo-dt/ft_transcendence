@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { IBall, IPaddle, Vec2 } from "../types";
-import { BALL_DEFAULT_POS_X, BALL_DEFAULT_POS_Y, BALL_DEFAULT_SPEED, BALL_RADIUS, BALL_VELOCITY_X, BALL_VELOCITY_Y, CANVAS_HEIGHT, CANVAS_WIDTH } from "../constants";
+import { BALL_DEFAULT_POS_X, BALL_DEFAULT_POS_Y, BALL_DEFAULT_SPEED, BALL_RADIUS, BALL_VELOCITY_X, BALL_VELOCITY_Y } from "../constants";
 import Canvas from "../components/Canvas";
 
 const colors = ["white", "silver", "grey", "maroon", "red", "purple", "fuchsia", "green", "lime", "olive", "yellow", "navy", "blue", "teal", "aqua"];
@@ -13,9 +13,10 @@ const colors = ["white", "silver", "grey", "maroon", "red", "purple", "fuchsia",
  * @param _velocity Ball velocity
  * @param _color Ball color
  * @param _active Is ball active (is displayed, can score)
- * @returns 
+ * @returns IBall state
  */
 const useBall = (
+  canvas: Canvas,
   _sideWalls: boolean,
   _radius: number = BALL_RADIUS,
   _pos: Vec2 = { x: BALL_DEFAULT_POS_X, y: BALL_DEFAULT_POS_Y },
@@ -125,7 +126,7 @@ const useBall = (
         setX(x - velocityX);
         return;
       }
-      if (__right_() > CANVAS_WIDTH && velocityX > 0) {
+      if (__right_() > canvas.width && velocityX > 0) {
         setVelocityX(-velocityX);
         setX(x - velocityX);
         return;
@@ -137,7 +138,7 @@ const useBall = (
       setY(y - velocityY);
       return;
     }
-    if (y > CANVAS_HEIGHT - _radius && velocityY > 0) {
+    if (y > canvas.height - _radius && velocityY > 0) {
       setVelocityY(-velocityY);
       setY(y - velocityY);
       return;

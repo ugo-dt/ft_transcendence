@@ -9,7 +9,6 @@ import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
 import Rankings from "./pages/Rankings";
-import Settings from "./pages/Settings";
 import SignIn from "./pages/SignIn";
 
 const router = createBrowserRouter([
@@ -35,10 +34,6 @@ const router = createBrowserRouter([
         element: <SignIn />
       },
       {
-        path: "play",
-        element: <Game />
-      },
-      {
         path: "messages",
         element: <Chat />
       },
@@ -55,12 +50,19 @@ const router = createBrowserRouter([
         element: <Profile />
       },
       {
-        path: "account",
+        path: "settings",
         element: <Account />
       },
       {
-        path: 'settings'
-      },
+        path: "game",
+        element: <Game />,
+        children: [
+          {
+            path: ':id',
+            element: <Game />,
+          },
+        ]
+      }
     ]
   }
 ])

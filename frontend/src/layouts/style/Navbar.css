@@ -1,0 +1,37 @@
+/* @media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+} */
+
+nav {
+  /* color: white;
+  background-color: #3D3E3D; */
+  /* box-shadow: 0 0 8px 2px rgb(0, 0, 0, 0.8); */
+  font-size: 14px;
+  font-weight: 500;
+  border-bottom: 1px solid rgb(0, 0, 0, 0.2);
+  display: flex;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.NavLink {
+  color: inherit;
+  transition: 0.3s;
+  text-decoration: none;
+  margin-left: 2px;
+  margin-right: 2px;
+  padding: 10px;
+}
+
+.NavLink:hover {
+  /* background-color: #1c1c1c; */
+  color: #54AFFF;
+  transition: 0.3s;
+}
+
+.nav-right:nth-last-of-type(2) {
+  margin-left: auto;
+}

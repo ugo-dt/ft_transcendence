@@ -6,7 +6,7 @@
 //  Block another account. User will not receive messages from the blocked user.
 //
 //  Create channels (chat rooms):
-//    - Either ublic, private, or locked with a password
+//    - Either public, private, or locked with a password
 //    - The channel owner can set a password required to access the channel, change
 //       it, and also remove it.
 //    - The channel owner is a channel administrator. They can set other users as administrators.

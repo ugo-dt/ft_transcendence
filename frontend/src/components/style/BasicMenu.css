@@ -1,0 +1,19 @@
+.button-text {
+  transition: .5 ease;
+}
+
+.button-text:hover {
+  transition: .5 ease;
+}
+
+.down-arrow-text-icon {
+  margin-left: 4px;
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+  /* transform: translateY(3px); */
+}
+
+.basic-menu {
+  border: 1px solid black;
+}

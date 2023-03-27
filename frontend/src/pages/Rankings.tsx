@@ -9,7 +9,6 @@ import React from "react";
 
 import {
   Container,
-  CssBaseline,
   Paper,
   Table,
   TableBody,
@@ -48,10 +47,8 @@ const placeholder = [
 
 function Rankings() {
   placeholder.sort((a, b) => a.rank - b.rank);
-  // ADD CSSBASELINE TO ROOT APP IN ORDER TO RESET BROWSER CSS?
   return (
     <Container maxWidth="md">
-      <CssBaseline /> 
       <TableContainer component={Paper} sx={{mt: 10}}>
         <Table>
           <TableHead>

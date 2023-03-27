@@ -5,6 +5,5 @@ export interface IPaddle {
 	width: number;
 	height: number;
 	color: string;
-	movingUp: boolean;
-	movingDown: boolean;
+	velocityY: number,
 }

@@ -69,7 +69,7 @@ function Game() {
         <Pong
           leftPlayerData={leftPlayerData}
           rightPlayerData={rightPlayerData}
-          mode={DEBUG_MODE}
+          mode={NORMAL_MODE}
         />
       </div>
     </>

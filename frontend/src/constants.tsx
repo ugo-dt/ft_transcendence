@@ -10,14 +10,14 @@ export const CANVAS_DEFAULT_HEIGHT: number = 480;
 export const CANVAS_DEFAULT_BACKGROUND_COLOR: string = "black";
 export const CANVAS_DEFAULT_FOREGROUND_COLOR: string = "white";
 export const CANVAS_DEFAULT_NET_COLOR: string = CANVAS_DEFAULT_FOREGROUND_COLOR;
-export const CANVAS_DEFAULT_NET_GAP: number = CANVAS_DEFAULT_HEIGHT / 16;
+export const CANVAS_DEFAULT_NET_GAP: number = 30;
 
 /* Ball */
 export const BALL_DEFAULT_RADIUS: number = 7;
 export const BALL_DEFAULT_POS_X: number = CANVAS_DEFAULT_WIDTH / 2;
 export const BALL_DEFAULT_POS_Y: number = CANVAS_DEFAULT_HEIGHT / 2;
 export const BALL_VELOCITY_X: number = 1;
-export const BALL_VELOCITY_Y = (): number => {return Math.random() * (3 - -3) - 3};
+export const BALL_VELOCITY_Y = (): number => {return Math.random() * (2 - -2) - 2};
 export const BALL_DEFAULT_SPEED: number = 7;
 export const BALL_MAX_STARTING_ANGLE: number = 2.000;
 

@@ -1,16 +1,11 @@
-.home-section {
-  height: max-content;
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-	display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 :root {
+  --home-content-background-color: rgba(240, 240, 240, 0.5);
+  --home-content-border-color: rgba(0, 0, 0, 0.1);
+  --home-content-radial-gradient-color: rgba(177, 177, 177, 0.1);
+
   --modules-text-color: black;
   --modules-background-color: white;
+  --modules-border-color: black;
 
   --modules-hover-text-color: rgb(41, 72, 99);
   --modules-hover-background-color: rgba(0, 0, 0, 0.1);
@@ -29,6 +24,28 @@
     --modules-hover-background-color: rgba(0, 0, 0, 0.1);
   }
 } */
+
+.Home {
+  display: flex;
+  justify-content: center;
+}
+
+.home-content {
+  background-color: var(--home-content-background-color);
+  border: 1px solid var(--home-content-border-color);
+  border-radius: 6px;
+  background: radial-gradient(180% 45% at top center, var(--home-content-radial-gradient-color) 30%,transparent 0);
+}
+
+.home-sections {
+  height: max-content;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+	display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
 h1 {
   text-align: center;
@@ -65,7 +82,7 @@ section {
   align-items: center;
   width: 300px;
   height: 100px;
-  border: 2px solid black;
+  border: 2px solid var(--modules-border-color);
   cursor: pointer;
   transition: .2s ease;
   box-shadow:

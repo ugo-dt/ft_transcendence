@@ -77,8 +77,10 @@ const usePong = (
   }
 
   function _updatePlayers() {
-    moveLeftPaddle(ball.pos, __demoMode_());
-    moveRightPaddle(ball.pos, __demoMode_());
+    // This runs either humanMovePaddle or computerMovePaddle.
+    // Parameters are ignored when human.
+    moveLeftPaddle(ball.velocity.x, ball.pos, __demoMode_());
+    moveRightPaddle(ball.velocity.x, ball.pos, __demoMode_());
   }
 
   function _updateBall() {

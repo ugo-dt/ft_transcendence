@@ -109,9 +109,13 @@ const Pong = ({
   const [gameState, resetGame, setPause, setBallPause, setRightIsCom] = usePong(canvas, mode, leftPlayerData, rightPlayerData);
   const { space } = useKeyState({ space: 'space' });
 
+  // function updateCanvas() {
+  // }
+
   useEffect(() => {
     const canvasElement = document.getElementById("canvas") as HTMLCanvasElement;
     canvas.context = canvasElement.getContext("2d") as CanvasRenderingContext2D;
+    // window.addEventListener("resize", updateCanvas);
   }, []);
 
   useEffect(() => {

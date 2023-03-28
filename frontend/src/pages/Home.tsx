@@ -77,46 +77,48 @@ function Home() {
 
   return (
     <div className="Home">
-      <div className="home-title">
-        <h1>Play Pong</h1>
-      </div>
-      <div className="home-section">
-        <section>
-          <Pong
-            canvasWidth={325}
-            canvasHeight={240}
-            mode={DEMO_MODE}
-            leftPlayerData={leftPlayerDemo}
-            rightPlayerData={rightPlayerDemo}
-          />
-        </section>
-        <section>
-          <div className="gamePage" style={{ display: 'flex', flexDirection: 'column' }}>
-            <div className="playModes">
-              <div className="modules" role="button" onClick={startRankedGame}>
-                <SportsTennisIcon className='icon tennis' fontSize="large" />
-                <div>
-                  <h2>Online</h2>
-                  <h5>Compete with someone of <br /> similar skill</h5>
-                </div>
-              </div>
-              <div className="modules" role="button" onClick={startComputerGame}>
-                <TvIcon className='icon tv' fontSize="large" />
-                <div>
-                  <h2>Computer</h2>
-                  <h5>Challenge a bot</h5>
-                </div>
-              </div>
-              <div className="modules" role="button" onClick={startCasualGame}>
-                <PeopleOutlineIcon className='icon people' fontSize="large" />
-                <div>
-                  <h2>Play a friend</h2>
-                  <h5>Invite a friend to a casual game</h5>
-                </div>
-              </div>
+      <div className="home-content">
+        <div className="home-title">
+          <h1>Play Pong</h1>
+        </div>
+        <div className="home-sections">
+          <section>
+            <Pong
+              canvasWidth={390}
+              canvasHeight={288}
+              mode={DEMO_MODE}
+              leftPlayerData={leftPlayerDemo}
+              rightPlayerData={rightPlayerDemo}
+            />
+          </section>
+          <section>
+            <div className="gamePage" style={{ display: 'flex', flexDirection: 'column' }}>
+              <ul className="playModes">
+                <li className="modules" role="button" onClick={startRankedGame}>
+                  <SportsTennisIcon className='icon tennis' fontSize="large" />
+                  <div>
+                    <h2>Online</h2>
+                    <h5>Compete with someone of <br /> similar skill</h5>
+                  </div>
+                </li>
+                <li className="modules" role="button" onClick={startComputerGame}>
+                  <TvIcon className='icon tv' fontSize="large" />
+                  <div>
+                    <h2>Computer</h2>
+                    <h5>Challenge a bot</h5>
+                  </div>
+                </li>
+                <li className="modules" role="button" onClick={startCasualGame}>
+                  <PeopleOutlineIcon className='icon people' fontSize="large" />
+                  <div>
+                    <h2>Play a friend</h2>
+                    <h5>Invite a friend to a casual game</h5>
+                  </div>
+                </li>
+              </ul>
             </div>
-          </div>
-        </section>
+          </section>
+        </div>
       </div>
     </div>
   );

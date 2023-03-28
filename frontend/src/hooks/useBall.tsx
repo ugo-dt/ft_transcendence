@@ -82,7 +82,7 @@ const useBall = (
           else if (__top_() >= paddle.pos.y + paddle.height / 2 && velocityY < 0) {
             return 1;
           }
-          return 3; // this doesnt work when speed increases
+          return 3;
         }
         return 2;
       }
@@ -95,7 +95,7 @@ const useBall = (
           else if (__top_() >= paddle.pos.y + paddle.height / 2 && velocityY < 0) {
             return 1;
           }
-          return 3; // this doesnt work when speed increases
+          return 3;
         }
         return 2;
       }

@@ -8,14 +8,10 @@ import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({isGlobal: true}),
     TypeOrmModule.forRoot({
-      type: "postgres",
-      host: process.env.HOST,
-      port: parseInt(process.env.PORT), // TEMPORARY VALUE
-      username: process.env.USERNAME,
-      password: process.env.PASSWORD,
-      database: process.env.DATABASE,
+      type: "sqlite",
+      database: "db.sqlite",
       entities: [User],
       synchronize: true // remove for production
     }),

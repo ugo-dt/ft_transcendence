@@ -1,3 +1,5 @@
 .env
+db.sqlite
+requests.http
 
 node_modules

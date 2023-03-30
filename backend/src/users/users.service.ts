@@ -7,6 +7,11 @@ import { User } from './entities/user.entity';
 export class UsersService {
 	constructor(@InjectRepository(User) private repo: Repository<User>) {}
 
+	create(accessToken: string, accessTokenExpirationTime: number, refreshToken: string, id42: number): Promise<User> {
+		const user = this.repo.create({accessToken, accessTokenExpirationTime, refreshToken, id42});
+		return this.repo.save(user);
+	}
+
 	findOne(id: number): Promise<User | null> {
 		return this.repo.findOneBy({id});
 	}

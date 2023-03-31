@@ -1,24 +1,32 @@
-/* @media (prefers-color-scheme: light) {
+:root {
+  --nav-text-color: inherit;
+  --nav-text-color-hover: #54AFFF;
+
+  --nav-box-shadow-color: rgb(0, 0, 0, 0.1);
+  --nav-border-bottom-color: rgb(0, 0, 0, 0.2);
+  --nav-background-color: inherit;
+}
+
+@media (prefers-color-scheme: dark) {
   :root {
-    color: #213547;
-    background-color: #ffffff;
+    --nav-text-color: rgb(255, 255, 255, 0.87);
+    --nav-border-bottom-color: rgb(255, 255, 255, 0.1);
   }
-} */
+}
 
 nav {
-  /* color: white;
-  background-color: #3D3E3D; */
-  box-shadow: 0 0 8px 2px rgb(0, 0, 0, 0.1);
+  background-color: var(--nav-background-color);
+  box-shadow: 0 0 8px 2px var(--nav-box-shadow-color);
   font-size: 14px;
   font-weight: 500;
-  border-bottom: 1px solid rgb(0, 0, 0, 0.2);
+  border-bottom: 1px solid var(--nav-border-bottom-color);
   display: flex;
   text-align: center;
   margin-bottom: 10px;
 }
 
 .NavLink {
-  color: inherit;
+  color: var(--nav-text-color);
   transition: 0.3s;
   text-decoration: none;
   margin-left: 2px;
@@ -28,7 +36,7 @@ nav {
 
 .NavLink:hover {
   /* background-color: #1c1c1c; */
-  color: #54AFFF;
+  color: var(--nav-text-color-hover);
   transition: 0.3s;
 }
 

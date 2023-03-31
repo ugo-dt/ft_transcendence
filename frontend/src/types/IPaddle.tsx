@@ -1,9 +1,8 @@
-import { Vec2 } from "./Vec2";
-
 export interface IPaddle {
-	pos: Vec2;
-	width: number;
-	height: number;
-	color: string;
-	velocityY: number,
+  x: number,
+  y: number,
+  width: number;
+  height: number;
+  color: string;
+  velocityY: number,
 }

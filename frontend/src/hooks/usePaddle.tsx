@@ -3,16 +3,28 @@ import { IPaddle } from "../types";
 import { CANVAS_DEFAULT_HEIGHT, CANVAS_DEFAULT_WIDTH, PADDLE_DEFAULT_COLOR, PADDLE_DEFAULT_HEIGHT, PADDLE_DEFAULT_WIDTH, PADDLE_DEFAULT_X_LEFT, PADDLE_DEFAULT_X_RIGHT } from "../constants";
 import Canvas from "../components/Canvas";
 
-const usePaddle = (
+function usePaddle(
   canvas: Canvas,
   _isLeft: boolean,
-): [IPaddle, any, any, any, any] => {
-  const [x] = useState(_isLeft ? canvas.width / (CANVAS_DEFAULT_WIDTH / PADDLE_DEFAULT_X_LEFT) : canvas.width / (CANVAS_DEFAULT_WIDTH / PADDLE_DEFAULT_X_RIGHT));
+): [IPaddle, any, any, any, any, any] {
+  const [x, setX] = useState(_isLeft ? canvas.width / (CANVAS_DEFAULT_WIDTH / PADDLE_DEFAULT_X_LEFT) : canvas.width / (CANVAS_DEFAULT_WIDTH / PADDLE_DEFAULT_X_RIGHT));
   const [y, setY] = useState(canvas.height / 2 - (canvas.height / (CANVAS_DEFAULT_HEIGHT / (PADDLE_DEFAULT_HEIGHT / 2))));
-  const [width] = useState(canvas.width / (CANVAS_DEFAULT_WIDTH / PADDLE_DEFAULT_WIDTH));
-  const [height] = useState(canvas.height / (CANVAS_DEFAULT_HEIGHT / PADDLE_DEFAULT_HEIGHT));
+  const [width, setWidth] = useState(canvas.width / (CANVAS_DEFAULT_WIDTH / PADDLE_DEFAULT_WIDTH));
+  const [height, setHeight] = useState(canvas.height / (CANVAS_DEFAULT_HEIGHT / PADDLE_DEFAULT_HEIGHT));
   const [color] = useState(PADDLE_DEFAULT_COLOR);
   const [velocityY, setVelocityY] = useState(0);
+
+  function updateSize() {
+    if (_isLeft) {
+      setX(canvas.width / (CANVAS_DEFAULT_WIDTH / PADDLE_DEFAULT_X_LEFT));
+    }
+    else {
+      setX(canvas.width / (CANVAS_DEFAULT_WIDTH / PADDLE_DEFAULT_X_RIGHT));
+    }
+    setY(canvas.height / 2 - (canvas.height / (CANVAS_DEFAULT_HEIGHT / (PADDLE_DEFAULT_HEIGHT / 2))));
+    setWidth(canvas.width / (CANVAS_DEFAULT_WIDTH / PADDLE_DEFAULT_WIDTH));
+    setHeight(canvas.height / (CANVAS_DEFAULT_HEIGHT / PADDLE_DEFAULT_HEIGHT));
+  }
 
   function movePaddle() {
     if (!velocityY) { return ;}
@@ -27,10 +39,8 @@ const usePaddle = (
 
   return [
     {
-      pos: {
-        x: x,
-        y: y
-      },
+      x: x,
+      y: y,
       width: width,
       height: height,
       color: color,
@@ -40,6 +50,7 @@ const usePaddle = (
     drawPaddle,
     setY,
     setVelocityY,
+    updateSize,
   ];
 }
 

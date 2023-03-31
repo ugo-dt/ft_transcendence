@@ -1,4 +1,5 @@
-import { IBall, IPaddle, IPlayer } from "../types";
+import { IBall } from "./IBall";
+import { IPlayer } from "./IPlayer";
 
 export interface IGameState {
   ball: IBall,

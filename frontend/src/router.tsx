@@ -10,6 +10,7 @@ import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
 import Rankings from "./pages/Rankings";
 import SignIn from "./pages/SignIn";
+import BotGame from "./pages/BotGame";
 
 const router = createBrowserRouter([
   {
@@ -62,6 +63,10 @@ const router = createBrowserRouter([
             element: <Game />,
           },
         ]
+      },
+      {
+        path: 'computer',
+        element: <BotGame />
       }
     ]
   }

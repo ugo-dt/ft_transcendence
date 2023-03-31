@@ -7,6 +7,6 @@ export class PongController {
 
   @Get()
   getHello(): string {
-    return this.pongService.getHello();
+    return 'This is pong!';
   }
 }

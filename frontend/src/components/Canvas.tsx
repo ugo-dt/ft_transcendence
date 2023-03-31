@@ -37,11 +37,11 @@ class Canvas {
 
   public drawText(text: string, x: number, y: number, color: string) {
     if (this.context) {
+      this.context.font = "bold 68px Courier New";
       this.context.strokeStyle = 'black';
       this.context.lineWidth = 8;
       this.context.strokeText(text, x, y);
       this.context.fillStyle = color;
-      this.context.font = "bold 68px Courier New";
       this.context.fillText(text, x, y);
       this.context.lineWidth = 0;
     }

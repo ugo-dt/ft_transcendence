@@ -1,5 +1,29 @@
+:root {
+  --canvas-border-color: rgb(255, 255, 255, 0.85);
+}
+
 canvas {
-  border: 10px solid white;
+  border: 10px solid var(--canvas-border-color);
   outline: 1px solid #0C1821;
   overflow: hidden;
+}
+
+.debug-info {
+  border: 1px solid black;
+}
+
+.debug-info-cell {
+  padding: '5px';
+  border-bottom: '1px solid black';
+}
+
+@media (prefers-color-scheme: dark) {
+  .debug-info {
+    border: 1px solid white;
+    background-color: black;
+  }
+  .debug-info-cell {
+    padding: '5px';
+    border-bottom: '1px solid white';
+  }
 }

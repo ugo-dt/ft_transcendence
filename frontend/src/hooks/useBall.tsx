@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { IBall, IPaddle, Vec2 } from "../types";
+import { IBall, IPaddle } from "../types";
 import { BALL_DEFAULT_SPEED, BALL_DEFAULT_RADIUS, BALL_VELOCITY_Y, CANVAS_DEFAULT_WIDTH } from "../constants";
 import Canvas from "../components/Canvas";
 
@@ -13,27 +13,31 @@ import Canvas from "../components/Canvas";
  * @param _active Is ball active (is displayed, can score)
  * @returns IBall state
  */
-const useBall = (
+function useBall(
   canvas: Canvas,
   _sideWalls: boolean,
   _radius: number = canvas.width / (CANVAS_DEFAULT_WIDTH / BALL_DEFAULT_RADIUS),
-  _pos: Vec2 = { x: canvas.width / 2, y: canvas.height / 2 },
+  _x: number = canvas.width / 2,
+  _y: number = canvas.height / 2,
   _speed: number = canvas.width / (CANVAS_DEFAULT_WIDTH / BALL_DEFAULT_SPEED),
-  _velocity: Vec2 = { x: _speed * Math.cos(Math.PI * 4) * 1, y: BALL_VELOCITY_Y() },
+  _velocityX: number =_speed * Math.cos(Math.PI * 4) * 1,
+  _velocityY: number = BALL_VELOCITY_Y(),
   _color: string = "white",
   _active: boolean = true,
-): [IBall, any, any, any, any, any, any] => {
-  const [x, setX] = useState(_pos.x);
-  const [y, setY] = useState(_pos.y);
+): [IBall, any, any, any, any, any, any, any, any] {
+  const [x, setX] = useState(_x);
+  const [y, setY] = useState(_y);
   const [speed, setSpeed] = useState(_speed)
-  const [velocityX, setVelocityX] = useState(_velocity.x);
-  const [velocityY, setVelocityY] = useState(_velocity.y);
+  const [velocityX, setVelocityX] = useState(_velocityX);
+  const [velocityY, setVelocityY] = useState(_velocityY);
   const [color, setColor] = useState(_color);
   const [colorIndex, setColorIndex] = useState(0);
   const [active, setActive] = useState(_active);
-  const [startVelocityGoesLeft, setstartVelocityGoesLeft] = useState(_velocity.x > 0);
+  const [startVelocityGoesLeft, setstartVelocityGoesLeft] = useState(_velocityX > 0);
   const [pause, setPause] = useState(false);
   // const colors = ["white", "silver", "grey", "maroon", "red", "purple", "fuchsia", "green", "lime", "olive", "yellow", "navy", "blue", "teal", "aqua"];
+
+  function __setPos_(_x: number, _y: number) {setX(_x); setY(_y);}
 
   function __left_() { return x - _radius; }
   function __right_() { return x + _radius; }
@@ -41,17 +45,17 @@ const useBall = (
   function __bottom_() { return y + _radius; }
 
   function _isInPaddleNextFrame(paddle: IPaddle) {
-    return __left_() + velocityX <= paddle.pos.x + paddle.width && __right_() + velocityX >= paddle.pos.x
-      && __top_() + velocityY <= paddle.pos.y + paddle.height && __bottom_() + velocityY >= paddle.pos.y;
+    return __left_() + velocityX <= paddle.x + paddle.width && __right_() + velocityX >= paddle.x
+      && __top_() + velocityY <= paddle.y + paddle.height && __bottom_() + velocityY >= paddle.y;
   }
 
   function _isInPaddle(paddle: IPaddle) {
-    return __left_() <= paddle.pos.x + paddle.width && __right_() >= paddle.pos.x
-      && __top_() <= paddle.pos.y + paddle.height && __bottom_() >= paddle.pos.y;
+    return __left_() <= paddle.x + paddle.width && __right_() >= paddle.x
+      && __top_() <= paddle.y + paddle.height && __bottom_() >= paddle.y;
   }
 
   function _calculateBallAngle(paddle: IPaddle, isLeft: boolean, c: number) {
-    let collidePoint = (y - (paddle.pos.y + paddle.height / 2));
+    let collidePoint = (y - (paddle.y + paddle.height / 2));
     collidePoint = collidePoint / (paddle.height / 2);
     let angleRad = (Math.PI / 4) * collidePoint;
 
@@ -75,11 +79,11 @@ const useBall = (
     if (paddle && _isInPaddle(paddle)) {
       // right paddle
       if (velocityX > 0) {
-        if (__right_() >= paddle.pos.x + paddle.width / 2) {
-          if (__bottom_() <= paddle.pos.y + paddle.height / 2 && velocityY > 0) {
+        if (__right_() >= paddle.x + paddle.width / 2) {
+          if (__bottom_() <= paddle.y + paddle.height / 2 && velocityY > 0) {
             return 1;
           }
-          else if (__top_() >= paddle.pos.y + paddle.height / 2 && velocityY < 0) {
+          else if (__top_() >= paddle.y + paddle.height / 2 && velocityY < 0) {
             return 1;
           }
           return 3;
@@ -88,11 +92,11 @@ const useBall = (
       }
       // left paddle
       else {
-        if (__left_() <= paddle.pos.x + paddle.width / 2) {
-          if (__bottom_() <= paddle.pos.y + paddle.height / 2 && velocityY > 0) {
+        if (__left_() <= paddle.x + paddle.width / 2) {
+          if (__bottom_() <= paddle.y + paddle.height / 2 && velocityY > 0) {
             return 1;
           }
-          else if (__top_() >= paddle.pos.y + paddle.height / 2 && velocityY < 0) {
+          else if (__top_() >= paddle.y + paddle.height / 2 && velocityY < 0) {
             return 1;
           }
           return 3;
@@ -101,14 +105,14 @@ const useBall = (
       }
     }
     if (velocityX < 0) {
-      if (_isInPaddleNextFrame(paddle)) {
-        setX(paddle.pos.x + paddle.width + _radius);
+      if (_isInPaddleNextFrame(paddle) && __top_() > paddle.y && __bottom_() < paddle.y + paddle.height) {
+        setX(paddle.x + paddle.width + _radius);
         return (2);
       }
     }
     else {
-      if (_isInPaddleNextFrame(paddle)) {
-        setX(paddle.pos.x - _radius);
+      if (_isInPaddleNextFrame(paddle) && __top_() > paddle.y && __bottom_() < paddle.y + paddle.height) {
+        setX(paddle.x - _radius);
         return (2);
       }
     }
@@ -171,33 +175,43 @@ const useBall = (
 
   function resetBall() {
     setSpeed(_speed);
-    setX(_pos.x);
-    setY(_pos.y);
+    setX(_x);
+    setY(_y);
 
     // alternate starting direction
-    setVelocityX(startVelocityGoesLeft ? _velocity.x : -_velocity.x);
+    setVelocityX(startVelocityGoesLeft ? _velocityX : -_velocityX);
     setstartVelocityGoesLeft(!startVelocityGoesLeft);
 
     // set random angle
     setVelocityY(BALL_VELOCITY_Y());
   }
 
+  function updateBallSize() {
+    _radius = canvas.width / (CANVAS_DEFAULT_WIDTH / BALL_DEFAULT_RADIUS);
+    _speed = canvas.width / (CANVAS_DEFAULT_WIDTH / BALL_DEFAULT_SPEED);
+    __setPos_(x / 2, y / 2);
+  }
+
   return [
     {
       radius: _radius,
-      pos: { x: x, y: y },
+      x: x,
+      y: y,
       speed: speed,
-      velocity: { x: velocityX, y: velocityY },
+      velocityX: velocityX,
+      velocityY: velocityY,
       color: color,
       active: active,
       pause: pause,
     },
+    __setPos_,
     moveBall,
     drawBall,
     checkBallCollisions,
     resetBall,
     setActive,
     setPause,
+    updateBallSize,
   ];
 }
 

@@ -30,7 +30,8 @@
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.2.0",
     "socket-io": "^1.0.0",
-    "socket.io": "^4.6.1"
+    "socket.io": "^4.6.1",
+    "use-key-state": "^0.1.9"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.0.0",

@@ -1,0 +1,85 @@
+:root {
+  --modules-text-color: black;
+  --modules-background-color: white;
+  --modules-border-color: black;
+
+  --modules-hover-text-color: rgb(30, 60, 86);
+  --modules-hover-background-color: rgba(0, 0, 0, 0.1);
+
+  --tennis-icon-hover-color: rgb(255, 84, 84);
+  --tv-icon-hover-color: rgb(84, 113, 255);
+  --people-icon-hover-color: rgb(0, 196, 26);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --modules-hover-text-color: rgb(184, 222, 255);
+    --modules-text-color: rgb(255, 255, 255, 0.87);
+    --modules-background-color: #242424;
+    --modules-hover-background-color: rgb(255, 255, 255, 0.1);
+  }
+}
+
+.playModes {
+  margin-top: 0px;
+  display: flex;
+  gap: 10%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  vertical-align: middle;
+  user-select: none;
+}
+
+.modules {
+  margin: 5px;
+  color: var(--modules-text-color);
+  background-color: var(--modules-background-color);
+  transition: background-color 1s;
+  display: flex;
+  align-items: center;
+  width: 300px;
+  height: 100px;
+  border: 2px solid var(--modules-border-color);
+  cursor: pointer;
+  transition: .2s ease;
+  box-shadow:
+    1px 1px #010101,
+    2px 2px #010101,
+    3px 3px #010101,
+    4px 4px #010101,
+    5px 5px #010101,
+    6px 6px #010101;
+}
+
+.modules:hover {
+  color: var(--modules-hover-text-color);
+  background-color: var(--modules-hover-background-color);
+  -webkit-transform: translateX(-3px);
+  transform: translateX(-3px);
+  transition: .5s ease;
+}
+
+.icon {
+  margin-left: 15px;
+  margin-right: 20px;
+}
+
+.modules:hover>.tennis {
+  color: var(--tennis-icon-hover-color);
+  transition: .5s ease;
+}
+
+.modules:hover>.tv {
+  color: var(--tv-icon-hover-color);
+  transition: .6s ease;
+}
+
+.modules:hover>.people {
+  color: var(--people-icon-hover-color);
+  transition: .6s ease;
+}
+
+.moduleImage {
+  margin-right: 5px;
+}

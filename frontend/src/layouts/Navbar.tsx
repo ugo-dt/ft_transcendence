@@ -56,9 +56,9 @@ function Navbar({ isSignedIn }: NavbarProps) {
         <Container maxWidth="xl">
           <Toolbar disableGutters>
             <Logo color={style.accentColor} fontSize='large' />
-            {!mobileScreen && navLinks(pages, 1)}
+            {!mobileScreen && navLinks(pages)}
             <div style={{marginLeft: 'auto'}}>
-              {!mobileScreen && navLinks(social, 0)}
+              {!mobileScreen && navLinks(social)}
               <AvatarButton isSignedIn={isSignedIn} avatarImageSrc={undefined}/>
             </div>
           </Toolbar>

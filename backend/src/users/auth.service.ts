@@ -17,8 +17,11 @@ export class AuthService {
 		};
 		const currentTime = Date.now();
 		const {data} = await firstValueFrom(this.httpService.post("https://api.intra.42.fr/oauth/token", options));
-		data.expirationTime = currentTime + data.expires_in;
-		return data;
+		return {
+			accessToken: data.access_token,
+			expirationTime: currentTime + data.expires_in,
+			refreshToken: data.refresh_token
+		};
 	}
 
 	async getTokenInfo(accessToken: string) {
@@ -27,16 +30,27 @@ export class AuthService {
 				access_token: accessToken
 			}
 		}));
-		return data;
+		return data.resource_owner_id;
 	}
 
-	async login(tokens: any, id42: number) {
+	async signIn(tokens: any, id42: number) {
 		const user = await this.usersService.find(id42);
 		if (!user.length) {
-			const newUser = await this.usersService.create(tokens.access_token, tokens.expirationTime, tokens.refresh_token, id42);
+			const newUser = await this.usersService.create(
+				tokens.accessToken,
+				tokens.expirationTime,
+				tokens.refreshToken,
+				id42,
+				"(placeholder)",
+				"(placeholder)"
+			);
 			return newUser;
 		}
-		const updateUser = await this.usersService.update(user[0].id, user[0])
+		const updateUser = await this.usersService.update(user[0].id, {
+			accessToken: tokens.accessToken,
+			expirationTime: tokens.expirationTime,
+			refreshToken: tokens.refreshToken
+		});
 		return updateUser;
 	}
 }

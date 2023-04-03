@@ -12,11 +12,14 @@ export class UsersService {
 		return this.repo.save(user);
 	}
 
-	findOne(id: number): Promise<User | null> {
+	findOne(id: number) {
+		if (!id) {
+			return null; // or throw an exception
+		}
 		return this.repo.findOneBy({id});
 	}
 
-	find(id42: number): Promise<User[]> { // ID42 IS A TEMPORARY NAME
+	find(id42: number): Promise<User[]> {
 		return this.repo.find({where: {id42}});
 	}
 

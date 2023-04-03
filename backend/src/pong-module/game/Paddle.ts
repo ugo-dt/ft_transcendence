@@ -18,7 +18,7 @@ export default class Paddle {
   private _height: number;
   private _color: string;
   private _velocityY: number;
-  
+
   constructor(
     x: number,
   ) {
@@ -39,6 +39,7 @@ export default class Paddle {
   public get width(): number { return this._width; }
   public get height(): number { return this._height; }
   public get color(): string { return this._color; }
+  public get velocityY(): number { return this._velocityY; }
 
   public set x(x: number) { this._x = x; }
   public set y(y: number) { this._y = y; }
@@ -47,6 +48,7 @@ export default class Paddle {
   public set width(width: number) { this._width = width; }
   public set height(height: number) { this._height = height; }
   public set color(color: string) { this._color = color; }
+  public set velocityY(velocityY: number) { this._velocityY = velocityY; }
 
   public get bounds(): Bounds {
     return {
@@ -68,8 +70,9 @@ export default class Paddle {
     }
   }
 
-  public update(x: number, y: number) {
-    if (this._velocityY) {
+  public update(canvasHeight: number) {
+    if (!this._velocityY) { return; }
+    if (this._velocityY && this._y + this._velocityY >= 0 && this._y + this._velocityY <= canvasHeight - this._height) {
       this._y += this._velocityY;
     }
   }

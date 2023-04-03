@@ -7,14 +7,14 @@ import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
 const GameModes = () => {
   const navigate = useNavigate();
 
-  function startRankedGame() {
-    navigate("/game/ranked");
+  function playOnline() {
+    navigate("/play/online");
   }
 
-  function startComputerGame() {
-    navigate("/computer");
+  function playComputer() {
+    navigate("/play/computer");
   }
-  function startFriendGame() {
+  function playFriend() {
     alert("Unimplemented.");
   }
 
@@ -22,21 +22,21 @@ const GameModes = () => {
     <>
       <div className="gamePage" style={{ display: 'flex', flexDirection: 'column' }}>
         <ul className="playModes">
-          <li className="modules" role="button" onClick={startRankedGame}>
+          <li className="modules" role="button" onClick={playOnline}>
             <SportsTennisIcon className='icon tennis' fontSize="large" />
             <div>
               <h2>Online</h2>
               <h5>Compete with someone of <br /> similar skill</h5>
             </div>
           </li>
-          <li className="modules" role="button" onClick={startComputerGame}>
+          <li className="modules" role="button" onClick={playComputer}>
             <TvIcon className='icon tv' fontSize="large" />
             <div>
               <h2>Computer</h2>
               <h5>Challenge a bot</h5>
             </div>
           </li>
-          <li className="modules" role="button" onClick={startFriendGame}>
+          <li className="modules" role="button" onClick={playFriend}>
             <PeopleOutlineIcon className='icon people' fontSize="large" />
             <div>
               <h2>Play a friend</h2>

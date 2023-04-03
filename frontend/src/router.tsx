@@ -11,6 +11,8 @@ import Profile from "./pages/Profile";
 import Rankings from "./pages/Rankings";
 import SignIn from "./pages/SignIn";
 import BotGame from "./pages/BotGame";
+import Play from "./pages/Play";
+import PlayOnline from "./pages/PlayOnline";
 
 const router = createBrowserRouter([
   {
@@ -55,18 +57,28 @@ const router = createBrowserRouter([
         element: <Account />
       },
       {
-        path: "game",
-        element: <Game />,
+        path: "play",
+        element: <Play />,
         children: [
           {
-            path: ':id',
-            element: <Game />,
+            path: "online",
+            element: <PlayOnline />,
+          },
+          {
+            path: "computer",
+            element: <BotGame />,
           },
         ]
       },
       {
-        path: 'computer',
-        element: <BotGame />
+        path: 'game',
+        element: <Game />,
+        children: [
+          {
+            path: ":id",
+            element: <Game />
+          }
+        ]
       }
     ]
   }

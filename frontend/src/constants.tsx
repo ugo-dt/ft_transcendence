@@ -3,7 +3,7 @@ export const DEBUG_MODE = 0x1;
 export const ONLINE_MODE = 0x2;
 export const OFFLINE_MODE = 0x4;
 export const DEMO_MODE = 0x8;
-export const TARGET_FPS: number = 75;
+export const TARGET_FPS: number = 60;
 
 /* Canvas */
 export const CANVAS_DEFAULT_WIDTH: number = 650;

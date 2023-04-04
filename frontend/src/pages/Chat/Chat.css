@@ -1,3 +1,8 @@
+#h1_main_title {
+	margin-left: auto;
+	margin-right: auto;
+}
+
 #div_chat_app {
 	display: flex;
 	flex-direction: column;
@@ -21,15 +26,27 @@
 }
 
 #div_input_bar {
-	margin: 5px;
+	margin-top: 1%;
+	padding: 1%;
 	width: 100%;
-	padding: 10px;
 	border-radius: 20px;
+}
+
+#li_messages-god {
+	list-style-type: none;
+	border-radius: 15px 15px 15px 15px;
+	background: rgb(98, 0, 255);
+	padding: 5px;
+	margin: 10px;
+	margin-left: auto;
+	margin-right: auto;
+	display: table;
+	max-width: 96%;
 }
 
 #li_messages-mine {
 	list-style-type: none;
-	border-radius: 15px 15px 5px 15px;
+	border-radius: 15px 15px 3px 15px;
 	background: #1982FC;
 	padding: 5px;
 	margin: 10px;
@@ -38,9 +55,15 @@
 	max-width: 96%;
 }
 
+.message {
+	margin-left: auto;
+	padding: 0;
+	border: 0;
+}
+
 #li_messages {
 	list-style-type: none;
-	border-radius: 15px 15px 15px 5px;
+	border-radius: 15px 15px 15px 3px;
 	background: rgb(55, 55, 55);
 	padding: 5px;
 	margin: 10px;
@@ -62,6 +85,7 @@
 	font-size: 18px;
 	justify-content: center;
 	line-height: 28px;
+	margin-top: 1%;
 	max-width: 100%;
 	padding: 14px 22px;
 	text-decoration: none;

@@ -22,107 +22,133 @@ import './Chat.css'
 import { useState, useEffect, useRef } from 'react';
 import { io } from "socket.io-client";
 
+interface Message {
+  id: number;
+  msg: string;
+  senderId: string;
+  isOwner: boolean;
+}
+
 function Chat(): JSX.Element {
-	const messagesEndRef = useRef(null);
-	const [messageInputValue, setMessageInputValue] = useState("");
-	const messages = useRef<{ id: number; msg: string; }[]>([]);
-	const messagesId = useRef(0);
-	const [messagesState, setMessagesState] = useState<{ id: number; msg: string; }[]>([]);
-	const socket = useRef(io("http://192.168.1.136:3000", {
-		autoConnect: false,
-	})).current;
+  const messagesEndRef = useRef<(null) | HTMLLIElement>(null);
+  const [messageInputValue, setMessageInputValue] = useState("");
+  const messages = useRef<Message[]>([]);
+  const messagesId = useRef(1);
+  const clientId = useRef('');
+  const [messagesState, setMessagesState] = useState<Message[]>([]);
+  const socket = useRef(io("http://192.168.1.136:3000", {
+    autoConnect: false,
+  })).current;
+  const printName = useRef(true);
 
-	const handleSubmitNewMessage = (): void => {
-		if (socket && messageInputValue.length > 0) {
-			console.log("sending", messageInputValue);
-			socket.emit('message', { message: messageInputValue });
-			setMessageInputValue("");
-		}
-	}
+  const handleSubmitNewMessage = (): void => {
+    if (socket && socket.connected && messageInputValue.length > 0) {
+      console.log("sending", messageInputValue);
+      console.log("clientId: ", clientId.current);
+      socket.emit('message', { message: messageInputValue, senderId: clientId.current });
+      setMessageInputValue("");
+      printName.current = false;
+    }
+  }
 
-	const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-		if (event.key === "Enter") {
-		  event.preventDefault();
-		  handleSubmitNewMessage();
-		}
-	  };
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      handleSubmitNewMessage();
+    }
+  };
 
-	function onConnect() {
-		console.log("Connected.");
-		messages.current = [];
-		setMessagesState(messages.current);
-	}
+  function onConnect() {
+    console.log(`Connected with ID: ${socket.id}`);
+    messages.current = [];
+    clientId.current = socket.id;
+    setMessagesState(messages.current);
+  }
 
-	function onDisconnect() {
-		console.log("Disconnected.");
-	}
+  function onDisconnect() {
+    console.log("Disconnected.");
+  }
 
-	function onMessage(message: string) {
-		console.log('onmessage');
+  function onMessage(data: any) {
+    console.log('onmessage');
+    let isSentByCurrentUser = false; // <-- default to false
 
-		messages.current = [...messages.current, { id: messagesId.current++, msg: message }];
-		setMessagesState(messages.current);
-		console.log("Received message:", message);
-	}
+    // Check if the message was sent by the current user
+    console.log("senderId: ", data.senderId);
 
-	useEffect(() => {
-		messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-	  }, [messagesState]);
+    if (data.senderId === clientId.current) {
+      isSentByCurrentUser = true;
+    }
 
-	useEffect(() => {
-		console.log("Connecting to server...");
-		socket.connect();
-		socket.on('connect', onConnect);
-		socket.on('disconnect', onDisconnect);
-		socket.on('message', (data) => onMessage(data.message));
+    messages.current = [...messages.current, { id: messagesId.current++, msg: data.message, senderId: data.senderId, isOwner: isSentByCurrentUser }];
+    setMessagesState(messages.current);
+    console.log("Received message:", data.message);
+    printName.current = true;
+  }
 
-		return () => {
-			console.log("Disconnecting from server...");
-			socket.removeAllListeners();
-			socket.disconnect();
-		};
-	}, []);
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messagesState]);
 
-	console.log("Rendering Chat component...");
+  useEffect(() => {
+    console.log("Connecting to server...");
+    socket.connect();
+    socket.on('connect', onConnect);
+    socket.on('disconnect', onDisconnect);
+    socket.on('message', onMessage);
 
-	return (
-		<>
-			<h1>Chat app</h1>
-			<div id="div_chat_app">
-				<div id="div_messages_box">
-					<ul>
-					<li id="li_messages">YO</li>
-					<li id="li_messages">Wassup bro</li>
-					<li id="li_messages">https://www.youtube.com/watch?v=yCGclRZrPvc&</li>
-						{
-							messagesState.map(item => (
-								<li id="li_messages-mine" key={item.id}>{item.msg}</li>
-							))
-						}
-						 <li ref={messagesEndRef} />
-					</ul>
-				</div>
-				<div id="div_input_box">
-					<input
-						placeholder='Type a message...'
-						id="div_input_bar"
-						type="text"
-						value={messageInputValue}
-						onKeyDown={handleKeyDown}
-						onChange={(e) => {
-							setMessageInputValue(e.target.value);
-							console.log("Input field changed:", e.target.value);
-						}}
-					/>
-					<button
-						id="button_send"
-						onClick={handleSubmitNewMessage}
-						type="submit"
-					>Send</button>
-				</div>
-			</div>
-		</>
-	);
+    return () => {
+      // Cleans up after the component is unmounted.
+      // It removes all the event listeners that were added to the socket object
+      // and disconnects the socket from the server.
+      console.log("Disconnecting from server...");
+      socket.removeAllListeners();
+      socket.disconnect();
+    };
+  }, []);
+
+  return (
+    <>
+      <div id="div_chat_app">
+        <h1 id="h1_main_title">Chat app</h1>
+        <div id="div_messages_box">
+          <ul>
+            <li id="li_messages-god">"Welcome to this conversation"</li>
+            <li id="li_messages">YO</li>
+            <li id="li_messages">Wassup bro</li>
+            <li id="li_messages-god">This is god speaking.</li>
+            <li id="li_messages-god">https://www.youtube.com/watch?v=yCGclRZrPvc&</li>
+            {
+              messagesState.map(item => (
+                  <li id={item.isOwner ? "li_messages-mine" : "li_messages"} key={item.id}>
+                    {item.msg}
+                  </li>
+              ))
+            }
+            <li ref={messagesEndRef} />
+          </ul>
+        </div>
+        <div id="div_input_box">
+          <input
+            placeholder='Type a message...'
+            id="div_input_bar"
+            type="text"
+            value={messageInputValue}
+            onKeyDown={handleKeyDown}
+            onChange={(e) => {
+              setMessageInputValue(e.target.value);
+              console.log("Input field changed:", e.target.value);
+            }}
+          />
+          <button
+            id="button_send"
+            onClick={handleSubmitNewMessage}
+            type="submit"
+          >Send</button>
+        </div>
+      </div>
+    </>
+  );
 }
 
 export default Chat;

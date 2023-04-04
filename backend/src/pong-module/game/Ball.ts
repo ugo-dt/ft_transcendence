@@ -29,14 +29,14 @@ export default class Ball {
     x: number,
     y: number,
     color: string,
-    sideWalls: boolean,
+    sideWalls: boolean = false,
   ) {
     this._x = x;
     this._y = y;
     this._radius = 7;
     this._speed = 5;
     this._velocityX = 5;
-    this._velocityY = Math.random() * (2 - -2) - 2;
+    this._velocityY = 0;//Math.random() * (2 - -2) - 2;
     this._color = color;
     this._sideWalls = sideWalls;
     this._active = false;

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useKeyState } from "use-key-state";
 import { IGameState, IPlayer } from "../types";
-import { CANVAS_DEFAULT_HEIGHT, CANVAS_DEFAULT_WIDTH, DEBUG_MODE, OFFLINE_MODE, ONLINE_MODE, TARGET_FPS } from "../constants";
+import { CANVAS_DEFAULT_HEIGHT, CANVAS_DEFAULT_WIDTH, DEBUG_MODE, OFFLINE_MODE, TARGET_FPS } from "../constants";
 import usePong from "../hooks/usePong";
 import Canvas from "../components/Canvas";
 
@@ -9,17 +9,19 @@ import "./style/Pong.css"
 
 interface DebugProps {
   gameState: IGameState,
-  resetGame: any,
-  setPause: any,
-  setBallPause: any,
-  setLeftIsCom: any,
-  setRightIsCom: any,
+  resetGame: () => void,
+  pause: boolean,
+  setPause: (pause: boolean) => void,
+  setBallPause: (pause: boolean) => void,
+  setLeftIsCom: (isCom: boolean) => void,
+  setRightIsCom: (isCom: boolean) => void,
 }
 
 const PongDebug = ({
   gameState,
   resetGame,
   setBallPause,
+  pause,
   setPause,
   setLeftIsCom,
   setRightIsCom,
@@ -40,7 +42,7 @@ const PongDebug = ({
         __info_ &&
         <div className="debug-area" style={{ position: 'absolute', top: '13%', left: '2%' }}>
           <button onClick={resetGame}>Reset game (r)</button><br />
-          <button onClick={() => setPause(!gameState.pause)}>{((gameState.pause && "Resume game") || "Pause game") + ' (space)'}</button>
+          <button onClick={() => setPause(!pause)}>{((pause && "Resume game") || "Pause game") + ' (space)'}</button>
           <div className="debug-info" style={{width: '150px'}}>
             <div className="debug-info-cell">
               <h4>Ball</h4>
@@ -56,23 +58,26 @@ const PongDebug = ({
             </div>
 
             <div className="debug-info-cell">
-              <h4>{gameState.leftPlayer.name + ((gameState.leftPlayer.isCom && " (COM)") || " (Human)")}</h4>
-              <h5>x: {gameState.leftPlayer.paddle!.x.toFixed(2)}</h5>
-              <h5>y: {gameState.leftPlayer.paddle!.y.toFixed(2)}</h5>
-              <h5>velocity y: {gameState.leftPlayer.paddle!.velocityY}</h5>
+              <h4>{gameState.leftPlayer.name + ((gameState.leftPaddle.isCom && " (COM)") || " (Human)")}</h4>
+              <button onClick={() => setRightIsCom(!gameState.leftPaddle.isCom)}>
+                {((gameState.leftPaddle.isCom && "Set as Human") || "Set as COM")}
+              </button>
+              <h5>x: {gameState.leftPaddle.x.toFixed(2)}</h5>
+              <h5>y: {gameState.rightPaddle.y.toFixed(2)}</h5>
+              <h5>velocity y: {gameState.leftPaddle!.velocityY}</h5>
               <h5>id: {gameState.leftPlayer.id}</h5>
               <h5>score: {gameState.leftPlayer.score}</h5>
               <h5>color: {gameState.leftPlayer.backgroundColor}</h5>
             </div>
 
             <div className="debug-info-cell">
-              <h4>{gameState.rightPlayer.name + ((gameState.rightPlayer.isCom && " (COM)") || " (Human)")}</h4>
-              <button onClick={() => setRightIsCom(!gameState.rightPlayer.isCom)}>
-                {((gameState.rightPlayer.isCom && "Set as Human") || "Set as COM")}
+              <h4>{gameState.rightPlayer.name + ((gameState.rightPaddle.isCom && " (COM)") || " (Human)")}</h4>
+              <button onClick={() => setRightIsCom(!gameState.rightPaddle.isCom)}>
+                {((gameState.rightPaddle.isCom && "Set as Human") || "Set as COM")}
               </button>
-              <h5>x: {gameState.rightPlayer.paddle!.x.toFixed(2)}</h5>
-              <h5>y: {gameState.rightPlayer.paddle!.y.toFixed(2)}</h5>
-              <h5>velocity y: {gameState.rightPlayer.paddle?.velocityY}</h5>
+              <h5>x: {gameState.rightPaddle!.x.toFixed(2)}</h5>
+              <h5>y: {gameState.rightPaddle!.y.toFixed(2)}</h5>
+              <h5>velocity y: {gameState.rightPaddle.velocityY}</h5>
               <h5>id: {gameState.rightPlayer.id}</h5>
               <h5>score: {gameState.rightPlayer.score}</h5>
               <h5>color: {gameState.rightPlayer.backgroundColor}</h5>
@@ -100,7 +105,7 @@ function Pong({
   mode,
 }: PongProps) {
   const [canvas, setCanvas]: [Canvas, any] = useState(new Canvas(canvasWidth, canvasHeight, null));
-  const [gameState, updateGame, updateGameSize, resetGame, setPause, setBallPause, setRightIsCom] = usePong(canvas, mode, leftPlayerData, rightPlayerData);
+  const [gameState, updateGame, resetGame, pause, setPause, setBallPause, setLeftIsCom, setRightIsCom] = usePong(canvas, mode, leftPlayerData, rightPlayerData);
   const { space } = useKeyState({ space: 'space' });
 
   useEffect(() => {
@@ -111,13 +116,13 @@ function Pong({
   useEffect(() => {
     if (mode & (OFFLINE_MODE | DEBUG_MODE)) {
       if (space.down) {
-        setPause(!gameState.pause);
+        setPause(!pause);
       }
     }
     const interval = setInterval(updateGame, 1000 / TARGET_FPS);
 
     return () => {clearInterval(interval);}
-  }, [space, gameState, updateGame, updateGameSize]);
+  }, [space, gameState, updateGame]);
 
   return (
     <>
@@ -126,9 +131,10 @@ function Pong({
         <PongDebug
           gameState={gameState}
           resetGame={resetGame}
+          pause={pause}
           setPause={setPause}
           setBallPause={setBallPause}
-          setLeftIsCom={() => console.log("unimplemented")}
+          setLeftIsCom={setLeftIsCom}
           setRightIsCom={setRightIsCom}
         />
       }
@@ -145,7 +151,7 @@ function Pong({
           Your browser does not support the HTML 5 Canvas.
         </canvas>
         {
-          gameState.pause &&
+          pause &&
           <div className="pause-text" style={{ textAlign: 'center' }}>
             <h3>Paused</h3>
             <p>Press Space to resume</p>

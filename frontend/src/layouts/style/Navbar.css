@@ -15,6 +15,7 @@
 }
 
 nav {
+  user-select: none;
   background-color: var(--nav-background-color);
   box-shadow: 0 0 8px 2px var(--nav-box-shadow-color);
   font-size: 14px;

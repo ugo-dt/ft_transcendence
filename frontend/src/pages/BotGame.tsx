@@ -11,7 +11,6 @@ function BotGame() {
     isLeft: true,
     isCom: false,
     score: 0,
-    keyboardState: null,
     backgroundColor: CANVAS_DEFAULT_BACKGROUND_COLOR,
   };
   const rightPlayerData: IPlayer = {
@@ -21,7 +20,6 @@ function BotGame() {
     isLeft: false,
     isCom: true,
     score: 0,
-    keyboardState: null,
     backgroundColor: CANVAS_DEFAULT_BACKGROUND_COLOR,
   };
 
@@ -35,7 +33,7 @@ function BotGame() {
         <Pong
           leftPlayerData={leftPlayerData}
           rightPlayerData={rightPlayerData}
-          mode={OFFLINE_MODE | DEBUG_MODE}
+          mode={OFFLINE_MODE}
         />
       </div>
     </>

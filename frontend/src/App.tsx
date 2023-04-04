@@ -6,10 +6,6 @@ import { useEffect, useRef } from 'react'
 import { io } from 'socket.io-client'
 import { Context } from './context'
 
-function useSocket() {
-  
-};
-
 function App() {
   const serverUrl = "http://192.168.1.178:3000/pong";
   const socketRef = useRef(io(serverUrl, {

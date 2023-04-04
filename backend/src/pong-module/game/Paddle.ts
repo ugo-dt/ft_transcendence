@@ -71,8 +71,9 @@ export default class Paddle {
   }
 
   public update(canvasHeight: number) {
-    if (!this._velocityY) { return; }
-    if (this._velocityY && this._y + this._velocityY >= 0 && this._y + this._velocityY <= canvasHeight - this._height) {
+    if (this._velocityY
+      && this._y + this._velocityY >= 0
+      && this._y + this._velocityY <= canvasHeight - this._height) {
       this._y += this._velocityY;
     }
   }

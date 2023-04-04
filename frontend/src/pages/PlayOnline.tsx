@@ -4,10 +4,10 @@ import { useNavigate } from "react-router";
 import { Context } from "../context";
 
 function PlayOnline() {
-  const { serverUrl, socketRef } = useContext(Context);
-  const socket = socketRef.current;
+  const socket = useContext(Context).socketRef.current;
   const inQueueRef = useRef(false);
   const [inQueue, setInQueue] = useState(false);
+  const inGame = useRef(false);
   
   const navigate = useNavigate();
 
@@ -30,11 +30,13 @@ function PlayOnline() {
   }
 
   function onStartGame(data: any) {
-    if (data.roomId) {
-      console.log("Game started", data);
-      const gameUrl = "/game/" + data.roomId;
-      navigate(gameUrl, { state: { roomId: data.roomId } });
+    if (inGame.current) {
+      return ;
     }
+    inGame.current = true;
+    console.log("Started game", data);
+    const gameUrl = "/game/" + data.roomId;
+    navigate(gameUrl, { state: { roomId: data.roomId } });
   }
 
   function onEndGame() {

@@ -19,6 +19,7 @@
 .Home {
   display: flex;
   justify-content: center;
+  user-select: none;
 }
 
 .home-content {

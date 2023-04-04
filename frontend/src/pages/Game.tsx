@@ -23,29 +23,26 @@
  * add score
  */
 
-import { useContext, useEffect, useState } from "react";
-import { CANVAS_DEFAULT_NET_COLOR, CANVAS_DEFAULT_NET_GAP, DEBUG_MODE, ONLINE_MODE, TARGET_FPS } from "../constants";
+import { Navigate, useLocation, useNavigate } from "react-router";
+import { useContext, useEffect, useRef, useState } from "react";
+import { useKeyState } from "use-key-state";
+import { Context } from "../context";
+import { CANVAS_DEFAULT_NET_COLOR, CANVAS_DEFAULT_NET_GAP, TARGET_FPS } from "../constants";
 import { IGameState, IPaddle } from "../types";
 import Canvas from "../components/Canvas";
-import { Navigate, useLocation } from "react-router";
-import { Context } from "../context";
-import { useKeyState } from "use-key-state";
 
 function Game() {
   const location = useLocation();
-  console.log(location.state);
+  const navigate = useNavigate();
 
   if (!location.state) {    
     return <Navigate to={"/play/online"} />
   }
   else {
-    const { gameData } = location.state;
-    const { serverUrl, socketRef } = useContext(Context);
-    const socket = socketRef.current;
+    const socket = useContext(Context).socketRef.current;
     const [canvas] = useState(new Canvas(650, 480, null));
+    const gameState = useRef((null as unknown) as IGameState);
     const keyboardState = useKeyState().keyStateQuery;
-
-    let gameState: any;
 
     function _updateKeyState() {
       if (keyboardState.pressed('w')) {
@@ -77,24 +74,37 @@ function Game() {
         canvas.drawRect(canvas.width / 2 - 5, i, 10, 15, CANVAS_DEFAULT_NET_COLOR);
       }
       canvas.drawCircle(gameState.ball.x, gameState.ball.y, gameState.ball.radius, gameState.ball.color);
-      _drawPaddle(gameState.leftPlayer.paddle);
-      _drawPaddle(gameState.rightPlayer.paddle);
+      _drawPaddle(gameState.leftPaddle);
+      _drawPaddle(gameState.rightPaddle);
     }
 
     function _update() {
-      // console.log("update", gameState);
       _updateKeyState();
-      _render(gameState);
+      try {
+        _render(gameState.current);
+      }
+      catch {
+        onEndGame();
+      }
+    }
+
+    function onUpdate(data: any) {
+      gameState.current = data.gameState;
+    }
+
+    function onEndGame() {
+      navigate("/home");
     }
 
     useEffect(() => {
       canvas.context = (document.getElementById("canvas") as HTMLCanvasElement).getContext("2d") as CanvasRenderingContext2D;
-      socket.on('update', (data: any) => {gameState = data});
+      socket.on('update', onUpdate);
+      socket.on('endGame', onEndGame);
       const interval = setInterval(_update, 1000 / TARGET_FPS);
 
-      return () => {
-        socket.off('update', (data: any) => {gameState = data});
+      return () => {        
         clearInterval(interval);
+        socket.off('update', onUpdate);
       }
     }, [])
 

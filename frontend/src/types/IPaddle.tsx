@@ -1,3 +1,5 @@
+import { KeyStateQuery } from "use-key-state";
+
 export interface IPaddle {
   x: number,
   y: number,
@@ -5,4 +7,6 @@ export interface IPaddle {
   height: number;
   color: string;
   velocityY: number,
+  keyboardState: KeyStateQuery | null,
+  isCom: boolean,
 }

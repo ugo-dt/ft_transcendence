@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { IBall, IPaddle } from "../types";
 import { BALL_DEFAULT_SPEED, BALL_DEFAULT_RADIUS, BALL_VELOCITY_Y, CANVAS_DEFAULT_WIDTH } from "../constants";
 import Canvas from "../components/Canvas";
@@ -24,7 +24,15 @@ function useBall(
   _velocityY: number = BALL_VELOCITY_Y(),
   _color: string = "white",
   _active: boolean = true,
-): [IBall, any, any, any, any, any, any, any, any] {
+): [
+  IBall,
+  () => void,
+  () => void,
+  (left: IPaddle, right: IPaddle) => void,
+  () => void,
+  Dispatch<SetStateAction<boolean>>,
+  Dispatch<SetStateAction<boolean>>,
+] {
   const [x, setX] = useState(_x);
   const [y, setY] = useState(_y);
   const [speed, setSpeed] = useState(_speed)
@@ -36,8 +44,6 @@ function useBall(
   const [startVelocityGoesLeft, setstartVelocityGoesLeft] = useState(_velocityX > 0);
   const [pause, setPause] = useState(false);
   // const colors = ["white", "silver", "grey", "maroon", "red", "purple", "fuchsia", "green", "lime", "olive", "yellow", "navy", "blue", "teal", "aqua"];
-
-  function __setPos_(_x: number, _y: number) {setX(_x); setY(_y);}
 
   function __left_() { return x - _radius; }
   function __right_() { return x + _radius; }
@@ -186,12 +192,6 @@ function useBall(
     setVelocityY(BALL_VELOCITY_Y());
   }
 
-  function updateBallSize() {
-    _radius = canvas.width / (CANVAS_DEFAULT_WIDTH / BALL_DEFAULT_RADIUS);
-    _speed = canvas.width / (CANVAS_DEFAULT_WIDTH / BALL_DEFAULT_SPEED);
-    __setPos_(x / 2, y / 2);
-  }
-
   return [
     {
       radius: _radius,
@@ -204,14 +204,12 @@ function useBall(
       active: active,
       pause: pause,
     },
-    __setPos_,
     moveBall,
     drawBall,
     checkBallCollisions,
     resetBall,
     setActive,
     setPause,
-    updateBallSize,
   ];
 }
 

@@ -1,80 +1,139 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { GameState } from './game/GameState';
+import { WebSocketServer } from '@nestjs/websockets';
 
 interface ClientData {
+  __socket: Socket,
   id: number,
   name: string,
+  status: 'online' | 'playing';
 }
 
 interface RoomData {
-  id: string,
-  left: Socket,
-  right: Socket,
+  id: number,
+  left: ClientData,
+  right: ClientData,
   gameState: GameState;
   interval: NodeJS.Timer | null;
 }
 
 @Injectable()
 export class PongService {
-  private clients: Map<string, ClientData> = new Map();
-  private queue: Set<Socket> = new Set();
+  private clients: Set<ClientData> = new Set();
+  private queue: Set<ClientData> = new Set();
   private rooms: Set<RoomData> = new Set();
   private readonly logger = new Logger();
 
-  constructor() {
+  public getQueue(): ClientData[] {
+    return [...this.queue];
   }
 
-  async handleUserConnected(client: Socket, clientData: ClientData): Promise<void> {
+  private _getNewRoomId(): number {
+    let smallestMissingId = 0;
+    for (const roomData of this.rooms.values()) {
+      if (roomData.id === smallestMissingId) {
+        smallestMissingId++;
+      }
+      else if (smallestMissingId < roomData.id && !!(this.__getRoom(smallestMissingId))) {
+        break;
+      }
+    }
+    return smallestMissingId;
+  }
+
+  private _getNewClientId(): number {
+    let smallestMissingId = 0;
+    for (const clientData of this.clients.values()) {
+      if (clientData.id === smallestMissingId) {
+        smallestMissingId++;
+      }
+      else if (smallestMissingId < clientData.id && !!(this.__getClient(smallestMissingId))) {
+        break;
+      }
+    }
+    return smallestMissingId;
+  }
+
+  /**
+   * @param socket The client socket.
+   * @returns The clientData element corresponding to the socket, or undefined if the element does not exist.
+   */
+  private __getClientFromSocket(socket: Socket): ClientData | undefined {
+    for (const clientData of this.clients.values()) {
+      if (clientData.__socket.id === socket.id) {
+        return clientData;
+      }
+    }
+    return undefined;
+  }
+  
+  /**
+   * @param clientId The desired client id.
+   * @returns The clientData element with the given id, or undefined if the element does not exist.
+   */
+  private __getClient(clientId: number): ClientData | undefined {
+    for (const clientData of this.clients.values()) {
+      if (clientData.id === clientId) {
+        return clientData;
+      }
+    }
+    return undefined;
+  }
+
+  /**
+   * @param roomId The desired room id.
+   * @returns The roomData element with the given id, or undefined if the element does not exist.
+   */
+  private __getRoom(roomId: number): RoomData | undefined {
+    for (const roomData of this.rooms.values()) {
+      if (roomData.id === roomId) {
+        return roomData;
+      }
+    }
+    return undefined;
+  }
+
+  /**
+   * @param socket The client socket.
+   * @returns The room that the client is currently in, or undefined if the client is not in a room.
+   */
+  private __getSocketRoom(socket: Socket): RoomData | undefined {
+    for (const roomData of this.rooms.values()) {
+      if (roomData.left.__socket.id === socket.id || roomData.right.__socket.id === socket.id) {
+        return roomData;
+      }
+    }
+    return undefined;
+  }
+
+  public async handleUserConnected(client: Socket): Promise<void> {
+    const clientData: ClientData = {
+      __socket: client,
+      id: this._getNewClientId(),
+      name: client.data.name,
+      status: 'online',
+    }
+
+    this.clients.add(clientData);
     this.logger.verbose(`Client connected (${clientData.id}:${client.data.name}).`);
-    this.clients.set(client.id, clientData);
   }
 
-  async handleUserDisconnect(client: Socket): Promise<void> {
-    const clientData = this.clients.get(client.id);
+  public async handleUserDisconnect(client: Socket): Promise<void> {
+    const clientData = this.__getClientFromSocket(client);
+
     if (clientData) {
-      this.removeClientFromQueue(client);
-      this.clients.delete(client.id);
+      this.queue.delete(clientData);
+      this.clients.delete(clientData);
       this.logger.verbose(`Client disconnected (${clientData.id}).`);
     }
   }
 
-  __roomAt_(id: string | undefined): RoomData | undefined {
-    if (id) {
-      for (const roomData of this.rooms.values()) {
-        if (roomData.id === id) {
-          return roomData;
-        }
-      }
-    }
-    return undefined;
-  }
-
-  __clientAt_(id: number | undefined): ClientData | undefined {
-    if (id) {
-      for (const clientData of this.clients.values()) {
-        if (clientData.id === id) {
-          return clientData;
-        }
-      }
-    }
-    return undefined;
-  }
-
-  getQueueSize() {
-    return this.queue.size;
-  }
-
-  getQueue() {
-    return [...this.queue];
-  }
-
-  handleKey(client: Socket, direction: string, isPressed: boolean) {
-    const clientRooms: string[] = [...client.rooms];
-    const room = this.__roomAt_(clientRooms.at(1));
+  private _handleKey(client: Socket, direction: string, isPressed: boolean) {
+    const room = this.__getSocketRoom(client);
 
     if (room) {
-      const player = client.id === room?.left.id ? room.gameState.leftPlayer : room.gameState.rightPlayer;
+      const player = client.id === room.left.__socket.id ? room.gameState.leftPlayer : room.gameState.rightPlayer;
       if (direction === "up") {
         if (isPressed) {
           player.handleKeyUpPressed();
@@ -93,110 +152,97 @@ export class PongService {
     }
   }
 
-  handleKeyUpPressed(client: Socket) { this.handleKey(client, "up", true); }
-  handleKeyUpUnpressed(client: Socket) { this.handleKey(client, "up", false); }
-  handleKeyDownPressed(client: Socket) { this.handleKey(client, "down", true); }
-  handleKeyDownUnpressed(client: Socket) { this.handleKey(client, "down", false); }
+  public handleKeyUpPressed(client: Socket) { this._handleKey(client, "up", true); }
+  public handleKeyUpUnpressed(client: Socket) { this._handleKey(client, "up", false); }
+  public handleKeyDownPressed(client: Socket) { this._handleKey(client, "down", true); }
+  public handleKeyDownUnpressed(client: Socket) { this._handleKey(client, "down", false); }
 
-  getNewRoomId(): string {
-    let smallestMissingId = 0;
-    for (const roomData of this.rooms.values()) {
-      if (roomData.id === smallestMissingId.toString()) {
-        smallestMissingId++;
-      }
-      else if (smallestMissingId.toString() < roomData.id && !!(this.__roomAt_(smallestMissingId.toString()))) {
-        break;
-      }
+  private _destroyRoom(room: RoomData) {
+    room.left.__socket.leave(room.id.toString());
+    room.left.__socket.leave(room.id.toString());
+    if (room.interval) {
+      clearInterval(room.interval);
     }
-    return smallestMissingId.toString();
+    this.rooms.delete(room);
   }
 
-  getNewClientId(): number {
-    let smallestMissingId = 0;
-    for (const clientData of this.clients.values()) {
-      if (clientData.id === smallestMissingId) {
-        smallestMissingId++;
-      }
-      else if (smallestMissingId < clientData.id && !!(this.__clientAt_(smallestMissingId))) {
-        break;
-      }
-    }
-    return smallestMissingId;
-  }
-
-  createNewRoom(left: Socket, right: Socket): RoomData {
-    const roomId = this.getNewRoomId();
+  private _createRoom(left: ClientData, right: ClientData): RoomData {
+    const roomId = this._getNewRoomId();
     const gameState = new GameState(650, 480);
 
-    left.join(roomId);
-    right.join(roomId);
-    left.data.isLeft = true;
-    right.data.isLeft = false;
-    left.data.room = roomId;
-    right.data.room = roomId;
-    left.data.opponentId = right.id;
-    right.data.opponentId = left.id;
+    left.__socket.join(roomId.toString());
+    right.__socket.join(roomId.toString());
+    left.__socket.data.isLeft = true;
+    right.__socket.data.isLeft = false;
+    left.__socket.data.room = roomId;
+    right.__socket.data.room = roomId;
 
-    return {
+    const roomData = {
       id: roomId,
       left: left,
       right: right,
       gameState: gameState,
       interval: null,
     };
+
+    this.rooms.add(roomData);
+    return roomData;
   }
 
-  startGame(server: Server, left: Socket, right: Socket) {
-    const room: RoomData = this.createNewRoom(left, right);
-    this.rooms.add(room);
+  public startGame(server: Server, left: ClientData, right: ClientData) {
+    const room: RoomData = this._createRoom(left, right);
+    this.queue.delete(left);
+    this.queue.delete(right);
+    room.left.status = 'playing';
+    room.right.status = 'playing';
 
-    this.removeClientFromQueue(left);
-    this.removeClientFromQueue(right);
-
-    server.to(room.id).emit('startGame', { roomId: room.id });
+    server.to(room.id.toString()).emit('startGame', { roomId: room.id });
     room.interval = setInterval(() => {
       room.gameState.update();
-      server.to(room.id).emit('update', room.gameState.IGameState());
+      server.to(room.id.toString()).emit('update', {
+        gameState: room.gameState.IGameState(),
+      });
 
-      if (room.left.disconnected || room.right.disconnected) {
+      if (room.left.__socket.disconnected || room.right.__socket.disconnected) {
         this.endGame(server, room);
       }
     }, 1000 / 60);
-    this.logger.log(`Started new game (id: ${room.id})`);
+    this.logger.log(`Started new game (room: ${room.id}, left: ${room.left.id}), right: ${room.right.id}`);
   }
 
   endGame(server: Server, room: RoomData) {
-    server.to(room.id).emit('end');
-    if (room.interval) {
-      clearInterval(room.interval);
-    }
-    this.rooms.delete(room);
+    server.to(room.id.toString()).emit('endGame');
+    room.left.status = 'online';
+    room.right.status = 'online';
+    this._destroyRoom(room);
     this.logger.log(`Ended game (id: ${room.id})`);
   }
 
-  addClientToQueue(server: Server, client: Socket): string {
-    const clientData = this.clients.get(client.id);
+  addClientToQueue(client: Socket) {
+    const clientData = this.__getClientFromSocket(client);
     if (clientData) {
-      if (this.queue.has(client)) {
-        return 'already in queue';
+      const room = this.__getSocketRoom(client);
+      if (room) {
+        client.emit('startGame', { roomId: room.id });
+        return ;
       }
-      this.queue.add(client);
+
+      if (this.queue.has(clientData)) {
+        return ;
+      }
+      this.queue.add(clientData);
       this.logger.verbose(`Added client to queue (${clientData.id}).`);
-      return 'ok';
     }
-    return 'unknown client';
   }
 
-  removeClientFromQueue(client: Socket): string {
-    const clientData = this.clients.get(client.id);
+  public removeClientFromQueue(client: Socket) {
+    const clientData = this.__getClientFromSocket(client);
     if (clientData) {
-      if (!this.queue.has(client)) {
-        return 'not in queue';
+      if (!this.queue.has(clientData)) {
+        return ;
       }
-      this.queue.delete(client);
+      this.queue.delete(clientData);
       this.logger.verbose(`Removed client from queue (${clientData.id}).`);
-      return 'ok';
     }
-    return 'unknown client';
   }
 }

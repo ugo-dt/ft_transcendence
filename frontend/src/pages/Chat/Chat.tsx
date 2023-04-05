@@ -113,11 +113,8 @@ function Chat(): JSX.Element {
         <h1 id="h1_main_title">Chat app</h1>
         <div id="div_messages_box">
           <ul>
-            <li id="li_messages-god">"Welcome to this conversation"</li>
-            <li id="li_messages">YO</li>
-            <li id="li_messages">Wassup bro</li>
-            <li id="li_messages-god">This is god speaking.</li>
-            <li id="li_messages-god">https://www.youtube.com/watch?v=yCGclRZrPvc&</li>
+            <li id="li_messages-god">Welcome to this conversation.</li>
+            <li id="li_messages-god">This is God speaking.</li>
             {
               messagesState.map(item => (
                   <li id={item.isOwner ? "li_messages-mine" : "li_messages"} key={item.id}>
@@ -130,6 +127,7 @@ function Chat(): JSX.Element {
         </div>
         <div id="div_input_box">
           <input
+		  	autoFocus
             placeholder='Type a message...'
             id="div_input_bar"
             type="text"

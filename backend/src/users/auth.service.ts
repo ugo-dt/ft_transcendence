@@ -34,8 +34,8 @@ export class AuthService {
 	}
 
 	async signIn(tokens: any, id42: number) {
-		const user = await this.usersService.find(id42);
-		if (!user.length) {
+		const user = await this.usersService.findOneId42(id42);
+		if (!user) {
 			const newUser = await this.usersService.create(
 				tokens.accessToken,
 				tokens.expirationTime,
@@ -46,7 +46,7 @@ export class AuthService {
 			);
 			return newUser;
 		}
-		const updateUser = await this.usersService.update(user[0].id, {
+		const updateUser = await this.usersService.update(user.id, {
 			accessToken: tokens.accessToken,
 			expirationTime: tokens.expirationTime,
 			refreshToken: tokens.refreshToken

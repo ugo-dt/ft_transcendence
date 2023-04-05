@@ -12,15 +12,13 @@ export class UsersService {
 		return this.repo.save(user);
 	}
 
-	findOne(id: number) {
-		if (!id) {
-			return null; // or throw an exception
-		}
+	findOneId(id: number) {
+		if (!id) return null; // useless? check if negative id or 0 can result in an error
 		return this.repo.findOneBy({id});
 	}
 
-	find(id42: number): Promise<User[]> {
-		return this.repo.find({where: {id42}});
+	findOneId42(id42: number) {
+		return this.repo.findOneBy({id42});
 	}
 
 	findAll(): Promise<User[]> {
@@ -28,19 +26,15 @@ export class UsersService {
 	}
 
 	async update(id: number, attrs: Partial<User>): Promise<User> {
-		const user = await this.findOne(id);
-		if (!user) {
-			throw new NotFoundException("user not found");
-		}
+		const user = await this.findOneId(id);
+		if (!user) throw new NotFoundException("user not found");
 		Object.assign(user, attrs);
 		return this.repo.save(user);
 	}
 
 	async remove(id: number): Promise<User> {
-		const user = await this.findOne(id);
-		if (!user) {
-			throw new NotFoundException("user not found");
-		}
+		const user = await this.findOneId(id);
+		if (!user) throw new NotFoundException("user not found");
 		return this.repo.remove(user);
 	}
 }

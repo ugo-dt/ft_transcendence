@@ -2,6 +2,7 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
 import { UsersService } from './users.service';
+import * as bcrypt from "bcrypt";
 
 @Injectable()
 export class AuthService {
@@ -35,11 +36,14 @@ export class AuthService {
 
 	async signIn(tokens: any, id42: number) {
 		const user = await this.usersService.findOneId42(id42);
+		const salt = await bcrypt.genSalt();
+		const acToken = await bcrypt.hash(tokens.accessToken, salt);
+		const rfToken = await bcrypt.hash(tokens.refreshToken, salt);
 		if (!user) {
 			const newUser = await this.usersService.create(
-				tokens.accessToken,
+				acToken,
 				tokens.expirationTime,
-				tokens.refreshToken,
+				rfToken,
 				id42,
 				"(placeholder)",
 				"(placeholder)"
@@ -47,9 +51,9 @@ export class AuthService {
 			return newUser;
 		}
 		const updateUser = await this.usersService.update(user.id, {
-			accessToken: tokens.accessToken,
+			accessToken: acToken,
 			expirationTime: tokens.expirationTime,
-			refreshToken: tokens.refreshToken
+			refreshToken: rfToken
 		});
 		return updateUser;
 	}

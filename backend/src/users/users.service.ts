@@ -12,12 +12,11 @@ export class UsersService {
 		return this.repo.save(user);
 	}
 
-	findOneId(id: number) {
-		if (!id) return null; // useless? check if negative id or 0 can result in an error
+	findOneId(id: number): Promise<User | null> {
 		return this.repo.findOneBy({id});
 	}
 
-	findOneId42(id42: number) {
+	findOneId42(id42: number): Promise<User | null> {
 		return this.repo.findOneBy({id42});
 	}
 

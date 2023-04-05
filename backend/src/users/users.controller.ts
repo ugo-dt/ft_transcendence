@@ -1,5 +1,4 @@
-import { Body, ClassSerializerInterceptor, Controller, Get, NotFoundException, Param, Post, Req, Res, UseGuards, UseInterceptors } from '@nestjs/common';
-import { Request, Response } from 'express';
+import { Body, ClassSerializerInterceptor, Controller, Get, NotFoundException, Param, Post, Session, UseGuards, UseInterceptors } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginUserDto } from './dtos/login-user.dto';
 import { UsersService } from './users.service';
@@ -10,23 +9,23 @@ export class UsersController {
 	constructor(private usersService: UsersService, private authService: AuthService) {}
 
 	@Post("/signin")
-	async signIn(@Body() body: LoginUserDto, @Res({passthrough: true}) response: Response) {
+	async signIn(@Body() body: LoginUserDto, @Session() session: any) {
 		const tokens = await this.authService.getUserTokens(body.code);
 		const resourceOwnerId = await this.authService.getTokenInfo(tokens.accessToken);
 		const user = await this.authService.signIn(tokens, resourceOwnerId);
-		response.cookie("id42", user.id42);
+		session.userId = user.id;
 		return user;
 	}
 
 	@Post("/signout")
 	@UseGuards(UsersGuard)
-	signout(@Res({passthrough: true}) response: Response) {
-		response.clearCookie("id42");
+	signout(@Session() session: any) {
+		session.userId = null;
 	}
 
 	@Get("/myid")
-	logId(@Req() request: Request) {
-		return request.cookies;
+	logId(@Session() session: any) {
+		return session.userId;
 	}
 
 	@UseInterceptors(ClassSerializerInterceptor)

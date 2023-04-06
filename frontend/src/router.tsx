@@ -13,6 +13,7 @@ import SignIn from "./pages/SignIn";
 import BotGame from "./pages/BotGame";
 import Play from "./pages/Play";
 import PlayOnline from "./pages/PlayOnline";
+import Watch from "./pages/Watch";
 
 const router = createBrowserRouter([
   {
@@ -79,6 +80,10 @@ const router = createBrowserRouter([
             element: <Game />
           }
         ]
+      },
+      {
+        path: 'watch',
+        element: <Watch />,
       }
     ]
   }

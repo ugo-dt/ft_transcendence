@@ -1,7 +1,8 @@
 import { Logger } from "@nestjs/common";
 import { ConnectedSocket, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
-import { PongService } from "./pong.service";
+import { IRoomData, PongService } from "./pong.service";
+import { ClientData } from "./game/GameState";
 
 @WebSocketGateway({
   namespace: 'pong',
@@ -12,7 +13,7 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   constructor(private readonly pongService: PongService) {
     setInterval(() => {
-      const queue = this.pongService.getQueue();
+      const queue: ClientData[] = this.pongService.getQueue();
       if (queue.length >= 2) {
         this.pongService.startGame(this.server, queue[0], queue[1]);
       }
@@ -20,12 +21,21 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   async handleConnection(client: Socket, ...args: any[]) {
-    client.data.name = 'name'; // get name from db later.
+    client.data.name = 'Username'; // get name from db later.
     this.pongService.handleUserConnected(client);
   }
   
   async handleDisconnect(client: Socket) {
     this.pongService.handleUserDisconnect(client);
+  }
+
+  @SubscribeMessage('get-room-list')
+  handleGetRoomList(@ConnectedSocket() client: Socket) {    
+    return this.pongService.getRoomList();
+  }
+
+  @SubscribeMessage('spectate')
+  handleSpectate(@ConnectedSocket() client: Socket) {
   }
 
   @SubscribeMessage('join-queue')

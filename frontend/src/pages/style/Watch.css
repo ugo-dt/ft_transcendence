@@ -1,0 +1,14 @@
+.room-list-table {
+  border-collapse: collapse;
+}
+
+.room-list-row {
+  border: 1px solid white;
+}
+
+.room-list-cell {
+  border-right: 1px solid white;
+  min-width: fit-content;
+  text-align: center;
+  padding: 10px;
+}

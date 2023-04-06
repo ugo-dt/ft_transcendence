@@ -1,21 +1,25 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
-import { GameState } from './game/GameState';
-import { WebSocketServer } from '@nestjs/websockets';
-
-interface ClientData {
-  __socket: Socket,
-  id: number,
-  name: string,
-  status: 'online' | 'playing';
-}
+import { ClientData, GameState, IGameState } from './game/GameState';
 
 interface RoomData {
-  id: number,
-  left: ClientData,
-  right: ClientData,
+  id: number;
+  left: ClientData;
+  right: ClientData;
   gameState: GameState;
-  interval: NodeJS.Timer | null;
+}
+
+interface IClientData {
+  name: string,
+  avatar: string | null,
+}
+
+/* Object type - we emit this to clients */
+export interface IRoomData {
+  id: number,
+  left: IClientData,
+  right: IClientData,
+  gameState: IGameState,
 }
 
 @Injectable()
@@ -25,8 +29,32 @@ export class PongService {
   private rooms: Set<RoomData> = new Set();
   private readonly logger = new Logger();
 
+  constructor() {
+    // setInterval(() => {
+    //   process.stdout.write('\x1b[2J\x1b[H');
+    //   for (const roomData of this.rooms.values()) {
+    //     process.stdout.write(`Room ${roomData.id} - FPS: ${(1.0 / roomData.gameState.deltaTime).toFixed(1)}\n`);
+    //   }
+    // }, 1000);
+  }
+
   public getQueue(): ClientData[] {
     return [...this.queue];
+  }
+
+  public getRoomList(): IRoomData[] {
+    const roomList: IRoomData[] = [];
+    this.rooms.forEach(room => {
+      const roomData: IRoomData = {
+        id: room.id,
+        left: {name: room.left.name, avatar: room.left.avatar},
+        right: {name: room.right.name, avatar: room.right.avatar},
+        gameState: room.gameState.IGameState(),
+      }
+      roomList.push(roomData);
+    });
+    console.log(roomList);
+    return roomList;
   }
 
   private _getNewRoomId(): number {
@@ -112,6 +140,8 @@ export class PongService {
       __socket: client,
       id: this._getNewClientId(),
       name: client.data.name,
+      avatar: null,
+      backgroundColor: 'black',
       status: 'online',
     }
 
@@ -160,15 +190,15 @@ export class PongService {
   private _destroyRoom(room: RoomData) {
     room.left.__socket.leave(room.id.toString());
     room.left.__socket.leave(room.id.toString());
-    if (room.interval) {
-      clearInterval(room.interval);
+    if (room.gameState.interval) {
+      clearInterval(room.gameState.interval);
     }
     this.rooms.delete(room);
   }
 
   private _createRoom(left: ClientData, right: ClientData): RoomData {
     const roomId = this._getNewRoomId();
-    const gameState = new GameState(650, 480);
+    const gameState = new GameState(left, right);
 
     left.__socket.join(roomId.toString());
     right.__socket.join(roomId.toString());
@@ -177,13 +207,12 @@ export class PongService {
     left.__socket.data.room = roomId;
     right.__socket.data.room = roomId;
 
-    const roomData = {
+    const roomData: RoomData = {
       id: roomId,
       left: left,
       right: right,
       gameState: gameState,
-      interval: null,
-    };
+    }
 
     this.rooms.add(roomData);
     return roomData;
@@ -197,21 +226,37 @@ export class PongService {
     room.right.status = 'playing';
 
     server.to(room.id.toString()).emit('startGame', { roomId: room.id });
-    room.interval = setInterval(() => {
-      room.gameState.update();
-      server.to(room.id.toString()).emit('update', {
-        gameState: room.gameState.IGameState(),
-      });
 
-      if (room.left.__socket.disconnected || room.right.__socket.disconnected) {
+    room.gameState.previous = Date.now();
+    room.gameState.interval = setInterval(() => {
+      room.gameState.current = Date.now();
+      room.gameState.deltaTime = (room.gameState.current - room.gameState.previous) / 1000;
+      
+      if (room.gameState.gameOver) {
         this.endGame(server, room);
       }
-    }, 1000 / 60);
+
+      room.gameState.update();
+
+      const roomData: IRoomData = {
+        id: room.id,
+        left: {name: room.left.name, avatar: room.left.avatar},
+        right: {name: room.right.name, avatar: room.right.avatar},
+        gameState: room.gameState.IGameState(),
+      }
+      server.to(room.id.toString()).emit('update', roomData);
+
+      // if (room.left.__socket.disconnected || room.right.__socket.disconnected) {
+      //   this.endGame(server, room);
+      // }
+
+      room.gameState.previous = Date.now();
+    }, 1000 / room.gameState.fps);
     this.logger.log(`Started new game (room: ${room.id}, left: ${room.left.id}), right: ${room.right.id}`);
   }
 
   endGame(server: Server, room: RoomData) {
-    server.to(room.id.toString()).emit('endGame');
+    server.to(room.id.toString()).emit('endGame', room.gameState.IGameState());
     room.left.status = 'online';
     room.right.status = 'online';
     this._destroyRoom(room);

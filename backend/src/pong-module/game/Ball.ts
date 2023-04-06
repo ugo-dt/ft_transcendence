@@ -1,5 +1,8 @@
-import { Bounds } from "./Bounds";
 import Paddle, { IPaddle } from "./Paddle";
+import { Player } from "./Player";
+
+const DEFAULT_SPEED = 400;
+const DEFAULT_RADIUS = 7;
 
 export interface IBall {
   x: number,
@@ -24,6 +27,7 @@ export default class Ball {
   private _sideWalls: boolean;
   private _active: boolean;
   private _startsRight: boolean;
+  private _nextFrame: any;
 
   constructor(
     x: number,
@@ -33,14 +37,15 @@ export default class Ball {
   ) {
     this._x = x;
     this._y = y;
-    this._radius = 7;
-    this._speed = 5;
-    this._velocityX = 5;
-    this._velocityY = 0;//Math.random() * (2 - -2) - 2;
+    this._radius = DEFAULT_RADIUS;
+    this._speed = DEFAULT_SPEED;
+    this._velocityX = DEFAULT_SPEED;
+    this._velocityY = 0;//Math.random() * ((DEFAULT_SPEED / 2) - -(DEFAULT_SPEED / 2)) - (DEFAULT_SPEED / 2);
     this._color = color;
     this._sideWalls = sideWalls;
-    this._active = false;
+    this._active = true;
     this._startsRight = true;
+    this._nextFrame = null;
   }
 
   public get x(): number { return this._x; }
@@ -61,111 +66,39 @@ export default class Ball {
   public get top(): number { return this._y - this._radius; }
   public get bottom(): number { return this._y + this._radius; }
 
-  // public collides(paddle: Bounds) {
-  //   return this.left <= paddle.right && this.right >= paddle.left
-  //     && this.top <= paddle.bottom && this.bottom >= paddle.top;
-  // }
+  private _isInPaddleNextFrame(paddle: IPaddle, deltaTime: number) {
+    const nextLeft = this.left + this._velocityX * deltaTime;
+    const nextRight = this.right + this._velocityX * deltaTime;
+    const nextTop = this.top + this._velocityY * deltaTime;
+    const nextBottom = this.bottom + this._velocityY * deltaTime;
 
-  // public _isInPaddleNextFrame(paddle: Bounds) {
-  //   return this.left + this._velocityX <= paddle.right && this.right + this._velocityX >= paddle.left
-  //     && this.top + this._velocityY <= paddle.bottom && this.bottom + this._velocityY >= paddle.top;
-  // }
+    const buffer = this._radius / 2;
 
-  // public _isInPaddle(paddle: Bounds) {
-  //   return this.left <= paddle.right && this.right >= paddle.left
-  //     && this.top <= paddle.bottom && this.bottom >= paddle.top;
-  // }
-
-  // public _calculateBallAngle(paddle: Bounds, isLeft: boolean, c: number) {
-  //   let collidePoint = (this._y - (paddle.bottom / 2));
-  //   collidePoint = collidePoint / (80 / 2); // 80 is paddle height
-  //   let angleRad = (Math.PI / 4) * collidePoint;
-
-  //   let direction = (isLeft ? 1 : -1);
-  //   if (c == 3) {
-  //     direction *= -1;
-  //   }
-
-  //   if (c == 1) {
-  //     this._velocityY = -this._velocityY;
-  //   }
-  //   else {
-  //     this._velocityX = this._speed * Math.cos(angleRad) * direction;
-  //     this._velocityY = this._speed * Math.sin(angleRad);
-  //     if (this._speed < 15)
-  //       this._speed = this._speed + 0.1;
-  //   }
-  // }
-
-  // public _ballCollidesWith(paddle: Bounds) {
-  //   if (paddle && this._isInPaddle(paddle)) {
-  //     // right paddle
-  //     if (this._velocityX > 0) {
-  //       if (this.right >= paddle.right / 2) {
-  //         if (this.bottom <= paddle.bottom / 2 && this._velocityY > 0) {
-  //           return 1;
-  //         }
-  //         else if (this.top >= paddle.bottom / 2 && this._velocityY < 0) {
-  //           return 1;
-  //         }
-  //         return 3;
-  //       }
-  //       return 2;
-  //     }
-  //     // left paddle
-  //     else {
-  //       if (this.left <= paddle.right / 2) {
-  //         if (this.bottom <= paddle.bottom / 2 && this._velocityY > 0) {
-  //           return 1;
-  //         }
-  //         else if (this.top >= paddle.bottom / 2 && this._velocityY < 0) {
-  //           return 1;
-  //         }
-  //         return 3;
-  //       }
-  //       return 2;
-  //     }
-  //   }
-  //   if (this._velocityX < 0) {
-  //     if (this._isInPaddleNextFrame(paddle) && this.top > paddle.top && this.bottom < paddle.bottom) {
-  //       this._x = paddle.right + this._radius;
-  //       return (2);
-  //     }
-  //   }
-  //   else {
-  //     if (this._isInPaddleNextFrame(paddle) && this.top > paddle.top && this.bottom < paddle.bottom) {
-  //       this._x = paddle.left - this._radius;
-  //       return (2);
-  //     }
-  //   }
-  //   return (0);
-  // }
-
-  // public checkBallCollisions(left: Bounds, right: Bounds) {
-  //   let c;
-  //   if (this._velocityX < 0) {
-  //     if ((c = this._ballCollidesWith(left))) {
-  //       this._calculateBallAngle(left, true, c);
-  //     }
-  //   }
-  //   else {
-  //     if ((c = this._ballCollidesWith(right))) {
-  //       this._calculateBallAngle(right, false, c);
-  //     }
-  //   }
-  // }
-
-  public _isInPaddleNextFrame(paddle: IPaddle) {
-    return this.left + this._velocityX <= paddle.x + paddle.width && this.right + this._velocityX >= paddle.x
-      && this.top + this._velocityY <= paddle.y + paddle.height && this.bottom + this._velocityY >= paddle.y;
+    return (
+      nextLeft < paddle.x + paddle.width + buffer &&
+      nextRight > paddle.x - buffer &&
+      nextTop < paddle.y + paddle.height + buffer &&
+      nextBottom > paddle.y - buffer
+    );
   }
 
-  public _isInPaddle(paddle: IPaddle) {
-    return this.left <= paddle.x + paddle.width && this.right >= paddle.x
-      && this.top <= paddle.y + paddle.height && this.bottom >= paddle.y;
+  private _isInPaddle(paddle: IPaddle) {
+    const left = this.left;
+    const right = this.right;
+    const top = this.top;
+    const bottom = this.bottom;
+
+    const buffer = this._radius / 2;
+
+    return (
+      left < paddle.x + paddle.width + buffer &&
+      right > paddle.x - buffer &&
+      top < paddle.y + paddle.height + buffer &&
+      bottom > paddle.y - buffer
+    );
   }
 
-  public _calculateBallAngle(paddle: IPaddle, isLeft: boolean, c: number) {
+  private _calculateBallAngle(paddle: IPaddle, isLeft: boolean, c: number) {
     let collidePoint = (this._y - (paddle.y + paddle.height / 2));
     collidePoint = collidePoint / (paddle.height / 2);
     let angleRad = (Math.PI / 4) * collidePoint;
@@ -179,111 +112,150 @@ export default class Ball {
       this._velocityY = -this._velocityY;
     }
     else {
-      this._velocityX = this._speed * Math.cos(angleRad) * direction;
-      this._velocityY = this._speed * Math.sin(angleRad);
-      if (this._speed < 15) {
-        this._speed += 0.1;
+      const velocityX = this._speed * Math.cos(angleRad) * direction;
+      const velocityY = this._speed * Math.sin(angleRad);
+      this._velocityX = Math.round(velocityX);
+      this._velocityY = Math.round(velocityY);
+      if (Math.abs(this._speed) < 3 * DEFAULT_SPEED) {
+        this._speed += DEFAULT_SPEED / 25;
       }
     }
   }
 
-  public _ballCollidesWith(paddle: IPaddle) {
-    if (paddle && this._isInPaddle(paddle)) {
-      // right paddle
-      if (this._velocityX > 0) {
-        if (this.right >= paddle.x + paddle.width / 2) {
-          if (this.bottom <= paddle.y + paddle.height / 2 && this._velocityY > 0) {
-            return 1;
-          }
-          else if (this.top >= paddle.y + paddle.height / 2 && this._velocityY < 0) {
-            return 1;
-          }
-          return 3;
+  private _ballCollidesWith(paddle: IPaddle) {
+    // right paddle
+    if (this._velocityX > 0) {
+      if (this.right >= paddle.x + paddle.width / 2) {
+        if (this.bottom <= paddle.y + paddle.height / 2 && this._velocityY > 0) {
+          return 1;
         }
-        return 2;
-      }
-      // left paddle
-      else {
-        if (this.left <= paddle.x + paddle.width / 2) {
-          if (this.bottom <= paddle.y + paddle.height / 2 && this._velocityY > 0) {
-            return 1;
-          }
-          else if (this.top >= paddle.y + paddle.height / 2 && this._velocityY < 0) {
-            return 1;
-          }
-          return 3;
+        else if (this.top >= paddle.y + paddle.height / 2 && this._velocityY < 0) {
+          return 1;
         }
-        return 2;
+        return 3;
       }
     }
-    // if (this._velocityX < 0) {
-    //   if (this._isInPaddleNextFrame(paddle) && this.top > paddle.y && this.bottom < paddle.y + paddle.height) {
-    //     this._x = paddle.x + paddle.width + this._radius;
-    //     return (2);
-    //   }
-    // }
-    // else {
-    //   if (this._isInPaddleNextFrame(paddle) && this.top > paddle.y && this.bottom < paddle.y + paddle.height) {
-    //     this._x = paddle.x - this._radius;
-    //     return (2);
-    //   }
-    // }
-    return (0);
-  }
-
-  public checkBallCollisions(left: IPaddle, right: IPaddle) {
-    let c;
-    if (this._velocityX < 0) {
-      if ((c = this._ballCollidesWith(left))) {
-        this._calculateBallAngle(left, true, c);
-      }
-    }
+    // left paddle
     else {
-      if ((c = this._ballCollidesWith(right))) {
-        this._calculateBallAngle(right, false, c);
+      if (this.left <= paddle.x + paddle.width / 2) {
+        if (this.bottom <= paddle.y + paddle.height / 2 && this._velocityY > 0) {
+          return 1;
+        }
+        else if (this.top >= paddle.y + paddle.height / 2 && this._velocityY < 0) {
+          return 1;
+        }
+        return 3;
       }
+      return 2;
     }
+    return 2;
   }
 
-  public move(canvasWidth: number, canvasHeight: number) {
+  private _checkBallCollisions(canvasWidth: number, canvasHeight: number, left: IPaddle, right: IPaddle, deltaTime: number) {
+    let c;
+
+    // sides
     if (this._sideWalls) {
-      if ((this.left < 0 && this._velocityX < 0)
-        || (this.right > canvasWidth && this._velocityX > 0)) {
+      if ((this.left < 0 && this._velocityX < 0) || (this.right > canvasWidth && this._velocityX > 0)) {
         this._velocityX = -this._velocityX;
-        this._x -= this._velocityX;
+        // this._x += this._velocityX;
         return;
       }
     }
-
+    // floor / ceiling
     if ((this.top < 0 && this._velocityY < 0)
       || (this.bottom > canvasHeight && this._velocityY > 0)) {
       this._velocityY = -this._velocityY;
-      this._y -= this._velocityY;
+      // this._y -= this._velocityY;
       return;
     }
-    this._x += this._velocityX;
-    this._y += this._velocityY;
+    // paddles
+    if (this._nextFrame) {
+      this._calculateBallAngle(this._nextFrame.paddle, this._nextFrame.isLeft, this._nextFrame.c);
+      this._nextFrame = null;
+      return ;
+    }
+  
+    if (this._velocityX < 0) {
+      if (this._isInPaddle(left)) {
+        if ((c = this._ballCollidesWith(left))) {
+          this._calculateBallAngle(left, true, c);
+          return ;
+        }
+      }
+    }
+    else {
+      if (this._isInPaddle(right)) {
+        if ((c = this._ballCollidesWith(right))) {
+          this._calculateBallAngle(right, false, c);
+          return ;
+        }
+      }
+    }
+
+    if (this._velocityX < 0) {
+      if (this._isInPaddleNextFrame(left, deltaTime)) {
+        if ((c = this._ballCollidesWith(left))) {
+          this._nextFrame = {paddle: left, isLeft: true, c: c};
+          this.x = left.x + left.width + this._radius;
+          return ;
+        }
+      }
+    }
+    else {
+      if (this._isInPaddleNextFrame(right, deltaTime)) {
+        if ((c = this._ballCollidesWith(right))) {
+          this._nextFrame = {paddle: right, isLeft: false, c: c};
+          this.x = right.x - this._radius;
+          return ;
+        }
+      }
+    }
+  }
+
+  private _move(deltaTime: number) {
+    const x = this._x + this._velocityX * deltaTime;
+    const y = this._y + this._velocityY * deltaTime;
+    this._x = Math.round(x);
+    this._y = Math.round(y);
   }
 
   public reset(x: number, y: number) {
-    this._speed = 5;
+    this._speed = DEFAULT_SPEED;
     this._x = x;
     this._y = y;
 
     // alternate starting direction
-    this._velocityX = this._startsRight ? -5 : 5;
+    this._velocityX = this._startsRight ? -DEFAULT_SPEED : DEFAULT_SPEED;
     this._startsRight = !this._startsRight;
 
     // set random angle
-    this._velocityY = Math.random() * (2 - -2) - 2;
+    this._velocityY = Math.random() * ((DEFAULT_SPEED / 2) - -(DEFAULT_SPEED / 2)) - (DEFAULT_SPEED / 2);
   }
 
+  private _scorePoint(canvasWidth: number, leftPlayer: Player, rightPlayer: Player) {
+    if (this._x > canvasWidth) {
+      leftPlayer.score += 1;
+    }
+    else {
+      rightPlayer.score += 1;
+    }
+  }
 
-  public update(canvasWidth: number, canvasHeight: number, leftPaddle: Paddle, rightPaddle: Paddle): void {
-    this.move(canvasWidth, canvasHeight);
-    this.checkBallCollisions(leftPaddle.IPaddle(), rightPaddle.IPaddle());
+  public update(
+    canvasWidth: number,
+    canvasHeight: number,
+    deltaTime: number,
+    leftPaddle: Paddle,
+    rightPaddle: Paddle,
+    leftPlayer: Player,
+    rightPlayer: Player
+  ): void {
+    this._move(deltaTime);
+    this._checkBallCollisions(canvasWidth, canvasHeight, leftPaddle.IPaddle(), rightPaddle.IPaddle(), deltaTime);
     if (this._active && (this._x > canvasWidth || this._x < 0)) {
       this._active = false;
+      this._scorePoint(canvasWidth, leftPlayer, rightPlayer);
       setTimeout(() => {
         this.reset(canvasWidth / 2, canvasHeight / 2);
         this._active = true;

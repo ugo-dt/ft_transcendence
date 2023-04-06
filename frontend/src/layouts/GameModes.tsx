@@ -20,7 +20,7 @@ const GameModes = () => {
 
   return (
     <>
-      <div className="gamePage" style={{ display: 'flex', flexDirection: 'column' }}>
+      <div className="gameModes">
         <ul className="playModes">
           <li className="modules" role="button" onClick={playOnline}>
             <SportsTennisIcon className='icon tennis' fontSize="large" />

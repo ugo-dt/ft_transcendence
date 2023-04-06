@@ -70,7 +70,7 @@
 // export default _BottomNavbar;
 
 // AvatarButton.tsx
-import React from "react";
+// import React from "react";
 // import { Link } from 'react-router-dom';
 // import Tooltip from "@mui/material/Tooltip";
 // import IconButton from "@mui/material/IconButton";
@@ -269,7 +269,7 @@ import "./style/Navbar.css"
 import { NavLink } from "react-router-dom";
 import BasicMenu from "../components/BasicMenu";
 
-const mainRoutes = ["Home", "Profile", "Rankings"];
+const mainRoutes = ["Home", "Profile", "Watch", "Rankings"];
 const menuItems = ["Settings", "Sign out"];
 
 interface NavbarProps {

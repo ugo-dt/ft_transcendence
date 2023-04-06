@@ -7,7 +7,7 @@ export interface IPlayer {
   isLeft: boolean,
   isCom: boolean,
   score: number,
-  backgroundColor?: string,
+  backgroundColor: string | null,
 }
 
 export class Player {
@@ -25,6 +25,7 @@ export class Player {
     name: string,
     avatar: string | null,
     isLeft: boolean,
+    backgroundColor: string,
   ) {
     this._id = id;
     this._name = name;
@@ -33,16 +34,17 @@ export class Player {
     this._keyUpPressed = false;
     this._keyDownPressed = false;
     this._score = 0;
-    this._backgroundColor = "black";
+    this._backgroundColor = backgroundColor;
   }
 
   public get id(): number { return this._id; }
   public get name(): string { return this._name; }
   public get avatar(): string | null { return this._avatar; }
   public get isLeft(): boolean { return this._isLeft; }
-  
   public get keyUpPressed(): boolean { return this._keyUpPressed; }
   public get keyDownPressed(): boolean { return this._keyDownPressed; }
+  public get score(): number { return this._score; }  
+  public get backgroundColor(): string { return this._backgroundColor; }
 
   public set id(id: number) { this._id = id; }
   public set name(name: string) { this._name = name; }
@@ -50,6 +52,8 @@ export class Player {
   public set isLeft(isLeft: boolean) { this._isLeft = isLeft; }
   public set keyUpPressed(keyUpPressed: boolean) { this._keyUpPressed = keyUpPressed; }
   public set keyDownPressed(keyDownPressed: boolean) { this._keyDownPressed = keyDownPressed; }
+  public set score(score: number) { this._score = score; }  
+  public set backgroundColor(backgroundColor: string) { this._backgroundColor = backgroundColor; }
 
   public handleKeyUpPressed() { this.keyUpPressed = true; }
   public handleKeyUpUnpressed() { this.keyUpPressed = false; }
@@ -70,17 +74,17 @@ export class Player {
     );
   }
 
-  public update(canvasHeight: number, paddle: Paddle) {
+  public update(canvasHeight: number, paddle: Paddle, deltaTime: number) {
     if (this._keyUpPressed) {
       if (this._keyDownPressed) {
         paddle.velocityY = 0;
       }
       else {
-        paddle.velocityY = -10;
+        paddle.velocityY = -700 * deltaTime;
       }
     }
     else if (this._keyDownPressed) {
-      paddle.velocityY = 10;
+      paddle.velocityY = 700 * deltaTime;
     }
     else {
       paddle.velocityY = 0;

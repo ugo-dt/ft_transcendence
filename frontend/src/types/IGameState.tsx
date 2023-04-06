@@ -8,4 +8,5 @@ export interface IGameState {
   rightPlayer: IPlayer,
   leftPaddle: IPaddle
   rightPaddle: IPaddle,
+  gameOver: boolean,
 }

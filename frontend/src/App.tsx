@@ -10,9 +10,6 @@ function App() {
   const serverUrl = "http://192.168.1.178:3000/pong";
   const socketRef = useRef(io(serverUrl, {
     autoConnect: false,
-    query: {
-      role: 'player',
-    },
   }));
 
   const contextValue = {

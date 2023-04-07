@@ -16,17 +16,13 @@ export class User {
 
 	@Column()
 	@Exclude()
-	expirationTime: number;
-
-	@Column()
-	@Exclude()
 	refreshToken: string;
 
 	@Column()
 	id42: number;
 
 	@Column()
-	name: string;
+	username: string;
 
 	@Column()
 	avatar: string;

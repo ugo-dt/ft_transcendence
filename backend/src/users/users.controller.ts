@@ -1,31 +1,18 @@
-import { Body, ClassSerializerInterceptor, Controller, Delete, Get, NotFoundException, Param, Post, Session, UseGuards, UseInterceptors } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { LoginUserDto } from './dtos/login-user.dto';
+import { ClassSerializerInterceptor, Controller, Delete, Get, NotFoundException, Param, UseInterceptors } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { UsersGuard } from "./guards/users.guard";
 
 @Controller('users')
 export class UsersController {
-	constructor(private usersService: UsersService, private authService: AuthService) {}
+	constructor(private usersService: UsersService) {}
 
-	@Post("/signin")
-	async signIn(@Body() body: LoginUserDto, @Session() session: any) {
-		const tokens = await this.authService.getUserTokens(body.code);
-		const resourceOwnerId = await this.authService.getTokenInfo(tokens.accessToken);
-		const user = await this.authService.signIn(tokens, resourceOwnerId);
-		session.userId = user.id;
-		return user;
-	}
+	@UseInterceptors(ClassSerializerInterceptor)
+	@Get("/me")
+	getMyInfo() {}
 
-	@Post("/signout")
-	@UseGuards(UsersGuard)
-	signout(@Session() session: any) {
-		session.userId = null;
-	}
-
-	@Get("/myid")
-	logId(@Session() session: any) {
-		return session.userId;
+	@UseInterceptors(ClassSerializerInterceptor)
+	@Get("/all")
+	findAllUsers() {
+		return this.usersService.findAll();
 	}
 
 	@UseInterceptors(ClassSerializerInterceptor)
@@ -36,6 +23,7 @@ export class UsersController {
 		return user;
 	}
 
+	@UseInterceptors(ClassSerializerInterceptor)
 	@Delete("/:id")
 	removeUser(@Param("id") id: string) {
 		return this.usersService.remove(parseInt(id));

@@ -1,7 +1,8 @@
 import { Logger } from "@nestjs/common";
-import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
-import { log } from "console";
+import { MessageBody, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { Socket } from "socket.io";
+import { MessagesService } from "./messages.service";
+import { CreateMessageDto } from "./createMessage.dto";
 
 @WebSocketGateway({
 	cors: {
@@ -12,6 +13,8 @@ import { Socket } from "socket.io";
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@WebSocketServer()
 	server;
+
+	constructor(private readonly messagesService: MessagesService) {}
 	readonly logger = new Logger();
 
 	async handleConnection(client: Socket, ...args: any[]) {
@@ -22,9 +25,26 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		this.logger.log(`Client disconnected: ${client.id}`);
 	}
 
-	@SubscribeMessage('message')
-	handleMessage(@MessageBody() data: any, @ConnectedSocket() client: Socket): void {
-		this.logger.log(`Message received from client ${client.id}:  ${data.message}`);
-		this.server.emit('message', { message: data.message, senderId: `${client.id}` });
+	@SubscribeMessage('createMessage')
+	async handleCreateMessage(@MessageBody() createMessageDto: CreateMessageDto) {
+		this.logger.log(`createMessage received from client ${createMessageDto.sender}:  ${createMessageDto.content}`);
+		const message = await this.messagesService.create(createMessageDto);
+
+		this.server.emit('createdMessage', message);
+
+		return message;
+	}
+
+	@SubscribeMessage('getAllMessages')
+	handleGetAllMessages() {
+		this.logger.log('getAllMessage');
+		return this.messagesService.getAllMessages();
+	}
+
+	@SubscribeMessage('clear')
+	debugClearAllMessages() {
+		this.logger.log('cleared all messages');
+		this.server.emit('clear');
+		this.messagesService.debugClearAllMessages();
 	}
 }

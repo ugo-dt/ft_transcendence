@@ -17,39 +17,34 @@
 //
 // Access other users profile page
 
-import { Login } from '@mui/icons-material';
 import './Chat.css'
+import messageSound from "./resources/messageSound.mp3"
 
 import { useState, useEffect, useRef } from 'react';
 import { io } from "socket.io-client";
+import React from 'react';
 
-interface Message {
-	id: number;
-	msg: string;
-	senderId: string;
-	isOwner: boolean;
+interface IMessage {
+	sender: string;
+	content: string;
+	timestamp: string;
 }
 
 function Chat(): JSX.Element {
-	let [loggedIn, setLoggedIn] = useState<boolean>(false);
+	const [loggedIn, setLoggedIn] = useState<boolean>(false);
 	const messagesEndRef = useRef<(null) | HTMLLIElement>(null);
 	const [messageInputValue, setMessageInputValue] = useState("");
-	const messages = useRef<Message[]>([]);
-	const messagesId = useRef(1);
 	const clientId = useRef('');
-	const [messagesState, setMessagesState] = useState<Message[]>([]);
+	const [messages, setMessages] = useState<IMessage[]>([]);
 	const socket = useRef(io("http://192.168.1.136:3000", {
 		autoConnect: false,
 	})).current;
-	const printName = useRef(true);
 
 	const handleSubmitNewMessage = (): void => {
 		if (socket && socket.connected && messageInputValue.length > 0) {
-			console.log("sending", messageInputValue);
-			console.log("clientId: ", clientId.current);
-			socket.emit('message', { message: messageInputValue, senderId: clientId.current });
+			const IMessage: IMessage = { content: messageInputValue, sender: clientId.current, timestamp: Date().toString()};
+			socket.emit('createMessage', IMessage);
 			setMessageInputValue("");
-			printName.current = false;
 		}
 	}
 
@@ -62,43 +57,50 @@ function Chat(): JSX.Element {
 
 	function onConnect() {
 		console.log(`Connected with ID: ${socket.id}`);
-		messages.current = [];
 		clientId.current = socket.id;
-		setMessagesState(messages.current);
+		socket.emit('getAllMessages', {}, (response: IMessage[]) => {
+			setMessages(response);
+		})
 	}
 
 	function onDisconnect() {
 		console.log("Disconnected.");
 	}
 
-	function onMessage(data: any) {
-		console.log('onmessage');
-		let isSentByCurrentUser = false; // <-- default to false
+	function onClear() {
+		socket.emit('getAllMessages', {}, (response: IMessage[]) => {
+			setMessages(response);
+		})
+	}
 
-		// Check if the message was sent by the current user
-		console.log("senderId: ", data.senderId);
+	function onCreatedMessage() {
+		socket.emit('getAllMessages', {}, (response: IMessage[]) => {
+			setMessages(response);
+		})
+		playSound();
+	}
 
-		if (data.senderId === clientId.current) {
-			isSentByCurrentUser = true;
+	function scrollToBottom() {
+		if (messagesEndRef.current) {
+			messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
 		}
+	}
 
-		messages.current = [...messages.current, { id: messagesId.current++, msg: data.message, senderId: data.senderId, isOwner: isSentByCurrentUser }];
-		setMessagesState(messages.current);
-		console.log("Received message:", data.message);
-		printName.current = true;
+	function playSound () {
+		new Audio(messageSound).play();
 	}
 
 	useEffect(() => {
-		messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-	}, [messagesState]);
+		scrollToBottom();
+	}, [messages]);
 
 	useEffect(() => {
 		console.log("Connecting to server...");
 		socket.connect();
 		socket.on('connect', onConnect);
 		socket.on('disconnect', onDisconnect);
-		socket.on('message', onMessage);
-
+		socket.on('createdMessage', onCreatedMessage);
+		socket.on('clear', onClear);
 		return () => {
 			// Cleans up after the component is unmounted.
 			// It removes all the event listeners that were added to the socket object
@@ -108,6 +110,13 @@ function Chat(): JSX.Element {
 			socket.disconnect();
 		};
 	}, []);
+
+	function clearMessages() {
+		socket.emit('clear');
+		socket.emit('getAllMessages', {}, (response: IMessage[]) => {
+			setMessages(response);
+		})
+	}
 
 	if (!loggedIn)
 		return (
@@ -123,15 +132,14 @@ function Chat(): JSX.Element {
 				<h1 id="h1_main_title">Chat app</h1>
 				<div id="div_messages_box">
 					<ul>
-						<li id="li_messages-god">Welcome to this conversation.</li>
-						<li id="li_messages-god">This is God speaking.</li>
-						{
-							messagesState.map(item => (
-								<li id={item.isOwner ? "li_messages-mine" : "li_messages"} key={item.id}>
-									{item.msg}
-								</li>
-							))
-						}
+						{messages.map((message, index) => (
+							<li id={message.sender === "God" ? "li_messages-god"
+								: message.sender === clientId.current
+									? "li_messages-mine" : "li_messages"}
+								key={index}>
+								{message.content}
+							</li>
+						))}
 						<li ref={messagesEndRef} />
 					</ul>
 				</div>
@@ -145,14 +153,17 @@ function Chat(): JSX.Element {
 						onKeyDown={handleKeyDown}
 						onChange={(e) => {
 							setMessageInputValue(e.target.value);
-							console.log("Input field changed:", e.target.value);
 						}}
-					/>
+					/>					
 					<button
-						id="button_send"
-						onClick={handleSubmitNewMessage}
+						onClick={scrollToBottom}
 						type="submit"
-					>Send</button>
+					>scroll</button>
+					<button
+						onClick={clearMessages}
+						type="submit"
+					>clear</button>
+					<p>{Date().toString()}</p>
 				</div>
 			</div>
 		</>

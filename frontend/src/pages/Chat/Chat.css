@@ -25,8 +25,16 @@
 	word-break: break-all;
 }
 
+#span_icon {
+	background: url(resources/send_arrow.png);
+	width: 200px;
+	height: 200px;
+	display: block;
+}
+
 #div_input_bar {
 	margin-top: 1%;
+	margin-bottom: 1%;
 	padding: 1%;
 	width: 100%;
 	border-radius: 20px;
@@ -69,47 +77,4 @@
 	margin: 10px;
 	display: table;
 	max-width: 96%;
-}
-
-/* CSS */
-#button_send {
-	align-items: center;
-	background-color: rgba(240, 240, 240, 0.26);
-	border: 1px solid #DFDFDF;
-	border-radius: 16px;
-	box-sizing: border-box;
-	color: #000000;
-	cursor: pointer;
-	display: flex;
-	font-family: Inter, sans-serif;
-	font-size: 18px;
-	justify-content: center;
-	line-height: 28px;
-	margin-top: 1%;
-	max-width: 100%;
-	padding: 14px 22px;
-	text-decoration: none;
-	transition: all .2s;
-	user-select: none;
-	-webkit-user-select: none;
-	touch-action: manipulation;
-	width: 100%;
-}
-
-#button_send:active,
-#button_send:hover {
-	outline: 0;
-}
-
-#button_send:hover {
-	background-color: #FFFFFF;
-	border-color: rgba(0, 0, 0, 0.19);
-}
-
-@media (min-width: 768px) {
-	#button_send {
-		font-size: 20px;
-		min-width: 200px;
-		padding: 14px 16px;
-	}
 }

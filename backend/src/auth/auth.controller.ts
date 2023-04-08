@@ -7,7 +7,7 @@ import { AuthGuard } from './guards/auth.guard';
 export class AuthController {
 	constructor(private authService: AuthService) {}
 
-	@Post("/signin")
+	@Post("signin")
 	async signIn(@Body() body: LoginAuthDto, @Session() session: any) {
 		const tokens = await this.authService.getResourceOwnerAccessToken(body.code);
 		console.log(tokens);
@@ -18,9 +18,14 @@ export class AuthController {
 		return user;
 	}
 
-	@Post("/signout")
+	@Post("signout")
 	@UseGuards(AuthGuard)
 	signout(@Session() session: any) {
 		session.userId = null;
+	}
+
+	@Post("refresh")
+	refreshToken() {
+
 	}
 }

@@ -28,22 +28,9 @@ import { Navigate, useLocation, useNavigate } from "react-router";
 import { useKeyState } from "use-key-state";
 import { Context } from "../context";
 import { CANVAS_DEFAULT_FOREGROUND_COLOR, CANVAS_DEFAULT_NET_COLOR, CANVAS_DEFAULT_NET_GAP, TARGET_FPS } from "../constants";
-import { IGameState, IPaddle } from "../types";
+import { IGameState, IPaddle, IRoomData } from "../types";
 import Canvas from "../components/Canvas";
-import SportsTennisIcon from '@mui/icons-material/SportsTennis';
 import "./style/Game.css"
-
-interface IClientData {
-  name: string,
-  avatar: string | null,
-}
-
-export interface IRoomData {
-  id: number,
-  left: IClientData,
-  right: IClientData,
-  gameState: IGameState,
-}
 
 const WIN_SCORE = 1;
 
@@ -51,7 +38,7 @@ function Game() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  if (!location.state) {
+  if (!location.state) {    
     return <Navigate to={"/play/online"} />
   }
   else {
@@ -104,6 +91,8 @@ function Game() {
     }
 
     function _update() {
+      console.log(roomData.current);
+      
       if (roomData.current.gameState) {
         const gameState: IGameState = roomData.current.gameState;
 
@@ -114,9 +103,9 @@ function Game() {
         _updateKeyState();
         _render(gameState);
       }
-      else {
-        navigate("/home");
-      }
+      // else {
+      //   navigate("/home");
+      // }
     }
 
     function onUpdate(data: IRoomData) {

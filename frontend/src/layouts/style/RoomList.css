@@ -1,0 +1,50 @@
+  .room-list {
+    display: flex;
+    flex-direction: column;
+    padding: 5px;
+    width: fit-content;
+  }
+
+  .room-list-table {
+    border-collapse: collapse;
+  }
+
+  .room-list-row {
+    border: 1px solid white;
+  }
+
+  .room-list-cell {
+    border-right: 1px solid white;
+    min-width: fit-content;
+    text-align: center;
+    padding: 10px;
+  }
+
+  .room-list-cell-username {
+    cursor: pointer;
+  }
+
+  .room-list-cell-username:hover {
+    background-color: #333;
+    transition: .3s;
+    text-decoration: underline;
+  }
+
+  .pages {
+    margin-left: auto;
+    text-align: right;
+  }
+
+  .pages-buttons-btn {
+    margin-top: 5px;
+    margin-left: 5px;
+    padding: 3px;
+  }
+
+  section {
+    margin: 0;
+  }
+
+  #pages-buttons-page-number {
+    margin-left: auto;
+  }

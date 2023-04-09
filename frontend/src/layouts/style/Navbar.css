@@ -36,7 +36,6 @@ nav {
 }
 
 .NavLink:hover {
-  /* background-color: #1c1c1c; */
   color: var(--nav-text-color-hover);
   transition: 0.3s;
 }

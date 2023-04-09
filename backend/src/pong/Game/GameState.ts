@@ -1,5 +1,5 @@
-import { Socket } from "socket.io";
-import Ball, { IBall } from "./Ball"
+import Client from "../Client/Client";
+import Ball, { IBall } from "./Ball";
 import Paddle, { IPaddle } from "./Paddle";
 import { IPlayer, Player } from "./Player";
 
@@ -14,15 +14,6 @@ export interface IGameState {
   leftPaddle: IPaddle,
   rightPaddle: IPaddle,
   gameOver: boolean,
-}
-
-export interface ClientData {
-  __socket: Socket,
-  id: number,
-  name: string,
-  avatar: string | null,
-  backgroundColor: string,
-  status: 'online' | 'playing';
 }
 
 interface Time {
@@ -44,7 +35,7 @@ export class GameState {
   private _time: Time;
   private _gameOver: boolean;
 
-  constructor(left: ClientData, right: ClientData) {
+  constructor(left: Client, right: Client) {
     this._canvasWidth = CANVAS_WIDTH;
     this._canvasHeight = CANVAS_HEIGHT;
     this._leftPlayer = new Player(0, left.name, left.avatar, true, left.backgroundColor);

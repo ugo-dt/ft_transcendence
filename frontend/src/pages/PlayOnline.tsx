@@ -36,7 +36,7 @@ function PlayOnline() {
     inGame.current = true;
     console.log("Started game", data);
     const gameUrl = "/game/" + data.roomId;
-    navigate(gameUrl, { state: { roomId: data.roomId } });
+    navigate(gameUrl, { state: { roomId: data.roomId, role: 'player' } });
   }
 
   function onEndGame() {

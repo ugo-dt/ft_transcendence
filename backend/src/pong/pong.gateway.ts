@@ -1,8 +1,8 @@
-import { Logger } from "@nestjs/common";
 import { ConnectedSocket, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
-import { IRoomData, PongService } from "./pong.service";
-import { ClientData } from "./game/GameState";
+import { PongService } from "./pong.service";
+import Queue from "./Matchmaking/Queue";
+import Client from "./Client/Client";
 
 @WebSocketGateway({
   namespace: 'pong',
@@ -11,60 +11,52 @@ import { ClientData } from "./game/GameState";
 export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
 
-  constructor(private readonly pongService: PongService) {
+  constructor() {
     setInterval(() => {
-      const queue: ClientData[] = this.pongService.getQueue();
+      const queue: Client[] = Queue.list();
       if (queue.length >= 2) {
-        this.pongService.startGame(this.server, queue[0], queue[1]);
+        PongService.startGame(this.server, queue[0], queue[1]);
       }
     }, 1000);
   }
 
   async handleConnection(client: Socket, ...args: any[]) {
     client.data.name = 'Username'; // get name from db later.
-    this.pongService.handleUserConnected(client);
+    client.data.backgroundColor = 'black';
+    PongService.handleUserConnected(client);
   }
   
   async handleDisconnect(client: Socket) {
-    this.pongService.handleUserDisconnect(client);
-  }
-
-  @SubscribeMessage('get-room-list')
-  handleGetRoomList(@ConnectedSocket() client: Socket) {    
-    return this.pongService.getRoomList();
-  }
-
-  @SubscribeMessage('spectate')
-  handleSpectate(@ConnectedSocket() client: Socket) {
+    PongService.handleUserDisconnect(client);
   }
 
   @SubscribeMessage('join-queue')
   handleJoinQueue(@ConnectedSocket() client: Socket) {
-    this.pongService.addClientToQueue(client);
+    PongService.addClientToQueue(client);
   }
 
   @SubscribeMessage('leave-queue')
   handleLeaveQueue(@ConnectedSocket() client: Socket) {
-    this.pongService.removeClientFromQueue(client);
+    PongService.removeClientFromQueue(client);
   }
 
   @SubscribeMessage('upKeyPressed')
   handleKeyUpPressed(@ConnectedSocket() client: Socket) {
-    this.pongService.handleKeyUpPressed(client);
+    PongService.handleKeyUpPressed(client);
   }
 
   @SubscribeMessage('upKeyUnpressed')
   handleKeyUpUnpressed(@ConnectedSocket() client: Socket) {
-    this.pongService.handleKeyUpUnpressed(client);
+    PongService.handleKeyUpUnpressed(client);
   }
 
   @SubscribeMessage('downKeyPressed')
   handleKeyDownPressed(@ConnectedSocket() client: Socket) {
-    this.pongService.handleKeyDownPressed(client);
+    PongService.handleKeyDownPressed(client);
   }
 
   @SubscribeMessage('downKeyUnpressed')
   handleKeyDownUnpressed(@ConnectedSocket() client: Socket) {
-    this.pongService.handleKeyDownUnpressed(client);
+    PongService.handleKeyDownUnpressed(client);
   }
 }

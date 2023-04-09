@@ -3,6 +3,7 @@
 }
 
 canvas {
+  margin: 10px;
   border: 10px solid var(--canvas-border-color);
   outline: 1px solid #0C1821;
   overflow: hidden;

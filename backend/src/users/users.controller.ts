@@ -5,23 +5,20 @@ import { User } from './entities/user.entity';
 import { CurrentUserInterceptor } from './interceptors/current-user.interceptor';
 
 @Controller('users')
-@UseInterceptors(CurrentUserInterceptor)
+@UseInterceptors(ClassSerializerInterceptor, CurrentUserInterceptor)
 export class UsersController {
 	constructor(private usersService: UsersService) {}
 
-	@UseInterceptors(ClassSerializerInterceptor)
 	@Get("me")
 	getMyInfo(@CurrentUser() user: User) {
 		return user;
 	}
 
-	@UseInterceptors(ClassSerializerInterceptor)
 	@Get("all")
 	findAllUsers() {
 		return this.usersService.findAll();
 	}
 
-	@UseInterceptors(ClassSerializerInterceptor)
 	@Get(":id")
 	async findUser(@Param("id") id: string) {
 		const user = await this.usersService.findOneId(parseInt(id));
@@ -29,7 +26,6 @@ export class UsersController {
 		return user;
 	}
 
-	@UseInterceptors(ClassSerializerInterceptor)
 	@Delete(":id")
 	removeUser(@Param("id") id: string) {
 		return this.usersService.remove(parseInt(id));

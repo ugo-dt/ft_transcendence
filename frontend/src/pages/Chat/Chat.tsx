@@ -22,28 +22,56 @@ import messageSound from "./resources/messageSound.mp3"
 
 import { useState, useEffect, useRef } from 'react';
 import { io } from "socket.io-client";
-import React from 'react';
 
 interface IMessage {
 	sender: string;
 	content: string;
 	timestamp: string;
+	toChannel: number;
+}
+
+interface IChannel {
+	channelId: number;
+	name: string;
+	messageHistory: IMessage[];
+	isPrivate: boolean;
+	admins: string[]; // should prolly be user.userId at some point
+	isDm: boolean;
 }
 
 function Chat(): JSX.Element {
-	const [loggedIn, setLoggedIn] = useState<boolean>(false);
+	const [loggedIn, setLoggedIn] = useState<boolean>(true);
 	const messagesEndRef = useRef<(null) | HTMLLIElement>(null);
 	const [messageInputValue, setMessageInputValue] = useState("");
+	const [createChannelNameInputValue, setCreateNameChannelInputValue] = useState("");
+	const [createChannelPasswordInputValue, setcreateChannelPasswordInputValue] = useState("");
+	const [createChannelIsDm, setCreateChannelIsDm] = useState<boolean>(false);
 	const clientId = useRef('');
-	const [messages, setMessages] = useState<IMessage[]>([]);
+	const [ChannelID, setChannelId] = useState<number>(0);
+	const [channels, setChannels] = useState<IChannel[]>([{
+		channelId: 0,
+		name: "default",
+		messageHistory: [{
+			sender: 'God',
+			content: 'Hello. This is God from the backend.',
+			timestamp: Date().toString(),
+			toChannel: 0
+		}],
+		isPrivate: false,
+		admins: [],
+		isDm: false
+	}]);
 	const socket = useRef(io("http://192.168.1.136:3000", {
 		autoConnect: false,
 	})).current;
 
 	const handleSubmitNewMessage = (): void => {
 		if (socket && socket.connected && messageInputValue.length > 0) {
-			const IMessage: IMessage = { content: messageInputValue, sender: clientId.current, timestamp: Date().toString()};
-			socket.emit('createMessage', IMessage);
+			const message: IMessage = { content: messageInputValue,
+										sender: clientId.current,
+										timestamp: Date().toString(),
+										toChannel: ChannelID };
+			socket.emit('createMessage', message);
 			setMessageInputValue("");
 		}
 	}
@@ -58,8 +86,8 @@ function Chat(): JSX.Element {
 	function onConnect() {
 		console.log(`Connected with ID: ${socket.id}`);
 		clientId.current = socket.id;
-		socket.emit('getAllMessages', {}, (response: IMessage[]) => {
-			setMessages(response);
+		socket.emit('getAllChannels', {}, (response: IChannel[]) => {
+			setChannels(response);
 		})
 	}
 
@@ -68,16 +96,22 @@ function Chat(): JSX.Element {
 	}
 
 	function onClear() {
-		socket.emit('getAllMessages', {}, (response: IMessage[]) => {
-			setMessages(response);
+		socket.emit('getAllChannels', (response: IChannel[]) => {
+			setChannels(response);
 		})
 	}
 
 	function onCreatedMessage() {
-		socket.emit('getAllMessages', {}, (response: IMessage[]) => {
-			setMessages(response);
+		socket.emit('getAllChannels', ChannelID, (response: IChannel[]) => {
+			setChannels(response);
 		})
 		playSound();
+	}
+
+	function onCreatedChannel() {
+		socket.emit('getAllChannels', ChannelID, (response: IChannel[]) => {
+			setChannels(response);
+		})
 	}
 
 	function scrollToBottom() {
@@ -86,13 +120,58 @@ function Chat(): JSX.Element {
 		}
 	}
 
-	function playSound () {
+	function playSound() {
 		new Audio(messageSound).play();
+	}
+
+	function createChannel(): void {		
+		const channel: IChannel = { channelId: 1,
+			name: createChannelNameInputValue,
+			messageHistory: [],
+			isPrivate: false,
+			admins: [],
+			isDm: createChannelIsDm }; // isDM will have to change
+			
+			socket.emit('createChannel', channel, (response: IChannel[]) => {			
+				setChannels(response);
+				console.log("response", response);
+			})
+		closeCreateChannelForm();
+		setCreateNameChannelInputValue("");
+		setcreateChannelPasswordInputValue("");
+	}
+
+	function openCreateChannelForm() {
+		const form = document.getElementById("form_create_channel");
+		if (form) {
+			form.style.visibility = "visible";
+		}
+	}
+
+	function closeCreateChannelForm() {		
+		const form = document.getElementById("form_create_channel");
+		if (form) {
+			form.style.visibility = "hidden";
+		}
+	}
+
+	function clearMessages() {
+		socket.emit('clear', ChannelID);
+		socket.emit('getAllChannels', (response: IChannel[]) => {
+			setChannels(response);
+		})
+	}
+
+	function clearChannels() {
+		socket.emit('clearChannels');
+		socket.emit('getAllChannels', (response: IChannel[]) => {
+			setChannels(response);
+		})
 	}
 
 	useEffect(() => {
 		scrollToBottom();
-	}, [messages]);
+	}, [channels]);
 
 	useEffect(() => {
 		console.log("Connecting to server...");
@@ -100,6 +179,7 @@ function Chat(): JSX.Element {
 		socket.on('connect', onConnect);
 		socket.on('disconnect', onDisconnect);
 		socket.on('createdMessage', onCreatedMessage);
+		socket.on('createdChannel', onCreatedChannel);
 		socket.on('clear', onClear);
 		return () => {
 			// Cleans up after the component is unmounted.
@@ -111,13 +191,6 @@ function Chat(): JSX.Element {
 		};
 	}, []);
 
-	function clearMessages() {
-		socket.emit('clear');
-		socket.emit('getAllMessages', {}, (response: IMessage[]) => {
-			setMessages(response);
-		})
-	}
-
 	if (!loggedIn)
 		return (
 			<>
@@ -128,42 +201,101 @@ function Chat(): JSX.Element {
 
 	return (
 		<>
-			<div id="div_chat_app">
-				<h1 id="h1_main_title">Chat app</h1>
-				<div id="div_messages_box">
-					<ul>
-						{messages.map((message, index) => (
-							<li id={message.sender === "God" ? "li_messages-god"
-								: message.sender === clientId.current
-									? "li_messages-mine" : "li_messages"}
-								key={index}>
-								{message.content}
-							</li>
-						))}
-						<li ref={messagesEndRef} />
-					</ul>
-				</div>
-				<div id="div_input_box">
+			<div id="div_main">
+				<form
+					id="form_create_channel">
+					<button
+					type="button"
+					id="button_close_create_channel"
+					onClick={closeCreateChannelForm}>✕</button>
+					<label id="label_create_channel" htmlFor="email"><b>Channel Name</b></label>
 					<input
-						autoFocus
-						placeholder='Type a message...'
-						id="div_input_bar"
-						type="text"
-						value={messageInputValue}
-						onKeyDown={handleKeyDown}
-						onChange={(e) => {
-							setMessageInputValue(e.target.value);
-						}}
-					/>					
+					className="input_create_channel"
+					type="text"
+					placeholder="Channel Name"
+					name="channelName"
+					value={createChannelNameInputValue}
+					onChange={(e) => {
+						setCreateNameChannelInputValue(e.target.value);
+					}}
+					required
+					/>
+
+					<label id="label_create_channel" htmlFor="psw"><b>Password</b></label>
+					<input
+					className="input_create_channel"
+					type="password"
+					placeholder="Channel Password"
+					name="channelPassword"
+					value={createChannelPasswordInputValue}
+					onChange={(e) => {
+						setcreateChannelPasswordInputValue(e.target.value);
+					}}
+					/>
+
+					<label id="label_create_channel" htmlFor="psw"><b>Is DM</b></label>
+					<input
+					className="input_create_channel"
+					type="checkbox"
+					name="isDm"
+					/>
+
+					<button type="button" id="button_create_channel" onClick={createChannel}>Create Channel</button>
+				</form>
+				<div id="div_channels">
+					<h2 id="h2_channel_title">Channels</h2>
+					{channels && channels.map((channel, index) => (
+						<button id="button_channel"
+							key={index}>
+							{channel.name}
+						</button>
+					))}
 					<button
-						onClick={scrollToBottom}
-						type="submit"
-					>scroll</button>
-					<button
-						onClick={clearMessages}
-						type="submit"
-					>clear</button>
-					<p>{Date().toString()}</p>
+						id="button_open_create"
+						onClick={openCreateChannelForm}
+					>+</button>
+				</div>
+				<div id="div_chat_window">
+					<h1 id="h1_main_title">Chat app</h1>
+					<div id="div_messages_box">
+						<ul>
+							{channels && channels[ChannelID] && channels[ChannelID].messageHistory.map((message, index) => (
+								<li id={message.sender === "God" ? "li_messages-god"
+									: message.sender === clientId.current
+										? "li_messages-mine" : "li_messages"}
+									key={index}>
+									{message.content}
+								</li>
+							))}
+							<li ref={messagesEndRef} />
+						</ul>
+					</div>
+					<div id="div_input_box">
+						<input
+							autoFocus
+							placeholder='Type a message...'
+							id="div_input_bar"
+							type="text"
+							value={messageInputValue}
+							onKeyDown={handleKeyDown}
+							onChange={(e) => {
+								setMessageInputValue(e.target.value);
+							}}
+						/>
+						<button
+							onClick={scrollToBottom}
+							type="submit"
+						>scroll</button>
+						<button
+							onClick={clearMessages}
+							type="submit"
+						>clear</button>
+						<button
+							onClick={clearChannels}
+							type="submit"
+						>clear Channels</button>
+						<p id="debug_date">{Date().toString()}</p>
+					</div>
 				</div>
 			</div>
 		</>

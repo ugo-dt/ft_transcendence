@@ -1,32 +1,32 @@
 import Client from "../Client/Client";
 
-class Queue {
-  private static __queue_ = new Set<Client>;
+namespace Queue {
+  const __queue_ = new Set<Client>;
 
-  public static add(client: Client) {
-    this.__queue_.add(client);
+  export function add(client: Client) {
+    __queue_.add(client);
   }
 
-  public static remove(client: Client): void;
-  public static remove(clientId: number): void;
-  public static remove(client: Client | number): void {
+  export function remove(client: Client): void;
+  export function remove(clientId: number): void;
+  export function remove(client: Client | number): void {
     if (typeof client === 'number') {
       const clt = Client.at(client);
       if (clt) {
-        this.__queue_.delete(clt);
+        __queue_.delete(clt);
       }
     }
     else {
-      this.__queue_.delete(client);
+      __queue_.delete(client);
     }
   }
 
-  public static size(): number {
-    return Queue.__queue_.size;
+  export function size(): number {
+    return __queue_.size;
   }
 
-  public static list(): Client[] {
-    return Array.from(Queue.__queue_);
+  export function list(): Client[] {
+    return Array.from(__queue_);
   }
 }
 

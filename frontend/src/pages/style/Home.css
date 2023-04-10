@@ -10,7 +10,7 @@
   :root {
     --home-content-background-color: rgba(240, 240, 240, 0.5);
     --home-content-border-color: rgba(255, 255, 255, 0.1);
-    --home-content-radial-gradient-color: rgba(177, 177, 177, 0.2);
+    --home-content-radial-gradient-color: rgba(144, 142, 142, 0.2);
 
     --title-linear-gradient: 315deg,#54AFFF 25%,#42d392;
   }
@@ -46,6 +46,7 @@ h1 {
 	display: flex;
   align-items: center;
   justify-content: center;
+  margin: 20px;
 }
 
 section {

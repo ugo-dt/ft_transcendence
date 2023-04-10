@@ -10,7 +10,6 @@ const PongDemo = () => {
     isLeft: true,
     isCom: true,
     score: 0,
-    keyboardState: null,
     backgroundColor: "black",
   };
   const rightPlayerDemo: IPlayer = {
@@ -20,15 +19,14 @@ const PongDemo = () => {
     isLeft: false,
     isCom: true,
     score: 0,
-    keyboardState: null,
     backgroundColor: "black",
   };
 
 	return (
     <>
       <Pong
-        canvasWidth={390}
-        canvasHeight={288}
+        canvasWidth={455}
+        canvasHeight={336}
         leftPlayerData={leftPlayerDemo}
         rightPlayerData={rightPlayerDemo}
         mode={DEMO_MODE}

@@ -5,6 +5,13 @@ export const STATUS_PLAYING = 0x2;
 export const STATUS_OFFLINE = 0x4;
 export type _Status = typeof STATUS_ONLINE | typeof STATUS_PLAYING | typeof STATUS_OFFLINE;
 
+export interface IClient {
+  id: number,
+  name: string,
+  avatar: string | null,
+  backgroundColor: string,
+}
+
 class Client {
   private static __clients_ = new Set<Client>;
 
@@ -52,6 +59,26 @@ class Client {
   public set backgroundColor(backgroundColor: string) { this._backgroundColor = backgroundColor; }
   public set status(status: _Status ) { this._status = status; }
   public set rating(rating: number) { this._rating = rating; }
+  
+  public IClient(): IClient {
+    const iClient: IClient = {
+      id: this._id,
+      name: this._name,
+      avatar: this._avatar,
+      backgroundColor: this._backgroundColor,
+    }
+    return iClient;
+  }
+
+  public static nullIClient(): IClient {
+    const iClient: IClient = {
+      id: -1,
+      name: '',
+      avatar: null,
+      backgroundColor: 'black',
+    }
+    return iClient;
+  }
 
   public static new(clientSocket: Socket): Client {
     const client = new Client(clientSocket);
@@ -82,10 +109,11 @@ class Client {
     return undefined;
   }
 
-  public static remove(socket: Socket) {
+  public static delete(socket: Socket) {
     for (const client of Client.__clients_.values()) {
       if (client.__socket_.id === socket.id) {
         Client.__clients_.delete(client);
+        return ;
       }
     }
   }

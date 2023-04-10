@@ -43,3 +43,7 @@ nav {
 .nav-right:nth-last-of-type(2) {
   margin-left: auto;
 }
+
+.active {
+  border-bottom: 1px solid #54AFFF;
+}

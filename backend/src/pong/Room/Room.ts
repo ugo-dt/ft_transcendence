@@ -1,16 +1,24 @@
 import { Server } from "socket.io";
-import Client, { STATUS_ONLINE } from "../Client/Client";
-import { GameState } from "../Game/GameState";
+import Client, { IClient, STATUS_ONLINE, STATUS_PLAYING } from "../Client/Client";
+import { GameState, IGameState } from "../Game/GameState";
 import Queue from "../Matchmaking/Queue";
+import { Player } from "../Game/Player";
+
+export interface IRoom {
+  id: number,
+  left: IClient,
+  right: IClient,
+  gameState: IGameState,
+}
 
 class Room {
   /** This set contains the ids of all current rooms. */
-  public static __rooms_ = new Set<Room>;
+  private static __rooms_ = new Set<Room>;
 
   private readonly _id: number;
   private _left: Client | null;
   private _right: Client | null;
-  // private _spectators: Set<Client>;
+  private _spectators: Set<Client>;
 
   private _gameState: GameState;
 
@@ -18,7 +26,7 @@ class Room {
     let _new_id = 0;
     for (const room of Room.__rooms_.values()) {
       if (room._id != _new_id && !(Room.at(_new_id))) {
-        break ;
+        break;
       }
       _new_id++;
     }
@@ -36,6 +44,7 @@ class Room {
     if (right) {
       this.join(right);
     }
+    this._spectators = new Set();
   }
 
   public get id(): number { return this._id; }
@@ -47,16 +56,54 @@ class Room {
   public set left(left: Client | null) { this._left = left; }
   public set right(right: Client | null) { this._right = right; }
   public set gameState(gameState: GameState) { this._gameState = gameState; }
+  
+  public IRoom(): IRoom {
+    const iRoom: IRoom = {
+      id: this._id,
+      left: this._left ? this._left.IClient() : Client.nullIClient(),
+      right: this._right ? this._right.IClient() : Client.nullIClient(),
+      gameState: this._gameState.IGameState(),
+    };
+    return iRoom;
+  }
+
+  public handleKey(client: Client, direction: string, isPressed: boolean) {
+    if (this._left && this._right) {
+      const player: Player = client.__socket.id === this._left.__socket.id ? this._gameState.leftPlayer : this._gameState.rightPlayer;
+
+      if (direction === "up") {
+        if (isPressed) {
+          player.handleKeyUpPressed();
+        }
+        else {
+          player.handleKeyUpUnpressed();
+        }
+      } else {
+        if (isPressed) {
+          player.handleKeyDownPressed();
+        }
+        else {
+          player.handleKeyDownUnpressed();
+        }
+      }
+    }
+  }
 
   public endGame(server: Server) {
     if (!this._left || !this._right) {
-      return ;
+      return;
     }
     this._left.status = STATUS_ONLINE;
     this._right.status = STATUS_ONLINE;
 
     server.to(this._id.toString()).emit('endGame', this.gameState.IGameState());
-    console.log(`Ended game (id: ${this._id})`);
+
+    if (this._gameState.interval) {
+      clearInterval(this._gameState.interval);
+    }
+    console.log(`Ended game (room: ${this._id}, left: ${this._left!.id}, right: ${this._left!.id}).`);
+    // Delete the room
+    Room.delete(this);
   }
 
   public startGame(server: Server): boolean {
@@ -65,6 +112,8 @@ class Room {
     }
     const leftPlayer: Client = this._left;
     const rightPlayer: Client = this._right;
+    leftPlayer.status = STATUS_PLAYING;
+    rightPlayer.status = STATUS_PLAYING;
     this._gameState = new GameState(leftPlayer, rightPlayer);
 
     server.to(this._id.toString()).emit('startGame', { roomId: this._id });
@@ -78,17 +127,17 @@ class Room {
       this._gameState.update();
       const room = {
         id: this._id,
-        left: {id: leftPlayer.id, name: leftPlayer.name, avatar: leftPlayer.avatar},
-        right: {id: rightPlayer.id, name: rightPlayer.name, avatar: rightPlayer.avatar},
+        left: { id: leftPlayer.id, name: leftPlayer.name, avatar: leftPlayer.avatar },
+        right: { id: rightPlayer.id, name: rightPlayer.name, avatar: rightPlayer.avatar },
         gameState: this._gameState.IGameState(),
       }
       server.to(this._id.toString()).emit('update', room);
       this._gameState.previous = Date.now();
     }, 1000 / this._gameState.fps);
-    console.log(`Started new game (room: ${this._id}, left: ${leftPlayer.id}, right: ${rightPlayer.id})`);
+    console.log(`Started new game (room: ${this._id}, left: ${this._id}, right: ${this._id}).`);
     return true;
   }
-  
+
   public join(client: Client): boolean {
     if (!this._left) {
       this._left = client;
@@ -102,7 +151,17 @@ class Room {
     }
     return false;
   }
-  
+
+  public addSpectator(client: Client) {
+    client.__socket.join(this._id.toString());
+    this._spectators.add(client);
+  }
+
+  public removeSpectator(client: Client) {
+    client.__socket.leave(this._id.toString());
+    this._spectators.delete(client);
+  }
+
   public leave(client: Client | null) {
     if (this._left) {
       this._left.__socket.leave(this._id.toString());
@@ -129,7 +188,7 @@ class Room {
     }
     return undefined;
   }
-  
+
   public static at(id: number): Room | undefined {
     if (typeof id === 'number') {
       for (const room of Room.__rooms_.values()) {
@@ -141,18 +200,37 @@ class Room {
     return undefined;
   }
 
-  public static remove(id: number) {
+  public static delete(room: Room): void;
+  public static delete(room: number): void;
+  public static delete(x: number | Room): void {
+    let _delete_id: number;
+
+    if (typeof x === 'number') {
+      _delete_id = x;
+    }
+    else {
+      _delete_id = x.id;
+    }
     for (const room of Room.__rooms_.values()) {
-      if (room._id === id) {
+      if (room.id === _delete_id) {
         room.leave(room._left);
         room.leave(room._right);
+        room._spectators.forEach((spec) => {
+          room.removeSpectator(spec);
+        });
         Room.__rooms_.delete(room);
+        return;
       }
     }
   }
 
-  public static list() {
-    return Array.from(Room.__rooms_);
+  public static list(): IRoom[] {
+    const roomList: IRoom[] = [];
+
+    Room.__rooms_.forEach((room: Room) => {
+      roomList.push(room.IRoom());
+    });
+    return roomList;
   }
 }
 

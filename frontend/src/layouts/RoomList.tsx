@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { IRoomData } from "../types";
+import { IRoom } from "../types";
 import { Context } from "../context";
 import "./style/RoomList.css"
 
@@ -9,7 +9,7 @@ const PAGE_SIZE: number = 10;
 function RoomList() {
   const navigate = useNavigate();
   const socket = useContext(Context).socketRef.current;
-  const [roomList, setRoomList] = useState([] as IRoomData[]);
+  const [roomList, setRoomList] = useState([] as IRoom[]);
   const [roomListPage, setRoomListPage] = useState(0);
   const [loading, setLoading] = useState(true);
 
@@ -21,7 +21,7 @@ function RoomList() {
   }
 
   useEffect(() => {
-    socket.emit('get-room-list', (data: IRoomData[]) => {
+    socket.emit('get-room-list', (data: IRoom[]) => {
       setRoomList(data.sort((a, b) => a.id - b.id));
       console.log(data);
     });
@@ -85,7 +85,10 @@ function RoomList() {
       </div> {/* className="pages" */}
     </div> /* className="room-list" */
         ) ||
-        <h2>No live games. Retry later.</h2>
+        <div style={{textAlign: 'center', margin: '5px'}}>
+          <h3>No current live games.</h3>
+          <h4>Refresh to reload.</h4>
+        </div>
       )}
     </div>
   );

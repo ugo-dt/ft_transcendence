@@ -28,9 +28,10 @@ import { Navigate, useLocation, useNavigate } from "react-router";
 import { useKeyState } from "use-key-state";
 import { Context } from "../context";
 import { CANVAS_DEFAULT_FOREGROUND_COLOR, CANVAS_DEFAULT_NET_COLOR, CANVAS_DEFAULT_NET_GAP, TARGET_FPS } from "../constants";
-import { IGameState, IPaddle, IRoomData } from "../types";
+import { IGameState, IPaddle, IRoom } from "../types";
 import Canvas from "../components/Canvas";
 import "./style/Game.css"
+import GameOver from "../layouts/GameOver";
 
 const WIN_SCORE = 1;
 
@@ -44,11 +45,10 @@ function Game() {
   else {
     const socket = useContext(Context).socketRef.current;
     const [canvas] = useState(new Canvas(650, 480, null));
-    const roomData: React.MutableRefObject<IRoomData> = useRef<IRoomData>({} as IRoomData);
+    const room: React.MutableRefObject<IRoom> = useRef<IRoom>({} as IRoom);
     const keyboardState = useKeyState().keyStateQuery;
     const gameInterval = useRef<NodeJS.Timer | undefined>(undefined);
     const [gameOver, setGameOver] = useState(false);
-    const [winnerIsLeft, setWinnerIsLeft] = useState(false);
 
     function _updateKeyState() {
       if (keyboardState.pressed('w')) {
@@ -91,10 +91,8 @@ function Game() {
     }
 
     function _update() {
-      console.log(roomData.current);
-      
-      if (roomData.current.gameState) {
-        const gameState: IGameState = roomData.current.gameState;
+      if (room.current.gameState) {
+        const gameState: IGameState = room.current.gameState;
 
         if (gameState.gameOver) {
           onEndGame(gameState);
@@ -108,12 +106,11 @@ function Game() {
       // }
     }
 
-    function onUpdate(data: IRoomData) {
-      roomData.current = data;
+    function onUpdate(data: IRoom) {
+      room.current = data;
     }
 
     function onEndGame(gameState: IGameState) {
-      setWinnerIsLeft(gameState.leftPlayer.score > gameState.rightPlayer.score)
       canvas.clear();
       canvas.drawRect(0, 0, canvas.width / 2, canvas.height, gameState.leftPlayer.backgroundColor);
       canvas.drawRect(canvas.width / 2, 0, canvas.width, canvas.height, gameState.rightPlayer.backgroundColor);
@@ -130,6 +127,9 @@ function Game() {
 
       return () => {
         clearInterval(gameInterval.current);
+        if (location.state.role === 'spectator') {
+          socket.emit('stop-spectate', location.state.roomId);
+        }
         socket.off('update', onUpdate);
         socket.off('endGame', onEndGame);
       }
@@ -143,54 +143,10 @@ function Game() {
           </canvas>
           {
             gameOver &&
-            <div className="game-over-container">
-              <section className="game-over">
-                <div className="game-over-header">
-                  Game Over
-                </div>
-                <div className="game-over-results-container">
-                  <div className="game-over-users game-over-users-left">
-                    <div className={`game-over-users-avatar ${winnerIsLeft ? 'game-over-users-winner' : ''}`}>
-                      <img id="avatar-component"
-                        src="/assets/noavatar.png"
-                        width={80}
-                        height={80}
-                        alt={roomData.current.gameState.leftPlayer.name}
-                        onClick={()=>window.open('/profile/' + roomData.current?.gameState.leftPlayer.id,'_blank')}
-                      />
-                    </div>
-                    <div className="game-over-users-username">
-                    {
-                      roomData.current.gameState.leftPlayer.name
-                    }
-                    </div>
-                  </div>
-                  <div className="game-over-results-score">
-                    {
-                      roomData.current!.gameState.leftPlayer.score + '-' +
-                      roomData.current!.gameState.rightPlayer.score
-                    }
-                  </div>
-                  <div className="game-over-users game-over-users-right">
-                  <div className={`game-over-users-avatar ${winnerIsLeft ? '' : 'game-over-users-winner'}`}>
-                      <img id="avatar-component"
-                        src="/assets/noavatar.png"
-                        width={80}
-                        height={80}
-                        alt={roomData.current?.gameState.rightPlayer.name}
-                        role="button"
-                        onClick={()=>window.open('/profile/' + roomData.current?.gameState.rightPlayer.id,'_blank')}
-                      />
-                    </div>
-                    <div className="game-over-users-username">
-                    {
-                      roomData.current?.gameState.rightPlayer.name
-                    }
-                    </div>
-                  </div>
-                </div>
-              </section>
-            </div>
+            <GameOver
+              leftPlayer={room.current!.gameState.leftPlayer}
+              rightPlayer={room.current!.gameState.rightPlayer}
+            />
           }
         </div> {/* className="gameArea" */}
       </div>

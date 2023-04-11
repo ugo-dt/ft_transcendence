@@ -1,0 +1,6 @@
+.env
+db.sqlite
+requests.http
+
+dist
+node_modules

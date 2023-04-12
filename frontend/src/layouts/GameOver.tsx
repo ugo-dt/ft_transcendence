@@ -1,9 +1,6 @@
-/**
- * Game over results
- */
-
 import { useState } from "react";
 import { IPlayer } from "../types";
+import "./style/GameOver.css"
 
 interface GameOverProps {
   leftPlayer: IPlayer,

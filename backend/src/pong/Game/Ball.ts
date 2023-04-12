@@ -40,7 +40,7 @@ export default class Ball {
     this._radius = DEFAULT_RADIUS;
     this._speed = DEFAULT_SPEED;
     this._velocityX = DEFAULT_SPEED;
-    this._velocityY = Math.random() * ((DEFAULT_SPEED / 2) - -(DEFAULT_SPEED / 2)) - (DEFAULT_SPEED / 2);
+    this._velocityY = 0;//Math.random() * ((DEFAULT_SPEED / 2) - -(DEFAULT_SPEED / 2)) - (DEFAULT_SPEED / 2);
     this._color = color;
     this._sideWalls = sideWalls;
     this._active = true;

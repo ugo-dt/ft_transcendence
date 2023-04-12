@@ -8,7 +8,7 @@ function Home() {
     <div className="Home">
       <div className="home-content">
         <div className="home-title">
-          <h1>Play Pong</h1>
+          <h1>ft_transcendence</h1>
         </div>
         <div className="home-sections">
           <section className="pong-demo">

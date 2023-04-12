@@ -1,8 +1,8 @@
 import { Server } from "socket.io";
 import Client, { IClient, STATUS_ONLINE, STATUS_PLAYING } from "../Client/Client";
 import { GameState, IGameState } from "../Game/GameState";
-import Queue from "../Matchmaking/Queue";
 import { Player } from "../Game/Player";
+import Elo from "../Matchmaking/Elo";
 
 export interface IRoom {
   id: number,
@@ -89,6 +89,14 @@ class Room {
     }
   }
 
+  public abortGame() {
+    if (this._gameState.interval) {
+      clearInterval(this._gameState.interval);
+    }
+    console.log(`Aborted game (room: ${this._id}). Both players disconnected.`);
+    Room.delete(this);
+  }
+
   public endGame(server: Server) {
     if (!this._left || !this._right) {
       return;
@@ -101,8 +109,11 @@ class Room {
     if (this._gameState.interval) {
       clearInterval(this._gameState.interval);
     }
-    console.log(`Ended game (room: ${this._id}, left: ${this._left!.id}, right: ${this._left!.id}).`);
-    // Delete the room
+    console.log(`Ended game (room: ${this._id}).`);
+    const [newLeftRating, newRightRating] = Elo.updateRatings(this._left.rating, this._right.rating, this._gameState.leftPlayer.score > this._gameState.rightPlayer.score);
+    this._left.rating = newLeftRating;
+    this._right.rating = newRightRating;
+    console.log(`Ratings updated (left: ${newLeftRating}, right: ${newRightRating})`);
     Room.delete(this);
   }
 
@@ -132,9 +143,12 @@ class Room {
         gameState: this._gameState.IGameState(),
       }
       server.to(this._id.toString()).emit('update', room);
+      if (leftPlayer.__socket.disconnected && rightPlayer.__socket.disconnected) {
+        this.abortGame();
+      }
       this._gameState.previous = Date.now();
     }, 1000 / this._gameState.fps);
-    console.log(`Started new game (room: ${this._id}, left: ${this._id}, right: ${this._id}).`);
+    console.log(`Started new game (room: ${this._id}, left: ${leftPlayer.id}, right: ${rightPlayer.id}).`);
     return true;
   }
 

@@ -1,6 +1,6 @@
 import { DEBUG_MODE, DEMO_MODE } from "../constants";
 import { IPlayer } from "../types";
-import Pong from "./Pong";
+import PongBot from "./PongBot";
 
 const PongDemo = () => {
   const leftPlayerDemo: IPlayer = {
@@ -24,7 +24,7 @@ const PongDemo = () => {
 
 	return (
     <>
-      <Pong
+      <PongBot
         canvasWidth={455}
         canvasHeight={336}
         leftPlayerData={leftPlayerDemo}

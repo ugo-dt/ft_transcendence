@@ -5,7 +5,7 @@ import { IPlayer, Player } from "./Player";
 
 const CANVAS_WIDTH = 650;
 const CANVAS_HEIGHT = 480;
-const WIN_SCORE = 1;
+const WIN_SCORE = 3;
 
 export interface IGameState {
   ball: IBall,
@@ -44,7 +44,7 @@ export class GameState {
     this._rightPaddle = new Paddle(615);
     this._ball = new Ball(this._canvasWidth / 2, this._canvasHeight / 2, "white", false);
     this._time = {
-      fps: 60,
+      fps: 120,
       interval: null,
       previous: 0,
       current: 0,

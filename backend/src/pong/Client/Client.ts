@@ -1,8 +1,8 @@
 import { Socket } from "socket.io";
 
-export const STATUS_ONLINE = 0x1;
-export const STATUS_PLAYING = 0x2;
-export const STATUS_OFFLINE = 0x4;
+export const STATUS_ONLINE = 'online';
+export const STATUS_PLAYING = 'playing';
+export const STATUS_OFFLINE = 'offline';
 export type _Status = typeof STATUS_ONLINE | typeof STATUS_PLAYING | typeof STATUS_OFFLINE;
 
 export interface IClient {

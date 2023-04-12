@@ -4,12 +4,16 @@ import { useNavigate } from "react-router";
 import { Context } from "../context";
 
 function PlayOnline() {
-  const socket = useContext(Context).socketRef.current;
+  const socket = useContext(Context).pongSocketRef.current;
+  const navigate = useNavigate();
   const inQueueRef = useRef(false);
   const [inQueue, setInQueue] = useState(false);
   const inGame = useRef(false);
-  
-  const navigate = useNavigate();
+  const [timer, setTimer] = useState({ minutes: 0, seconds: 0 });
+  const intervalRef = useRef<number>();
+
+  const { minutes, seconds } = timer;
+  const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
   function handleClick() {
     if (!socket.connected) {
@@ -19,12 +23,21 @@ function PlayOnline() {
       socket.emit('join-queue');
       inQueueRef.current = true;
       setInQueue(true);
+      intervalRef.current = window.setInterval(() => {
+        setTimer((prevTimer) => {
+          const seconds = prevTimer.seconds + 1;
+          const minutes = prevTimer.minutes + Math.floor(seconds / 60);
+          return { minutes, seconds: seconds % 60 };
+        });
+      }, 1000);
       console.log('Joined queue.');
     }
     else {
       socket.emit('leave-queue');
       inQueueRef.current = false;
       setInQueue(false);
+      window.clearInterval(intervalRef.current);
+      setTimer({minutes: 0, seconds: 0});
       console.log('Left queue.');
     }
   }
@@ -58,7 +71,6 @@ function PlayOnline() {
       <div className="play-online-content" style={{ display: 'flex', flexDirection: 'column', userSelect: 'none' }}>
         <h1>Play online</h1>
         <button
-          id="find-match-btn"
           onClick={handleClick}
           style={{
             padding: '10px',
@@ -67,10 +79,13 @@ function PlayOnline() {
         >
           <h3>
             {
-              (inQueue && 'Cancel') || 'Find match'
+              (inQueue && 'Cancel') || 'Find a match'
             }
           </h3>
         </button>
+        <h4 id="timer">
+          {inQueue ? formattedTime : ''}
+        </h4>
       </div>
     </div>
   );

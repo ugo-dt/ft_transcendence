@@ -1,30 +1,23 @@
-export class Elo {
-  public static kFactor = 32; // The K-factor determines how quickly ratings change after a game
-  public static defaultRating = 1200; // The default rating for new players
+namespace Elo {
+  export const kFactor: number = 32;
 
-  public static calculateExpectedScore(playerRating: number, opponentRating: number): number {
-    return 1 / (1 + Math.pow(10, (opponentRating - playerRating) / 400));
+  function _getExpectedScore(playerRating: number, opponentRating: number): number {
+    const exponent = (opponentRating - playerRating) / 400;
+    return 1 / (1 + Math.pow(10, exponent));
   }
 
-  public static calculateRatingChange(playerRating: number, opponentRating: number, actualScore: number): number {
-    const expectedScore = this.calculateExpectedScore(playerRating, opponentRating);
-    return Math.round(this.kFactor * (actualScore - expectedScore));
-  }
+  export function updateRatings(player1Rating: number, player2Rating: number, player1Wins: boolean): [number, number] {
+    const player1ExpectedScore = _getExpectedScore(player1Rating, player2Rating);
+    const player2ExpectedScore = 1 - player1ExpectedScore;
 
-  public static updateRatings(playerRating: number, opponentRating: number, playerWins: boolean): [number, number] {
-    const actualScore = playerWins ? 1 : 0;
-    const ratingChange = this.calculateRatingChange(playerRating, opponentRating, actualScore);
-    return [playerRating + ratingChange, opponentRating - ratingChange];
-  }
+    const player1ActualScore = player1Wins ? 1 : 0;
+    const player2ActualScore = player1Wins ? 0 : 1;
 
-  public static getNewPlayerRating(): number {
-    return this.defaultRating;
+    const newPlayer1Rating = Math.max(1, Math.round(player1Rating + kFactor * (player1ActualScore - player1ExpectedScore)));
+    const newPlayer2Rating = Math.max(1, Math.round(player2Rating + kFactor * (player2ActualScore - player2ExpectedScore)));
+
+    return [newPlayer1Rating, newPlayer2Rating];
   }
 }
 
-// Example usage:
-const player1Rating = 1600;
-const player2Rating = 1400;
-const player1Wins = true;
-
-const [newPlayer1Rating, newPlayer2Rating] = Elo.updateRatings(player1Rating, player2Rating, player1Wins);
+export default Elo;

@@ -1,9 +1,8 @@
-import { Navigate, useLocation } from "react-router";
-import { CANVAS_DEFAULT_BACKGROUND_COLOR, DEBUG_MODE, OFFLINE_MODE } from "../constants";
-import Pong from "../layouts/Pong";
+import { CANVAS_DEFAULT_BACKGROUND_COLOR, OFFLINE_MODE } from "../constants";
+import PongBot from "../layouts/PongBot";
 import { IPlayer } from "../types";
 
-function BotGame() {
+function GameBot() {
   const leftPlayerData: IPlayer = {
     id: 0,
     name: "",
@@ -30,7 +29,7 @@ function BotGame() {
         justifyContent: 'center',
         boxSizing: 'border-box',
       }}>
-        <Pong
+        <PongBot
           leftPlayerData={leftPlayerData}
           rightPlayerData={rightPlayerData}
           mode={OFFLINE_MODE}
@@ -40,4 +39,4 @@ function BotGame() {
   );
 }
 
-export default BotGame;
+export default GameBot;

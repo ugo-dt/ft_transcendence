@@ -14,9 +14,12 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   constructor(private readonly pongService: PongService) {
     setInterval(() => {
-      const queue: Client[] = Queue.list();
-      if (queue.length >= 2) {
-        this.pongService.startGame(this.server, queue[0], queue[1]);
+      // const queue: Client[] = Queue.list();
+      // if (queue.length >= 2) {
+      //   this.pongService.startGame(this.server, queue[0], queue[1]);
+      // }
+      if (Queue.size() >= 2) {
+        Queue.tryMatchPlayers(this.server, pongService);
       }
     }, 1000);
   }
@@ -34,6 +37,7 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('join-queue')
   public handleJoinQueue(@ConnectedSocket() client: Socket) {
+    console.log("test");
     this.pongService.addClientToQueue(client);
   }
 

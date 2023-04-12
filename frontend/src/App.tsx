@@ -2,37 +2,40 @@ import './App.css'
 import { Outlet } from 'react-router-dom'
 import { CssBaseline } from '@mui/material'
 import Navbar from './layouts/Navbar'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { io } from 'socket.io-client'
 import { Context } from './context'
 
 function App() {
-  const serverUrl = "http://192.168.1.178:3000/pong";
-  const socketRef = useRef(io(serverUrl, {
+  const serverUrl = "http://192.168.1.178:3000";
+  const pongSocketRef = useRef(io(serverUrl + '/pong', {
     autoConnect: false,
   }));
+  const [connected, setConnected] = useState(true);
 
   const contextValue = {
     serverUrl,
-    socketRef,
+    pongSocketRef,
   };
 
   function onConnect() {
+    setConnected(true);
     console.log(`Connected to ${serverUrl}.`);
   }
 
   function onDisconnect() {
     console.log(`Disconnected from ${serverUrl}.`);
+    setConnected(false);
   }
 
   useEffect(() => {
-    socketRef.current.on('connect', onConnect);
-    socketRef.current.on('disconnect', onDisconnect);
-    socketRef.current.connect();
+    pongSocketRef.current.on('connect', onConnect);
+    pongSocketRef.current.on('disconnect', onDisconnect);
+    pongSocketRef.current.connect();
 
     return () => {
-      socketRef.current.disconnect();
-      socketRef.current.removeAllListeners();
+      pongSocketRef.current.disconnect();
+      pongSocketRef.current.removeAllListeners();
     };
   }, []);
 
@@ -40,6 +43,14 @@ function App() {
     <div className="App">
       <CssBaseline />
       <Navbar isSignedIn={true}/>
+      {
+        !connected &&
+        <div className="alert-disconnected">
+          <h3>
+            You are disconnected. Please refresh the page.
+          </h3>
+        </div>
+      }
       <Context.Provider value={contextValue}>
         <Outlet />
       </Context.Provider>

@@ -10,7 +10,7 @@ import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
 import Rankings from "./pages/Rankings";
 import SignIn from "./pages/SignIn";
-import BotGame from "./pages/BotGame";
+import GameBot from "./pages/GameBot";
 import Play from "./pages/Play";
 import PlayOnline from "./pages/PlayOnline";
 import Watch from "./pages/Watch";
@@ -67,7 +67,7 @@ const router = createBrowserRouter([
           },
           {
             path: "computer",
-            element: <BotGame />,
+            element: <GameBot />,
           },
         ]
       },
@@ -84,6 +84,12 @@ const router = createBrowserRouter([
       {
         path: 'watch',
         element: <Watch />,
+        children: [
+          {
+            path: ":id",
+            element: <Watch />
+          }
+        ]
       }
     ]
   }

@@ -24,3 +24,8 @@
   color: var(--text-color);
   background-color: var(--background-color);
 }
+
+.alert-disconnected {
+  width: 100%;
+  background-color: brown;
+}

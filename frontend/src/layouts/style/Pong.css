@@ -2,6 +2,19 @@
   --canvas-border-color: rgb(255, 255, 255, 0.85);
 }
 
+.Game {
+  box-sizing: border-box;
+  user-select: none;
+  margin: 20px;
+}
+
+.game-area {
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 canvas {
   margin: 10px;
   border: 10px solid var(--canvas-border-color);

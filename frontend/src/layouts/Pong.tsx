@@ -2,21 +2,43 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { useKeyState } from "use-key-state";
 import { Context } from "../context";
-import { IGameState, IPaddle, IRoom } from "../types";
+import { IClient, IGameState, IPaddle, IPlayer, IRoom } from "../types";
 import { CANVAS_DEFAULT_FOREGROUND_COLOR, CANVAS_DEFAULT_NET_COLOR, CANVAS_DEFAULT_NET_GAP, TARGET_FPS } from "../constants";
 import GameOver from "./GameOver";
 import Canvas from "../components/Canvas";
+
+function PlayerInfo({ player, isLeft }: { player: IClient, isLeft: boolean }) {
+  return (
+    <div className={`game-player-info ${isLeft ? 'game-player-info-left' : 'game-player-info-right'}`}>
+      {
+        (
+          player.avatar
+          && <img src={player.avatar}></img>
+        )
+        ||
+        <img id="game-player-info-avatar"
+          src="/assets/noavatar.png"
+          width={40}
+          height={40}
+          alt={player.name}
+        />
+      }
+      <h4 id="game-player-info-username">{player.name}</h4>
+    </div>
+  );
+}
 
 interface PongProps {
   role: 'player' | 'spectator',
   roomId: number,
 }
 
-function Pong({role, roomId}: PongProps) {
+function Pong({ role, roomId }: PongProps) {
   const navigate = useNavigate();
   const socket = useContext(Context).pongSocketRef.current;
   const [canvas] = useState(new Canvas(650, 480, null));
-  const room: React.MutableRefObject<IRoom> = useRef<IRoom>({} as IRoom);
+  const roomRef = useRef<IRoom>({} as IRoom);
+  const [room, setRoom] = useState<IRoom>({} as IRoom);
   const keyboardState = useKeyState().keyStateQuery;
   const gameInterval = useRef<NodeJS.Timer | undefined>(undefined);
   const [gameOver, setGameOver] = useState(false);
@@ -62,8 +84,8 @@ function Pong({role, roomId}: PongProps) {
   }
 
   function _update() {
-    if (room.current.gameState) {
-      const gameState: IGameState = room.current.gameState;
+    if (roomRef.current.gameState) {
+      const gameState: IGameState = roomRef.current.gameState;
 
       if (gameState.gameOver) {
         onEndGame(gameState);
@@ -72,13 +94,15 @@ function Pong({role, roomId}: PongProps) {
       _updateKeyState();
       _render(gameState);
     }
-    else {
-      navigate("/home");
-    }
+    // else {
+    //   navigate("/home");
+    // }
   }
 
   function onUpdate(data: IRoom) {
-    room.current = data;
+    roomRef.current = data;
+    setRoom(data);
+    // console.log(room);
   }
 
   function onEndGame(gameState: IGameState) {
@@ -112,16 +136,18 @@ function Pong({role, roomId}: PongProps) {
   return (
     <div className="Pong">
       <div className="game-area">
-        <canvas id="canvas" width={650} height={480}>
-          Your browser does not support the HTML 5 Canvas.
-        </canvas>
         {
           gameOver &&
           <GameOver
-            leftPlayer={room.current!.gameState.leftPlayer}
-            rightPlayer={room.current!.gameState.rightPlayer}
+          leftPlayer={room!.gameState.leftPlayer}
+          rightPlayer={room!.gameState.rightPlayer}
           />
         }
+        {room.left && <PlayerInfo player={room.left} isLeft={true} />}
+        <canvas id="canvas" width={650} height={480}>
+          Your browser does not support the HTML 5 Canvas.
+        </canvas>
+        {room.right && <PlayerInfo player={room.right} isLeft={false} />}
       </div> {/* className="gameArea" */}
     </div>
   );

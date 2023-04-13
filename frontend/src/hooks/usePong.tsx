@@ -28,7 +28,7 @@ function usePong(
   ] {
   function __demoMode_(): boolean { return !!(mode & DEMO_MODE); }
   const [pause, setPause] = useState(!__demoMode_());
-  const [ball, moveBall, drawBall, checkBallCollisions, resetBall, setBallActive, setBallPause] = useBall(canvas, false);
+  const [ball, moveBall, drawBall, checkBallCollisions, resetBall, setBallPause] = useBall(canvas, false);
   const [leftPlayer, setLeftScore] = usePlayer(leftPlayerData);
   const [rightPlayer, setRightScore] = usePlayer(rightPlayerData);
   const [leftPaddle, moveLeftPaddle, setLeftIsCom, drawLeftPaddle] = usePaddle(canvas, true, leftPlayerData.isCom);
@@ -78,14 +78,13 @@ function usePong(
   function _updateBall() {
     moveBall();
     checkBallCollisions(leftPaddle, rightPaddle);
-    if (ball.active && (ball.x > canvas.width || ball.x < 0)) {
-      setBallActive(false);
+    if (ball.x > canvas.width || ball.x < 0) {
       if (!__demoMode_()) {
         _scorePoint();
       }
       setTimeout(() => {
         resetBall();
-        setBallActive(true);
+
       }, 450);
     }
   }
@@ -111,6 +110,7 @@ function usePong(
       rightPlayer: rightPlayer,
       leftPaddle: leftPaddle,
       rightPaddle: rightPaddle,
+      gameOver: false,
     },
     update,
     resetGame,

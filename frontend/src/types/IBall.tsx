@@ -6,6 +6,5 @@ export interface IBall {
   velocityX: number,
   velocityY: number,
   color: string,
-  active: boolean,
   pause: boolean,
 }

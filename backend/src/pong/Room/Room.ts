@@ -93,7 +93,7 @@ class Room {
     if (this._gameState.interval) {
       clearInterval(this._gameState.interval);
     }
-    console.log(`Aborted game (room: ${this._id}). Both players disconnected.`);
+    console.log(`Game aborted (room: ${this._id}). Both players disconnected.`);
     Room.delete(this);
   }
 
@@ -109,12 +109,22 @@ class Room {
     if (this._gameState.interval) {
       clearInterval(this._gameState.interval);
     }
-    console.log(`Ended game (room: ${this._id}).`);
     const [newLeftRating, newRightRating] = Elo.updateRatings(this._left.rating, this._right.rating, this._gameState.leftPlayer.score > this._gameState.rightPlayer.score);
     this._left.rating = newLeftRating;
     this._right.rating = newRightRating;
+    console.log(`Game ended (room: ${this._id}).`);
     console.log(`Ratings updated (left: ${newLeftRating}, right: ${newRightRating})`);
     Room.delete(this);
+  }
+
+  private _emitGame(server: Server, leftPlayer: Client, rightPlayer: Client) {
+    const room = {
+      id: this._id,
+      left: { id: leftPlayer.id, name: leftPlayer.name, avatar: leftPlayer.avatar },
+      right: { id: rightPlayer.id, name: rightPlayer.name, avatar: rightPlayer.avatar },
+      gameState: this._gameState.IGameState(),
+    }
+    server.to(this._id.toString()).emit('update', room);
   }
 
   public startGame(server: Server): boolean {
@@ -128,27 +138,25 @@ class Room {
     this._gameState = new GameState(leftPlayer, rightPlayer);
 
     server.to(this._id.toString()).emit('startGame', { roomId: this._id });
-    this._gameState.previous = Date.now();
-    this._gameState.interval = setInterval(() => {
-      this._gameState.current = Date.now();
-      this._gameState.deltaTime = (this._gameState.current - this._gameState.previous) / 1000;
-      if (this._gameState.gameOver) {
-        this.endGame(server);
-      }
-      this._gameState.update();
-      const room = {
-        id: this._id,
-        left: { id: leftPlayer.id, name: leftPlayer.name, avatar: leftPlayer.avatar },
-        right: { id: rightPlayer.id, name: rightPlayer.name, avatar: rightPlayer.avatar },
-        gameState: this._gameState.IGameState(),
-      }
-      server.to(this._id.toString()).emit('update', room);
-      if (leftPlayer.__socket.disconnected && rightPlayer.__socket.disconnected) {
-        this.abortGame();
-      }
+    this._emitGame(server, leftPlayer, rightPlayer);
+    setTimeout(() => {
       this._gameState.previous = Date.now();
-    }, 1000 / this._gameState.fps);
-    console.log(`Started new game (room: ${this._id}, left: ${leftPlayer.id}, right: ${rightPlayer.id}).`);
+      this._gameState.interval = setInterval(() => {
+        this._gameState.current = Date.now();
+        this._gameState.deltaTime = (this._gameState.current - this._gameState.previous) / 1000;
+        if (this._gameState.gameOver) {
+          this.endGame(server);
+        }
+        this._gameState.update();
+        this._emitGame(server, leftPlayer, rightPlayer);
+        if (leftPlayer.__socket.disconnected && rightPlayer.__socket.disconnected) {
+          this.abortGame();
+        }
+        this._gameState.previous = Date.now();
+      }, 1000 / this._gameState.fps);
+    }, 1000);
+
+    console.log(`Game started (room: ${this._id}, left: ${leftPlayer.id}, right: ${rightPlayer.id}).`);
     return true;
   }
 

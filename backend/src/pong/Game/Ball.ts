@@ -1,7 +1,7 @@
 import Paddle, { IPaddle } from "./Paddle";
 import { Player } from "./Player";
 
-const DEFAULT_SPEED = 400;
+const DEFAULT_SPEED = 300;
 const DEFAULT_RADIUS = 7;
 
 export interface IBall {
@@ -12,7 +12,6 @@ export interface IBall {
   velocityX: number,
   velocityY: number,
   color: string,
-  active: boolean,
   pause: boolean,
 }
 
@@ -25,7 +24,6 @@ export default class Ball {
   private _velocityY: number;
   private _color: string;
   private _sideWalls: boolean;
-  private _active: boolean;
   private _startsRight: boolean;
   private _nextFrame: any;
 
@@ -43,7 +41,6 @@ export default class Ball {
     this._velocityY = 0;//Math.random() * ((DEFAULT_SPEED / 2) - -(DEFAULT_SPEED / 2)) - (DEFAULT_SPEED / 2);
     this._color = color;
     this._sideWalls = sideWalls;
-    this._active = true;
     this._startsRight = true;
     this._nextFrame = null;
   }
@@ -117,7 +114,7 @@ export default class Ball {
       this._velocityX = Math.round(velocityX);
       this._velocityY = Math.round(velocityY);
       if (Math.abs(this._speed) < 3 * DEFAULT_SPEED) {
-        this._speed += DEFAULT_SPEED / 25;
+        this._speed += 20;
       }
     }
   }
@@ -220,10 +217,8 @@ export default class Ball {
     this._y = Math.round(y);
   }
 
-  public reset(x: number, y: number) {
+  public reset() {
     this._speed = DEFAULT_SPEED;
-    this._x = x;
-    this._y = y;
 
     // alternate starting direction
     this._velocityX = this._startsRight ? -DEFAULT_SPEED : DEFAULT_SPEED;
@@ -253,13 +248,15 @@ export default class Ball {
   ): void {
     this._move(deltaTime);
     this._checkBallCollisions(canvasWidth, canvasHeight, leftPaddle.IPaddle(), rightPaddle.IPaddle(), deltaTime);
-    if (this._active && (this._x > canvasWidth || this._x < 0)) {
-      this._active = false;
+    if (this._x > canvasWidth || this._x < 0) {
       this._scorePoint(canvasWidth, leftPlayer, rightPlayer);
+      this._x = canvasWidth / 2;
+      this._y = canvasHeight / 2;
+      this._velocityX = 0;
+      this._velocityY = 0;
       setTimeout(() => {
-        this.reset(canvasWidth / 2, canvasHeight / 2);
-        this._active = true;
-      }, 450);
+        this.reset();
+      }, 500);
     }
   }
 
@@ -273,7 +270,6 @@ export default class Ball {
         velocityX: this._velocityX,
         velocityY: this._velocityY,
         color: this._color,
-        active: true,
         pause: false,
       }
     );

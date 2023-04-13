@@ -51,7 +51,6 @@ const PongDebug = ({
               <h5>speed: {gameState.ball.speed.toFixed(2)}</h5>
               <h5>velocity x: {gameState.ball.velocityX.toFixed(2)}</h5>
               <h5>velocity y: {gameState.ball.velocityY.toFixed(2)}</h5>
-              <h5>active: {gameState.ball.active ? 'true' : 'false'}</h5>
               <button onClick={() => setBallPause(!gameState.ball.pause)}>
                 {((gameState.ball.pause && "Resume ball") || "Pause ball") + " (b)"}
               </button>

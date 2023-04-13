@@ -26,4 +26,6 @@ export class User {
 
 	@Column()
 	avatar: string;
+
+	// add, rating, wins and losses
 }

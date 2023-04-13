@@ -10,7 +10,6 @@ import Canvas from "../components/Canvas";
  * @param _pos Ball default position
  * @param _velocity Ball velocity
  * @param _color Ball color
- * @param _active Is ball active (is displayed, can score)
  * @returns IBall state
  */
 function useBall(
@@ -23,14 +22,12 @@ function useBall(
   _velocityX: number =_speed * Math.cos(Math.PI * 4) * 1,
   _velocityY: number = BALL_VELOCITY_Y(),
   _color: string = "white",
-  _active: boolean = true,
 ): [
   IBall,
   () => void,
   () => void,
   (left: IPaddle, right: IPaddle) => void,
   () => void,
-  Dispatch<SetStateAction<boolean>>,
   Dispatch<SetStateAction<boolean>>,
 ] {
   const [x, setX] = useState(_x);
@@ -40,7 +37,6 @@ function useBall(
   const [velocityY, setVelocityY] = useState(_velocityY);
   const [color, setColor] = useState(_color);
   const [colorIndex, setColorIndex] = useState(0);
-  const [active, setActive] = useState(_active);
   const [startVelocityGoesLeft, setstartVelocityGoesLeft] = useState(_velocityX > 0);
   const [pause, setPause] = useState(false);
   // const colors = ["white", "silver", "grey", "maroon", "red", "purple", "fuchsia", "green", "lime", "olive", "yellow", "navy", "blue", "teal", "aqua"];
@@ -175,7 +171,6 @@ function useBall(
   }
 
   function drawBall() {
-    if (!active) { return; }
     canvas.drawCircle(x, y, _radius, color);
   }
 
@@ -201,14 +196,12 @@ function useBall(
       velocityX: velocityX,
       velocityY: velocityY,
       color: color,
-      active: active,
       pause: pause,
     },
     moveBall,
     drawBall,
     checkBallCollisions,
     resetBall,
-    setActive,
     setPause,
   ];
 }

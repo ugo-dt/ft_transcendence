@@ -18,7 +18,14 @@ async function bootstrap() {
     credentials: true,
   });
   app.useGlobalPipes(new ValidationPipe({whitelist: true}));
-  app.use(session({secret: "a-secret-string", resave: false, saveUninitialized: false}));
+  app.use(session({
+    secret: "a-secret-string",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: false // remove for production
+    }
+  }));
   await app.listen(port);
 }
 

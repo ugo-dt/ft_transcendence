@@ -1,5 +1,6 @@
 export class EntityMessage {
-	sender: string;
+	senderId: number;
+	senderName: string
 	content: string;
 	timestamp: string;
 	toChannel: number;

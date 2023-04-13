@@ -3,7 +3,7 @@ import App from "./App";
 
 import Account from "./pages/Account";
 import Friends from "./pages/Friends";
-import Chat from "./pages/Chat/Chat";
+import Chat from "./pages/Chat";
 import Game from "./pages/Game";
 import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";

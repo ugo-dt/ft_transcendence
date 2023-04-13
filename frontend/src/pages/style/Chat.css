@@ -1,6 +1,6 @@
 #div_main {
 	display: flex;
-	background-color: rgb(43, 43, 43);
+	background-color: #313336;
 }
 
 #h1_main_title {
@@ -102,6 +102,7 @@
 #div_channels {
 	display: flex;
 	flex-direction: column;
+	margin-top: 3%;
 	margin-left: 1%;
 	overflow-y: scroll;
 	width: 300px;
@@ -120,7 +121,7 @@
 	}
 }
 
-#button_channel, #button_open_create {
+#button_channel, #button_open_create, #button_channel_current {
 	cursor: pointer;
 	margin-right: auto;
 	margin-left: auto;
@@ -131,13 +132,20 @@
 	margin-bottom: 15px;
 	border-width: 0;
 	border-radius: 2px;
-	box-shadow: 0 10px 10px rgba(0, 0, 0, .6);
-	background-color: #5b5b5b;
 	color: #ecf0f1;
 }
 
+#button_channel, #button_open_create {
+	background-color: #5b5b5b;
+}
+
+#button_channel_current {
+	background-color: #7d7d7d;
+	box-shadow: 0 10px 10px rgba(0, 0, 0, .12);
+}
+
 #button_channel:hover, #button_open_create:hover {
-	background-color: #6a6a6a;
+	background-color: #76777e;
 }
 
 #button_open_create {
@@ -148,11 +156,8 @@
 	color: white;
 	height: 100%;
 	width: 100%;
-	border-color: gray;
-	background-color: black;
-	border-style: solid;
-	border-width: 1px;
-	border-radius: 10px;
+	background-color: #36393e;
+	border-radius: 5px;
 	overflow-y: scroll;
 	word-break: break-all;
 }
@@ -163,9 +168,9 @@
 	margin-bottom: 1%;
 	padding: 1%;
 	width: 100%;
-	border-radius: 10px;
+	border-radius: 8px;
 	border-style: none;
-	background-color: #5b5b5b;
+	background-color: #56575b;
 }
 
 #div_input_bar::placeholder {
@@ -177,35 +182,10 @@
 	color: white;
 }
 
-#li_messages-god {
-	list-style-type: none;
-	border-radius: 15px 15px 15px 15px;
-	background: rgb(98, 0, 255);
-	padding: 5px;
-	margin: 10px;
-	margin-left: auto;
-	margin-right: auto;
-	display: table;
-	max-width: 96%;
-}
-
-#li_messages-mine {
-	list-style-type: none;
-	border-radius: 15px 15px 3px 15px;
-	background: #1982FC;
-	padding: 5px;
-	margin: 10px;
-	display: table;
-	margin-left: auto;
-	max-width: 96%;
-}
-
 #li_messages {
 	list-style-type: none;
-	border-radius: 15px 15px 15px 3px;
-	background: rgb(55, 55, 55);
 	padding: 5px;
-	margin: 10px;
+	margin-top: 10px;
 	display: table;
 	max-width: 96%;
 }

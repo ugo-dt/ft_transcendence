@@ -8,7 +8,7 @@ const PAGE_SIZE: number = 10;
 
 function RoomList() {
   const navigate = useNavigate();
-  const socket = useContext(Context).socketRef.current;
+  const socket = useContext(Context).pongSocketRef.current;
   const [roomList, setRoomList] = useState([] as IRoom[]);
   const [roomListPage, setRoomListPage] = useState(0);
   const [loading, setLoading] = useState(true);

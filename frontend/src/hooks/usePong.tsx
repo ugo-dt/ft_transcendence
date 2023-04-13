@@ -3,44 +3,36 @@
 // ball slowly gets smaller over time
 // different map color (maybe one for each player? maybe player gets to choose their color?)
 
-import { useEffect, useState } from "react";
-import { CANVAS_DEFAULT_BACKGROUND_COLOR, CANVAS_DEFAULT_FOREGROUND_COLOR, CANVAS_DEFAULT_NET_COLOR, CANVAS_DEFAULT_NET_GAP, DEBUG_MODE, DEMO_MODE, NORMAL_MODE, TARGET_FPS } from "../constants";
+import { Dispatch, SetStateAction, useState } from "react";
+import { CANVAS_DEFAULT_FOREGROUND_COLOR, CANVAS_DEFAULT_NET_COLOR, CANVAS_DEFAULT_NET_GAP, DEMO_MODE } from "../constants";
 import { IGameState, IPlayer } from "../types";
 import useBall from "../hooks/useBall";
 import usePlayer from "./usePlayer";
 import Canvas from "../components/Canvas";
+import usePaddle from "./usePaddle";
 
-
-const usePong = (
+function usePong(
   canvas: Canvas,
-  mode: string,
-  leftPlayerData: IPlayer = {
-    id: 0,
-    name: "",
-    avatar: null,
-    isLeft: true,
-    isCom: false,
-    score: 0,
-    keyboardState: null,
-    backgroundColor: CANVAS_DEFAULT_BACKGROUND_COLOR,
-  },
-  rightPlayerData: IPlayer = {
-    id: 1,
-    name: "Computer",
-    avatar: null,
-    isLeft: false,
-    isCom: true,
-    score: 0,
-    keyboardState: null,
-    backgroundColor: CANVAS_DEFAULT_BACKGROUND_COLOR,
-  },
-): [IGameState, any, any, any, any] => {
-  function __debugMode_(): boolean { return (mode === DEBUG_MODE); }
-  function __demoMode_(): boolean { return (mode === DEMO_MODE); }
-  const [pause, setPause] = useState(__debugMode_());
+  mode: number,
+  leftPlayerData: IPlayer,
+  rightPlayerData: IPlayer,
+): [
+    IGameState,
+    (gameState: IGameState) => void,
+    () => void,
+    boolean,
+    Dispatch<SetStateAction<boolean>>,
+    Dispatch<SetStateAction<boolean>>,
+    Dispatch<SetStateAction<boolean>>,
+    Dispatch<SetStateAction<boolean>>,
+  ] {
+  function __demoMode_(): boolean { return !!(mode & DEMO_MODE); }
+  const [pause, setPause] = useState(!__demoMode_());
   const [ball, moveBall, drawBall, checkBallCollisions, resetBall, setBallActive, setBallPause] = useBall(canvas, false);
-  const [leftPlayer, moveLeftPaddle, drawLeftPaddle, setLeftScore] = usePlayer(canvas, leftPlayerData);
-  const [rightPlayer, moveRightPaddle, drawRightPaddle, setRightScore, setRightIsCom] = usePlayer(canvas, rightPlayerData);
+  const [leftPlayer, setLeftScore] = usePlayer(leftPlayerData);
+  const [rightPlayer, setRightScore] = usePlayer(rightPlayerData);
+  const [leftPaddle, moveLeftPaddle, setLeftIsCom, drawLeftPaddle] = usePaddle(canvas, true, leftPlayerData.isCom);
+  const [rightPaddle, moveRightPaddle, setRightIsCom, drawRightPaddle] = usePaddle(canvas, false, rightPlayerData.isCom);
 
   function _drawBackground() {
     canvas.clear();
@@ -62,13 +54,13 @@ const usePong = (
     if (!__demoMode_()) {
       _drawScore();
     }
-    drawLeftPaddle(canvas);
-    drawRightPaddle(canvas);
-    drawBall(canvas);
+    drawLeftPaddle();
+    drawRightPaddle();
+    drawBall();
   }
 
   function _scorePoint() {
-    if (ball.pos.x > canvas.width) {
+    if (ball.x > canvas.width) {
       setLeftScore(leftPlayer.score + 1);
     }
     else {
@@ -77,13 +69,16 @@ const usePong = (
   }
 
   function _updatePlayers() {
-    moveLeftPaddle(ball.pos);
-    moveRightPaddle(ball.pos);
+    // This runs either humanMovePaddle or computerMovePaddle.
+    // Parameters are ignored when human.
+    moveLeftPaddle(ball.velocityX, ball.x, ball.y, __demoMode_());
+    moveRightPaddle(ball.velocityX, ball.x, ball.y, __demoMode_());
   }
 
   function _updateBall() {
     moveBall();
-    if (ball.active && (ball.pos.x > canvas.width || ball.pos.x < 0)) {
+    checkBallCollisions(leftPaddle, rightPaddle);
+    if (ball.active && (ball.x > canvas.width || ball.x < 0)) {
       setBallActive(false);
       if (!__demoMode_()) {
         _scorePoint();
@@ -93,7 +88,6 @@ const usePong = (
         setBallActive(true);
       }, 450);
     }
-    checkBallCollisions(leftPlayer.paddle, rightPlayer.paddle);
   }
 
   function update() {
@@ -103,35 +97,27 @@ const usePong = (
     }
     _render();
   }
-  
+
   function resetGame() {
     resetBall();
     setLeftScore(0);
     setRightScore(0);
   }
 
-  useEffect(() => {
-    _render();
-  }, []);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      update();
-    }, 1000 / TARGET_FPS);
-
-    return () => clearInterval(interval);
-  }, [update, pause, ball, leftPlayer, rightPlayer]);
-
   return ([
     {
       ball: ball,
       leftPlayer: leftPlayer,
       rightPlayer: rightPlayer,
-      pause: pause,
+      leftPaddle: leftPaddle,
+      rightPaddle: rightPaddle,
     },
+    update,
     resetGame,
+    pause,
     setPause,
     setBallPause,
+    setLeftIsCom,
     setRightIsCom,
   ]);
 }

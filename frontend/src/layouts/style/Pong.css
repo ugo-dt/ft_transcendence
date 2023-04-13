@@ -1,5 +1,43 @@
+:root {
+  --canvas-border-color: rgb(255, 255, 255, 0.85);
+}
+
+.Game {
+  box-sizing: border-box;
+  user-select: none;
+  margin: 20px;
+}
+
+.game-area {
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 canvas {
-  border: 10px solid white;
+  margin: 10px;
+  border: 10px solid var(--canvas-border-color);
   outline: 1px solid #0C1821;
   overflow: hidden;
+}
+
+.debug-info {
+  border: 1px solid black;
+}
+
+.debug-info-cell {
+  padding: '5px';
+  border-bottom: '1px solid black';
+}
+
+@media (prefers-color-scheme: dark) {
+  .debug-info {
+    border: 1px solid white;
+    background-color: black;
+  }
+  .debug-info-cell {
+    padding: '5px';
+    border-bottom: '1px solid white';
+  }
 }

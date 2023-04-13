@@ -1,68 +1,11 @@
-import { useEffect, useState } from "react";
-import { IPlayer, Vec2 } from "../types";
-import usePaddle from "./usePaddle";
-import { CANVAS_DEFAULT_HEIGHT, PADDLE_DEFAULT_VELOCITY } from "../constants";
-import { useKeyState } from "use-key-state";
-import Canvas from "../components/Canvas";
+import { Dispatch, SetStateAction, useState } from "react";
+import { IPlayer } from "../types";
 
-const usePlayer = (
-  canvas: Canvas,
-  _player: IPlayer,
-): [IPlayer, any, any, any, any] => {
-  const [isCom, setIsCom] = useState(_player.isCom);
+function usePlayer(_player: IPlayer): [
+  IPlayer,
+  Dispatch<SetStateAction<number>>,
+] {
   const [score, setScore] = useState(_player.score);
-  const [Paddle, movePaddle, drawPaddle, setPaddlePosition, setPaddleVelocityY] = usePaddle(canvas, _player.isLeft);
-  const keyboardState = useKeyState().keyStateQuery;
-  const paddleVelocity = canvas.height / (CANVAS_DEFAULT_HEIGHT / PADDLE_DEFAULT_VELOCITY);
-
-  function computerMovePaddle(ballPos: Vec2) {
-    let f = 0.16;
-
-    let c = Paddle.pos.y + (ballPos.y - (Paddle.pos.y + Paddle.height / 2)) * f;
-    if (c >= 0 && c <= canvas.height - Paddle.height) {
-      setPaddlePosition(c);
-    }
-  }
-
-  function humanMovePaddle() {    
-    if (_player.isLeft) {
-      if (keyboardState.pressed('w')) {
-        if (keyboardState.pressed('s')) {
-          setPaddleVelocityY(0);
-        }
-        else {
-          setPaddleVelocityY(-paddleVelocity);
-        }
-      }
-      else if (keyboardState.pressed('s')) {
-        setPaddleVelocityY(paddleVelocity);
-      }
-      else {
-        setPaddleVelocityY(0);
-      }
-    }
-    else {
-      
-      if (keyboardState.pressed('up')) {
-        if (keyboardState.pressed('down')) {
-          setPaddleVelocityY(0);
-        }
-        else {
-          setPaddleVelocityY(-paddleVelocity);
-        }
-      }
-      else if (keyboardState.pressed('down')) {
-        setPaddleVelocityY(paddleVelocity);
-      }
-      else {
-        setPaddleVelocityY(0);
-      }
-    }
-    movePaddle();
-  }
-
-  useEffect(() => {
-  }, [keyboardState]);
 
   return [
     {
@@ -70,16 +13,11 @@ const usePlayer = (
       name: _player.name,
       avatar: _player.avatar,
       isLeft: _player.isLeft,
-      isCom: isCom,
-      paddle: Paddle,
+      isCom: _player.isCom,
       score: score,
-      keyboardState: keyboardState,
       backgroundColor: _player.backgroundColor,
     },
-    isCom ? computerMovePaddle : humanMovePaddle,
-    drawPaddle,
     setScore,
-    setIsCom,
   ];
 }
 

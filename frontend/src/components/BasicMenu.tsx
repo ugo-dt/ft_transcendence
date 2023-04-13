@@ -49,7 +49,11 @@ export default function BasicMenu({ buttonText = "", items = [] }: NavbarMenuPro
         anchorEl={anchorEl}
         open={open}
         onClose={handleClose}
-        MenuListProps={{'aria-labelledby': 'basic-button' }}
+        MenuListProps={{'aria-labelledby': 'basic-button',
+          sx: {
+            background: 'inherit',
+          }
+        }}
         disableAutoFocusItem={true}
       >
         {

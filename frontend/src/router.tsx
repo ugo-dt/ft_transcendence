@@ -10,6 +10,10 @@ import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
 import Rankings from "./pages/Rankings";
 import SignIn from "./pages/SignIn";
+import GameBot from "./pages/GameBot";
+import Play from "./pages/Play";
+import PlayOnline from "./pages/PlayOnline";
+import Watch from "./pages/Watch";
 
 const router = createBrowserRouter([
   {
@@ -54,13 +58,37 @@ const router = createBrowserRouter([
         element: <Account />
       },
       {
-        path: "game",
+        path: "play",
+        element: <Play />,
+        children: [
+          {
+            path: "online",
+            element: <PlayOnline />,
+          },
+          {
+            path: "computer",
+            element: <GameBot />,
+          },
+        ]
+      },
+      {
+        path: 'game',
         element: <Game />,
         children: [
           {
-            path: ':id',
-            element: <Game />,
-          },
+            path: ":id",
+            element: <Game />
+          }
+        ]
+      },
+      {
+        path: 'watch',
+        element: <Watch />,
+        children: [
+          {
+            path: ":id",
+            element: <Watch />
+          }
         ]
       }
     ]

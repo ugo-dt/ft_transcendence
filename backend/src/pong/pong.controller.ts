@@ -3,10 +3,10 @@ import { PongService } from './pong.service';
 
 @Controller('pong')
 export class PongController {
-  constructor(private pongService: PongService) { }
+  constructor(private readonly pongService: PongService) { }
 
   @Get()
-  getHello(): string {
-    return this.pongService.getHello();
+  getHello() {
+    return this.pongService.roomList();
   }
 }

@@ -1,10 +1,10 @@
-import { Vec2 } from "./Vec2";
-
 export interface IBall {
+  x: number,
+  y: number,
   radius: number,
-	pos: Vec2,
   speed: number,
-  velocity: Vec2,
+  velocityX: number,
+  velocityY: number,
   color: string,
   active: boolean,
   pause: boolean,

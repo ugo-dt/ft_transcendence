@@ -1,161 +1,129 @@
-import usePong from "../hooks/usePong";
-import { IGameState, IPlayer } from "../types";
-import { CANVAS_DEFAULT_HEIGHT, CANVAS_DEFAULT_WIDTH, DEBUG_MODE, NORMAL_MODE } from "../constants";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router";
 import { useKeyState } from "use-key-state";
-
-import "./style/Pong.css"
+import { Context } from "../context";
+import { IGameState, IPaddle, IRoom } from "../types";
+import { CANVAS_DEFAULT_FOREGROUND_COLOR, CANVAS_DEFAULT_NET_COLOR, CANVAS_DEFAULT_NET_GAP, TARGET_FPS } from "../constants";
+import GameOver from "./GameOver";
 import Canvas from "../components/Canvas";
 
-interface DebugProps {
-  gameState: IGameState,
-  resetGame: any,
-  setPause: any,
-  setBallPause: any,
-  setLeftIsCom: any,
-  setRightIsCom: any,
-}
-
-const PongDebug = ({
-  gameState,
-  resetGame,
-  setBallPause,
-  setPause,
-  setLeftIsCom,
-  setRightIsCom,
-}: DebugProps) => {
-  const [__info_, __setDebug_] = useState(true);
-  const { r, h, b } = useKeyState({ r: 'r', h: 'h', b: 'b' });
-
-  useEffect(() => {
-    if (r.down) { resetGame(); }
-    if (h.down) { __setDebug_(!__info_); }
-    if (b.down) { setBallPause(!gameState.ball.pause); }
-  }, [__info_, gameState, r, h, b]);
-
-  return (
-    <>
-      <button style={{ position: 'absolute', top: '10%', left: '2%' }} onClick={() => __setDebug_(!__info_)}>{((__info_ && "Hide debug") || "Show debug") + ' (h)'}</button>
-      {
-        __info_ &&
-        <div className="debug" style={{ position: 'absolute', top: '13%', left: '2%' }}>
-          <button onClick={resetGame}>Reset game (r)</button><br />
-          <button onClick={() => setPause(!gameState.pause)}>{((gameState.pause && "Resume game") || "Pause game") + ' (space)'}</button>
-          <div className="debugInfo"
-            style={{
-              width: '150px',
-              outline: '1px solid black',
-            }}
-          >
-            <div style={{ padding: '5px', borderBottom: '1px solid black' }}>
-              <h4>Ball</h4>
-              <h5>pos x: {gameState.ball.pos.x.toFixed(2)}</h5>
-              <h5>pos y: {gameState.ball.pos.y.toFixed(2)}</h5>
-              <h5>speed: {gameState.ball.speed.toFixed(2)}</h5>
-              <h5>velocity x: {gameState.ball.velocity.x.toFixed(2)}</h5>
-              <h5>velocity y: {gameState.ball.velocity.y.toFixed(2)}</h5>
-              <h5>active: {gameState.ball.active ? 'true' : 'false'}</h5>
-              <button onClick={() => setBallPause(!gameState.ball.pause)}>
-                {((gameState.ball.pause && "Resume ball") || "Pause ball") + " (b)"}
-              </button>
-            </div>
-
-            <div style={{ padding: '5px', borderBottom: '1px solid black' }}>
-              <h4>{gameState.leftPlayer.name + ((gameState.leftPlayer.isCom && " (COM)") || " (Human)")}</h4>
-              <h5>x: {gameState.leftPlayer.paddle!.pos.x.toFixed(2)}</h5>
-              <h5>y: {gameState.leftPlayer.paddle!.pos.y.toFixed(2)}</h5>
-              <h5>velocity y: {gameState.leftPlayer.paddle!.velocityY}</h5>
-              <h5>id: {gameState.leftPlayer.id}</h5>
-              <h5>score: {gameState.leftPlayer.score}</h5>
-              <h5>color: {gameState.leftPlayer.backgroundColor}</h5>
-            </div>
-
-            <div style={{ padding: '5px', borderBottom: '0px solid black' }}>
-              <h4>{gameState.rightPlayer.name + ((gameState.rightPlayer.isCom && " (COM)") || " (Human)")}</h4>
-              <button onClick={() => setRightIsCom(!gameState.rightPlayer.isCom)}>
-                {((gameState.rightPlayer.isCom && "Set as Human") || "Set as COM")}
-              </button>
-              <h5>x: {gameState.rightPlayer.paddle!.pos.x.toFixed(2)}</h5>
-              <h5>y: {gameState.rightPlayer.paddle!.pos.y.toFixed(2)}</h5>
-              <h5>velocity y: {gameState.rightPlayer.paddle?.velocityY}</h5>
-              <h5>id: {gameState.rightPlayer.id}</h5>
-              <h5>score: {gameState.rightPlayer.score}</h5>
-              <h5>color: {gameState.rightPlayer.backgroundColor}</h5>
-            </div>
-          </div> {/* className="debugArea" */}
-        </div> /* className="debug" */
-      }
-    </>
-  );
-}
-
 interface PongProps {
-  canvasWidth?: number,
-  canvasHeight?: number,
-  mode: string,
-  leftPlayerData: IPlayer,
-  rightPlayerData: IPlayer,
+  role: 'player' | 'spectator',
+  roomId: number,
 }
 
-const Pong = ({
-  canvasWidth = CANVAS_DEFAULT_WIDTH,
-  canvasHeight = CANVAS_DEFAULT_HEIGHT,
-  mode = NORMAL_MODE,
-  leftPlayerData,
-  rightPlayerData,
-}: PongProps) => {
-  function __debugMode_(): boolean { return (mode === DEBUG_MODE); }
-  const [canvas, setCanvas]: [Canvas, any] = useState(new Canvas(canvasWidth, canvasHeight, null));
-  const [gameState, resetGame, setPause, setBallPause, setRightIsCom] = usePong(canvas, mode, leftPlayerData, rightPlayerData);
-  const { space } = useKeyState({ space: 'space' });
+function Pong({role, roomId}: PongProps) {
+  const navigate = useNavigate();
+  const socket = useContext(Context).pongSocketRef.current;
+  const [canvas] = useState(new Canvas(650, 480, null));
+  const room: React.MutableRefObject<IRoom> = useRef<IRoom>({} as IRoom);
+  const keyboardState = useKeyState().keyStateQuery;
+  const gameInterval = useRef<NodeJS.Timer | undefined>(undefined);
+  const [gameOver, setGameOver] = useState(false);
+
+  function _updateKeyState() {
+    if (keyboardState.pressed('w') || keyboardState.pressed('up')) {
+      socket.emit('upKeyPressed');
+    }
+    else {
+      socket.emit('upKeyUnpressed');
+    }
+    if (keyboardState.pressed('s') || keyboardState.pressed('down')) {
+      socket.emit('downKeyPressed');
+    }
+    else {
+      socket.emit('downKeyUnpressed');
+    }
+  }
+
+  function _drawPaddle(paddle: IPaddle) {
+    canvas.drawRect(paddle.x, paddle.y, paddle.width, paddle.height, paddle.color);
+  }
+
+  function _render(gameState: IGameState) {
+    canvas.clear();
+    canvas.drawRect(0, 0, canvas.width / 2, canvas.height, gameState.leftPlayer.backgroundColor);
+    canvas.drawRect(canvas.width / 2, 0, canvas.width, canvas.height, gameState.rightPlayer.backgroundColor);
+
+    canvas.drawText(gameState.leftPlayer.score.toString(), canvas.width / 4, canvas.height / 5, CANVAS_DEFAULT_FOREGROUND_COLOR);
+    canvas.drawText(gameState.rightPlayer.score.toString(), 3 * canvas.width / 4, canvas.height / 5, CANVAS_DEFAULT_FOREGROUND_COLOR);
+
+    // Net
+    for (let i = 7.5; i < canvas.height; i += CANVAS_DEFAULT_NET_GAP) {
+      canvas.drawRect(canvas.width / 2 - 5, i, 10, 15, CANVAS_DEFAULT_NET_COLOR);
+    }
+
+    // Ball
+    canvas.drawCircle(gameState.ball.x, gameState.ball.y, gameState.ball.radius, gameState.ball.color);
+
+    // Paddles
+    _drawPaddle(gameState.leftPaddle);
+    _drawPaddle(gameState.rightPaddle);
+  }
+
+  function _update() {
+    if (room.current.gameState) {
+      const gameState: IGameState = room.current.gameState;
+
+      if (gameState.gameOver) {
+        onEndGame(gameState);
+        return;
+      }
+      _updateKeyState();
+      _render(gameState);
+    }
+    else {
+      navigate("/home");
+    }
+  }
+
+  function onUpdate(data: IRoom) {
+    room.current = data;
+  }
+
+  function onEndGame(gameState: IGameState) {
+    canvas.clear();
+    canvas.drawRect(0, 0, canvas.width / 2, canvas.height, gameState.leftPlayer.backgroundColor);
+    canvas.drawRect(canvas.width / 2, 0, canvas.width, canvas.height, gameState.rightPlayer.backgroundColor);
+    setGameOver(true);
+    clearInterval(gameInterval.current);
+    gameInterval.current = undefined;
+  }
 
   useEffect(() => {
-    const canvasElement = document.getElementById("canvas") as HTMLCanvasElement;
-    canvas.context = canvasElement.getContext("2d") as CanvasRenderingContext2D;
+    canvas.context = (document.getElementById("canvas") as HTMLCanvasElement).getContext("2d") as CanvasRenderingContext2D;
+    if (role === 'spectator') {
+      socket.emit('spectate', roomId);
+    }
+    socket.on('update', onUpdate);
+    socket.on('endGame', onEndGame);
+    gameInterval.current = setInterval(_update, 1000 / TARGET_FPS);
+
+    return () => {
+      if (role === 'spectator') {
+        socket.emit('stop-spectate', roomId);
+      }
+      clearInterval(gameInterval.current);
+      socket.off('update', onUpdate);
+      socket.off('endGame', onEndGame);
+    }
   }, []);
 
-  useEffect(() => {
-    if (window.location.pathname === "/game/computer") {
-      if (space.down) {
-        setPause(!gameState.pause);
-      }
-    }
-  }, [space]);
-
   return (
-    <>
-      {
-        __debugMode_() && <PongDebug
-          gameState={gameState}
-          resetGame={resetGame}
-          setPause={setPause}
-          setBallPause={setBallPause}
-          setLeftIsCom={() => console.log("unimplemented")}
-          setRightIsCom={setRightIsCom}
-        />
-      }
-
-      <div
-        className="gameArea"
-        style={{
-          userSelect: 'none',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
-        <canvas id="canvas" width={canvasWidth} height={canvasHeight}>
+    <div className="Pong">
+      <div className="game-area">
+        <canvas id="canvas" width={650} height={480}>
           Your browser does not support the HTML 5 Canvas.
         </canvas>
         {
-          gameState.pause &&
-          <div className="pauseText" style={{ textAlign: 'center' }}>
-            <h3>Paused</h3>
-            <p>Press Space to resume</p>
-          </div>
+          gameOver &&
+          <GameOver
+            leftPlayer={room.current!.gameState.leftPlayer}
+            rightPlayer={room.current!.gameState.rightPlayer}
+          />
         }
       </div> {/* className="gameArea" */}
-    </>
+    </div>
   );
 }
 

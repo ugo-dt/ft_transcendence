@@ -1,0 +1,8 @@
+.PlayOnline {
+  display: flex;
+  justify-content: center;
+}
+
+#timer {
+  text-align: center;
+}

@@ -1,20 +1,31 @@
-:root{
+:root {
   --text-color: #1a1a1a;
-	--background-color: white;
+  --background-color: white;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text-color: rgb(255, 255, 255, 0.87);
+    --background-color: rgb(26, 26, 26);
+  }
 }
 
 *,
 *::before,
 *::after {
-	box-sizing: border-box;
-	margin: 0;
-	padding: 0;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 .App {
-	width: 100%;
-	height: 100vh;
-	display: block;
-	color: #1a1a1a;
-	background-color: var(--background-color);
+  height: 100vh;
+  display: block;
+  color: var(--text-color);
+  background-color: var(--background-color);
+}
+
+.alert-disconnected {
+  width: 100%;
+  background-color: brown;
 }

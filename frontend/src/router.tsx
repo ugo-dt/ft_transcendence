@@ -1,7 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
 
-import Account from "./pages/Account";
 import Friends from "./pages/Friends";
 import Chat from "./pages/Chat";
 import Game from "./pages/Game";
@@ -62,10 +61,6 @@ const router = createBrowserRouter([
             element: <Profile />
           }
         ]
-      },
-      {
-        path: "settings",
-        element: <Account />,
       },
       {
         path: "play",

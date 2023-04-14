@@ -20,12 +20,12 @@ function App() {
 
   function onConnect() {
     setConnected(true);
-    console.log(`Connected to ${serverUrl}.`);
+    // console.log(`Connected to ${serverUrl}.`);
   }
 
   function onDisconnect() {
     setConnected(false);
-    console.log(`Disconnected from ${serverUrl}.`);
+    // console.log(`Disconnected from ${serverUrl}.`);
   }
 
   useEffect(() => {

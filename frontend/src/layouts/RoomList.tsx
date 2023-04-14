@@ -16,12 +16,10 @@ function RoomList() {
   function _getRoomList() {
     socket.emit('get-room-list', (data: IRoom[]) => {
       setRoomList(data.sort((a, b) => a.id - b.id));
-      console.log(data);
     });
   }
 
   function handleWatch(roomId: number) {
-    console.log(roomId);
     const gameUrl = "/game/" + roomId;
     navigate(gameUrl, { state: { roomId: roomId, role: 'spectator' } });
   }

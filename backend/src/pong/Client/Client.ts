@@ -8,7 +8,7 @@ export type _Status = typeof STATUS_ONLINE | typeof STATUS_PLAYING | typeof STAT
 export interface IClient {
   id: number,
   name: string,
-  avatar: string | null,
+  avatar: string,
   backgroundColor: string,
 }
 
@@ -18,7 +18,7 @@ class Client {
   private __socket_: Socket;
   private _id: number;
   private _name: string;
-  private _avatar: string | null;
+  private _avatar: string;
   private _backgroundColor: string;
   private _status: _Status;
   private _rating: number;
@@ -35,7 +35,7 @@ class Client {
     this.__socket_ = socket;
     this._id = this.__newId();
     this._name = socket.data.name || 'User' + this._id;
-    this._avatar = socket.data.avatar;
+    this._avatar = "http://localhost:3000/public/images/noavatar.png";
     this._backgroundColor = socket.data.backgroundColor;
     this._status = STATUS_ONLINE;
     this._rating = 1200;
@@ -44,7 +44,7 @@ class Client {
   public get __socket(): Socket { return this.__socket_; }
   public get id(): number { return this._id; }
   public get name(): string { return this._name; }
-  public get avatar(): string | null { return this._avatar; }
+  public get avatar(): string { return this._avatar; }
   public get backgroundColor(): string { return this._backgroundColor; }
   public get status(): typeof STATUS_ONLINE | typeof STATUS_PLAYING | typeof STATUS_OFFLINE { return this._status; }
   public get rating(): number { return this._rating; }
@@ -52,7 +52,7 @@ class Client {
   public set __socket(__socket_: Socket) { this.__socket_ = __socket_; }
   public set id(id: number) { this._id = id; }
   public set name(name: string) { this._name = name; }
-  public set avatar(avatar: string | null) { this._avatar = avatar; }
+  public set avatar(avatar: string) { this._avatar = avatar; }
   public set backgroundColor(backgroundColor: string) { this._backgroundColor = backgroundColor; }
   public set status(status: _Status ) { this._status = status; }
   public set rating(rating: number) { this._rating = rating; }
@@ -71,7 +71,7 @@ class Client {
     const iClient: IClient = {
       id: -1,
       name: '',
-      avatar: null,
+      avatar: "http://localhost:3000/public/images/noavatar.png",
       backgroundColor: 'black',
     }
     return iClient;

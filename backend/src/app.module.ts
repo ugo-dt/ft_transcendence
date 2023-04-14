@@ -6,10 +6,16 @@ import { UsersModule } from './users/users.module';
 import { User } from './users/entities/user.entity';
 import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({isGlobal: true}),
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'),
+      serveRoot: '/public',
+    }),
     TypeOrmModule.forRoot({
       type: "sqlite",
       database: "db.sqlite",
@@ -24,4 +30,4 @@ import { ChatModule } from './chat/chat.module';
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule { }

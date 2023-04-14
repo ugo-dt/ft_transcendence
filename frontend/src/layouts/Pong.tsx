@@ -17,7 +17,7 @@ function PlayerInfo({ player, isLeft }: { player: IClient, isLeft: boolean }) {
         )
         ||
         <img id="game-player-info-avatar"
-          src="/assets/noavatar.png"
+          src="/assets/images/noavatar.png"
           width={40}
           height={40}
           alt={player.name}

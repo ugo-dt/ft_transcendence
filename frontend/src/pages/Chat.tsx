@@ -48,7 +48,7 @@ function Chat() {
 	const [ChannelID, setChannelId] = useState<number>(0);
 	const [channels, setChannels] = useState<IChannel[]>([]);
 
-	const socket = useRef(io("http://192.168.1.136:3000", {
+	const socket = useRef(io("http://localhost:3000/chat", {
 		autoConnect: false,
 	})).current;
 

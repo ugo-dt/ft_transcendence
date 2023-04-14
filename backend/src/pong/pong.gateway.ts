@@ -2,8 +2,8 @@ import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect,
 import { Server, Socket } from "socket.io";
 import { PongService } from "./pong.service";
 import Queue from "./Matchmaking/Queue";
-import Client from "./Client/Client";
 import { IRoom } from "./Room/Room";
+import RoomHistory from "./Room/RoomHistory";
 
 @WebSocketGateway({
   namespace: 'pong',
@@ -31,7 +31,7 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.pongService.handleUserConnected(client);
   }
   
-  public  async handleDisconnect(client: Socket) {
+  public async handleDisconnect(client: Socket) {
     this.pongService.handleUserDisconnect(client);
   }
 
@@ -48,7 +48,7 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('get-room-list')
   public handleGetRoomList(@ConnectedSocket() client: Socket): IRoom[] {    
-    return this.pongService.roomList();
+    return this.pongService.rooms();
   }
 
   @SubscribeMessage('spectate')
@@ -59,6 +59,11 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('stop-spectate')
   public handleStopSpectate(@ConnectedSocket() client: Socket, @MessageBody() roomId: number) {
     this.pongService.stopSpectateRoom(client, roomId);
+  }
+
+  @SubscribeMessage('game-results')
+  public handleGameResults(@MessageBody() roomId: number) {
+    return {room: RoomHistory.at(roomId)};
   }
 
   @SubscribeMessage('upKeyPressed')

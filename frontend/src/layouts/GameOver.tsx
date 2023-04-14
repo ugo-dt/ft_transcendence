@@ -20,7 +20,7 @@ function GameOver({ leftPlayer, rightPlayer }: GameOverProps) {
           <div className="game-over-users game-over-users-left">
             <div className={`game-over-users-avatar ${winnerIsLeft ? 'game-over-users-winner' : ''}`}>
               <img id="avatar-component"
-                src="/assets/noavatar.png"
+                src="/assets/images/noavatar.png"
                 width={80}
                 height={80}
                 alt={leftPlayer.name}
@@ -42,7 +42,7 @@ function GameOver({ leftPlayer, rightPlayer }: GameOverProps) {
           <div className="game-over-users game-over-users-right">
             <div className={`game-over-users-avatar ${winnerIsLeft ? '' : 'game-over-users-winner'}`}>
               <img id="avatar-component"
-                src="/assets/noavatar.png"
+                src="/assets/images/noavatar.png"
                 width={80}
                 height={80}
                 alt={rightPlayer.name}

@@ -6,4 +6,5 @@ export interface IRoom {
   left: IClient,
   right: IClient,
   gameState: IGameState,
+  gameOver: boolean,
 }

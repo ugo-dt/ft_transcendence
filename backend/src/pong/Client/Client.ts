@@ -25,12 +25,9 @@ class Client {
 
   private __newId(): number {
     let _new_id = 0;
-    for (const client of Client.__clients_.values()) {
-      if (client._id != _new_id && !(Client.at(_new_id))) {
-        break ;
-      }
+    while (Client.at(_new_id)) {
       _new_id++;
-    }    
+    }
     return _new_id;
   }
 
@@ -86,9 +83,9 @@ class Client {
     return client;
   }
 
-  public static at(clientId: number): Client | undefined;
-  public static at(clientSocket: Socket): Client | undefined;
-  public static at(client: number | Socket): Client | undefined {
+  public static at(clientId: number): Client | null;
+  public static at(clientSocket: Socket): Client | null;
+  public static at(client: number | Socket): Client | null {
     // Client ID
     if (typeof client === 'number') {
       for (const clt of Client.__clients_.values()) {
@@ -106,7 +103,7 @@ class Client {
         }
       }
     }
-    return undefined;
+    return null;
   }
 
   public static delete(socket: Socket) {
@@ -119,7 +116,12 @@ class Client {
   }
 
   public static list() {
-    return Array.from(Client.__clients_);
+    const clientList: IClient[] = [];
+
+    Client.__clients_.forEach((client: Client) => {
+      clientList.push(client.IClient());
+    });
+    return clientList;
   }
 }
 

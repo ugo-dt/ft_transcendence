@@ -1,5 +1,13 @@
 :root {
   --canvas-border-color: rgb(255, 255, 255, 0.85);
+  --avatar-border-color: black;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --canvas-border-color: white;
+    --avatar-border-color: white;
+  }
 }
 
 .Game {
@@ -23,23 +31,12 @@ canvas {
 }
 
 .debug-info {
-  border: 1px solid black;
+  border: 1px solid var(--canvas-border-color);;
 }
 
 .debug-info-cell {
-  padding: '5px';
-  border-bottom: '1px solid black';
-}
-
-@media (prefers-color-scheme: dark) {
-  .debug-info {
-    border: 1px solid white;
-    background-color: black;
-  }
-  .debug-info-cell {
-    padding: '5px';
-    border-bottom: '1px solid white';
-  }
+  padding: 5px;
+  border-bottom: 1px solid black;
 }
 
 .game-player-info {
@@ -54,8 +51,9 @@ canvas {
 #game-player-info-avatar {
   border-radius: 50%;
   display: block;
-  border: 2px solid white;
+  border: 1px solid var(--avatar-border-color);
   margin-bottom: 5px;
+  cursor: pointer;
 }
 
 #game-player-info-username {

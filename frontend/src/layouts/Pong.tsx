@@ -17,10 +17,12 @@ function PlayerInfo({ player, isLeft }: { player: IClient, isLeft: boolean }) {
         )
         ||
         <img id="game-player-info-avatar"
-          src="/assets/noavatar.png"
+          src="/assets/images/noavatar.png"
           width={40}
           height={40}
           alt={player.name}
+          onClick={() => window.open('/profile/' + player.id, '_blank')}
+          title='See profile'
         />
       }
       <h4 id="game-player-info-username">{player.name}</h4>
@@ -86,29 +88,40 @@ function Pong({ role, roomId }: PongProps) {
   function _update() {
     if (roomRef.current.gameState) {
       const gameState: IGameState = roomRef.current.gameState;
-
+      
       if (gameState.gameOver) {
-        onEndGame(gameState);
+        onEndGame();
         return;
       }
       _updateKeyState();
       _render(gameState);
     }
-    // else {
-    //   navigate("/home");
-    // }
+    else {
+      socket.emit('game-results', roomId, (data: {room: IRoom}) => {
+        console.log('lol');
+        console.log(data);
+        if (data.room) {
+          roomRef.current = data.room;
+          setRoom(roomRef.current);
+          onEndGame();
+        }
+        else {
+          navigate("/home");
+        }
+      });
+      clearInterval(gameInterval.current);
+      gameInterval.current = undefined;
+    }
   }
 
   function onUpdate(data: IRoom) {
     roomRef.current = data;
-    setRoom(data);
-    // console.log(room);
+    setRoom(roomRef.current);
   }
 
-  function onEndGame(gameState: IGameState) {
+  function onEndGame() {
     canvas.clear();
-    canvas.drawRect(0, 0, canvas.width / 2, canvas.height, gameState.leftPlayer.backgroundColor);
-    canvas.drawRect(canvas.width / 2, 0, canvas.width, canvas.height, gameState.rightPlayer.backgroundColor);
+    canvas.fill('black');
     setGameOver(true);
     clearInterval(gameInterval.current);
     gameInterval.current = undefined;

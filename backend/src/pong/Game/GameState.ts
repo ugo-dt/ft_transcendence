@@ -5,7 +5,7 @@ import { IPlayer, Player } from "./Player";
 
 const CANVAS_WIDTH = 650;
 const CANVAS_HEIGHT = 480;
-const WIN_SCORE = 10;
+const WIN_SCORE = 1;
 
 export interface IGameState {
   ball: IBall,

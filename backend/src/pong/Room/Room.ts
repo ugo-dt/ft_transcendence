@@ -3,6 +3,7 @@ import Client, { IClient, STATUS_ONLINE, STATUS_PLAYING } from "../Client/Client
 import { GameState, IGameState } from "../Game/GameState";
 import { Player } from "../Game/Player";
 import Elo from "../Matchmaking/Elo";
+import RoomHistory from "./RoomHistory";
 
 export interface IRoom {
   id: number,
@@ -12,7 +13,7 @@ export interface IRoom {
 }
 
 class Room {
-  /** This set contains the ids of all current rooms. */
+  /** This set contains all the current rooms. */
   private static __rooms_ = new Set<Room>;
 
   private readonly _id: number;
@@ -24,10 +25,7 @@ class Room {
 
   private __newId(): number {
     let _new_id = 0;
-    for (const room of Room.__rooms_.values()) {
-      if (room._id != _new_id && !(Room.at(_new_id))) {
-        break;
-      }
+    while (Room.at(_new_id) || RoomHistory.at(_new_id)) {
       _new_id++;
     }
     return _new_id;
@@ -103,6 +101,7 @@ class Room {
     }
     this._left.status = STATUS_ONLINE;
     this._right.status = STATUS_ONLINE;
+    this.gameState.gameOver = true;
 
     server.to(this._id.toString()).emit('endGame', this.gameState.IGameState());
 
@@ -114,6 +113,7 @@ class Room {
     this._right.rating = newRightRating;
     console.log(`Game ended (room: ${this._id}).`);
     console.log(`Ratings updated (left: ${newLeftRating}, right: ${newRightRating})`);
+    RoomHistory.add(this);
     Room.delete(this);
   }
 
@@ -202,16 +202,16 @@ class Room {
     return room;
   }
 
-  public static with(client: Client): Room | undefined {
+  public static with(client: Client): Room | null {
     for (const room of Room.__rooms_.values()) {
       if ((room._left && room._left.id === client.id) || (room._right && room._right.id === client.id)) {
         return room;
       }
     }
-    return undefined;
+    return null;
   }
 
-  public static at(id: number): Room | undefined {
+  public static at(id: number): Room | null {
     if (typeof id === 'number') {
       for (const room of Room.__rooms_.values()) {
         if (room._id === id) {
@@ -219,7 +219,7 @@ class Room {
         }
       }
     }
-    return undefined;
+    return null;
   }
 
   public static delete(room: Room): void;

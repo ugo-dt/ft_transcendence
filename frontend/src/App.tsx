@@ -24,8 +24,8 @@ function App() {
   }
 
   function onDisconnect() {
-    console.log(`Disconnected from ${serverUrl}.`);
     setConnected(false);
+    console.log(`Disconnected from ${serverUrl}.`);
   }
 
   useEffect(() => {

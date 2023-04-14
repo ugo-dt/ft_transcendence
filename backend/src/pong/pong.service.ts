@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
-import Client from './Client/Client';
+import Client, { IClient } from './Client/Client';
 import Queue from './Matchmaking/Queue';
 import Room, { IRoom } from './Room/Room';
+import RoomHistory from './Room/RoomHistory';
 
 @Injectable()
 export class PongService {
@@ -79,7 +80,15 @@ export class PongService {
     room.handleKey(client, direction, isPressed);
   }
 
-  public roomList(): IRoom[] {
+  public users(): IClient[] {
+    return Client.list();
+  }
+
+  public rooms(): IRoom[] {
     return Room.list();
+  }
+
+  public history(): IRoom[] {
+    return RoomHistory.list();
   }
 }

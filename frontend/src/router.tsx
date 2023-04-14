@@ -35,7 +35,7 @@ const router = createBrowserRouter([
       },
       {
         path: "signin",
-        element: <SignIn />
+        element: <SignIn />,
       },
       {
         path: "play",
@@ -43,23 +43,29 @@ const router = createBrowserRouter([
       },
       {
         path: "messages",
-        element: <Chat />
+        element: <Chat />,
       },
       {
         path: "friends",
-        element: <Friends />
+        element: <Friends />,
       },
       {
         path: "rankings",
-        element: <Rankings />
+        element: <Rankings />,
       },
       {
         path: "profile",
-        element: <Profile />
+        element: <Profile />,
+        children: [
+          {
+            path: ":id",
+            element: <Profile />
+          }
+        ]
       },
       {
         path: "settings",
-        element: <Account />
+        element: <Account />,
       },
       {
         path: "play",

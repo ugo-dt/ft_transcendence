@@ -2,7 +2,7 @@
 // - Ability to mute kick and ban users
 
 import { Logger } from "@nestjs/common";
-import { MessageBody, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
+import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
 import { ChannelsService } from "./channels.service";
 import { CreateMessageDto } from "./createMessage.dto";
@@ -11,11 +11,9 @@ import { CreateUserDto } from "./createUser.dto";
 import { UsersService } from "./users.service";
 
 @WebSocketGateway({
-  cors: {
-    origin: '*',
-  }
+  namespace: 'chat',
+  cors: '*',
 })
-
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
 
@@ -31,10 +29,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('createMessage')
-  async handlePushMessageToChannel(@MessageBody() createMessageDto: CreateMessageDto) {
+  async handlePushMessageToChannel(@ConnectedSocket() client: Socket, @MessageBody() createMessageDto: CreateMessageDto) {
     const channel = await this.channelsService.getChannelById(createMessageDto.toChannel);
 
-    this.channelsService.pushMessageToChannel(createMessageDto, createMessageDto.toChannel);
+    this.channelsService.pushMessageToChannel(createMessageDto, createMessageDto.toChannel, client.id);
     this.server.emit('createdMessage', channel);
   }
 

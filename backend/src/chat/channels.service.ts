@@ -34,9 +34,9 @@ export class ChannelsService {
 		return this.channels;
 	}
 
-	pushMessageToChannel(message: EntityMessage, index: number) {
+	pushMessageToChannel(message: EntityMessage, index: number, clientId: string) {
 		if (message.senderName === undefined)
-			message.senderName = "MuhFucka";			
+			message.senderName = 'Guest' + clientId;
 		this.channels[index].messageHistory.push(message);
 	}
 

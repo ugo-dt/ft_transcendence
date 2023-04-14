@@ -51,7 +51,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async handleCreateUser(@MessageBody() createUserDto: CreateUserDto) {
 		this.logger.log('createUser');
 		const user = await this.usersService.create(createUserDto);
-		console.log("this.usersService.getAllUsers(): ", this.usersService.getAllUsers());
 		return user;
 	}
 

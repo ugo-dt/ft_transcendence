@@ -143,7 +143,6 @@ function Chat() {
 		}
 		socket.emit('createUser', user, (response: IUser) => {
 			setUser(response);
-			console.log("response: ", response);
 		});
 		setLoggedIn(true);
 	}
@@ -166,7 +165,6 @@ function Chat() {
 
 			socket.emit('createChannel', channel, (response: IChannel[]) => {
 				setChannels(response);
-				console.log("response: ", response);
 			})
 			closeCreateChannelForm();
 			setCreateChannelNameInputValue("");

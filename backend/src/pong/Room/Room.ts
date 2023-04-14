@@ -1,7 +1,8 @@
+import { Logger } from "@nestjs/common";
 import { Server } from "socket.io";
 import Client, { IClient, STATUS_ONLINE, STATUS_PLAYING } from "../Client/Client";
-import { GameState, IGameState } from "../Game/GameState";
-import { Player } from "../Game/Player";
+import { GameState, IGameState } from "../Game";
+import { Player } from "../Game";
 import Elo from "../Matchmaking/Elo";
 import RoomHistory from "./RoomHistory";
 
@@ -14,13 +15,12 @@ export interface IRoom {
 
 class Room {
   /** This set contains all the current rooms. */
-  private static __rooms_ = new Set<Room>;
+  private static __rooms_: Set<Room> = new Set<Room>;
 
   private readonly _id: number;
   private _left: Client | null;
   private _right: Client | null;
   private _spectators: Set<Client>;
-
   private _gameState: GameState;
 
   private __newId(): number {
@@ -91,7 +91,7 @@ class Room {
     if (this._gameState.interval) {
       clearInterval(this._gameState.interval);
     }
-    console.log(`Game aborted (room: ${this._id}). Both players disconnected.`);
+    Logger.log(`Game aborted (room: ${this._id}). Both players disconnected.`);
     Room.delete(this);
   }
 
@@ -111,8 +111,8 @@ class Room {
     const [newLeftRating, newRightRating] = Elo.updateRatings(this._left.rating, this._right.rating, this._gameState.leftPlayer.score > this._gameState.rightPlayer.score);
     this._left.rating = newLeftRating;
     this._right.rating = newRightRating;
-    console.log(`Game ended (room: ${this._id}).`);
-    console.log(`Ratings updated (left: ${newLeftRating}, right: ${newRightRating})`);
+    Logger.log(`Game ended (room: ${this._id}).`);
+    Logger.log(`Ratings updated (left: ${newLeftRating}, right: ${newRightRating})`);
     RoomHistory.add(this);
     Room.delete(this);
   }
@@ -156,7 +156,7 @@ class Room {
       }, 1000 / this._gameState.fps);
     }, 1000);
 
-    console.log(`Game started (room: ${this._id}, left: ${leftPlayer.id}, right: ${rightPlayer.id}).`);
+    Logger.log(`Game started (room: ${this._id}, left: ${leftPlayer.id}, right: ${rightPlayer.id}).`);
     return true;
   }
 

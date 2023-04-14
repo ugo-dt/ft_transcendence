@@ -3,7 +3,7 @@ import Paddle from "./Paddle";
 export interface IPlayer {
   id: number,
   name: string,
-  avatar: string | null,
+  avatar: string,
   isLeft: boolean,
   isCom: boolean,
   score: number,
@@ -13,7 +13,7 @@ export interface IPlayer {
 export class Player {
   private _id: number;
   private _name: string;
-  private _avatar: string | null;
+  private _avatar: string;
   private _isLeft: boolean;
   private _keyUpPressed: boolean;
   private _keyDownPressed: boolean;
@@ -23,7 +23,7 @@ export class Player {
   constructor(
     id: number,
     name: string,
-    avatar: string | null,
+    avatar: string,
     isLeft: boolean,
     backgroundColor: string,
   ) {
@@ -39,7 +39,7 @@ export class Player {
 
   public get id(): number { return this._id; }
   public get name(): string { return this._name; }
-  public get avatar(): string | null { return this._avatar; }
+  public get avatar(): string { return this._avatar; }
   public get isLeft(): boolean { return this._isLeft; }
   public get keyUpPressed(): boolean { return this._keyUpPressed; }
   public get keyDownPressed(): boolean { return this._keyDownPressed; }
@@ -48,7 +48,7 @@ export class Player {
 
   public set id(id: number) { this._id = id; }
   public set name(name: string) { this._name = name; }
-  public set avatar(avatar: string | null) { this._avatar = avatar; }
+  public set avatar(avatar: string) { this._avatar = avatar; }
   public set isLeft(isLeft: boolean) { this._isLeft = isLeft; }
   public set keyUpPressed(keyUpPressed: boolean) { this._keyUpPressed = keyUpPressed; }
   public set keyDownPressed(keyDownPressed: boolean) { this._keyDownPressed = keyDownPressed; }

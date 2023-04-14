@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import Client, { IClient } from './Client/Client';
 import Queue from './Matchmaking/Queue';
@@ -7,9 +7,10 @@ import RoomHistory from './Room/RoomHistory';
 
 @Injectable()
 export class PongService {
+
   public async handleUserConnected(clientSocket: Socket): Promise<void> {
     const client = Client.new(clientSocket);
-    console.log(`[LOG]: Client connected: ${client.name} (id: ${client.id})`);
+    Logger.log(`Client connected: ${client.name} (id: ${client.id})`);
   }
 
   public async handleUserDisconnect(clientSocket: Socket): Promise<void> {
@@ -17,7 +18,7 @@ export class PongService {
     if (!client) {
       return ;
     }
-    console.log(`[LOG]: Client disconnected: ${client.name} (id: ${client.id})`);    
+    Logger.log(`Client disconnected: ${client.name} (id: ${client.id})`);    
     Client.delete(clientSocket);
   }
 
@@ -27,7 +28,7 @@ export class PongService {
       return ;
     }
     Queue.add(client);
-    console.log(`[LOG]: Added client ${client.id} to queue.`);
+    Logger.log(`Added client ${client.id} to queue.`);
   }
 
   public removeClientFromQueue(clientSocket: Socket) {
@@ -36,7 +37,7 @@ export class PongService {
       return ;
     }
     Queue.remove(client);
-    console.log(`[LOG]: Removed client ${client.id} from queue.`);
+    Logger.log(`Removed client ${client.id} from queue.`);
   }
 
   public startGame(server: Server, left: Client, right: Client) {

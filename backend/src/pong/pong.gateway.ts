@@ -4,6 +4,7 @@ import { PongService } from "./pong.service";
 import Queue from "./Matchmaking/Queue";
 import { IRoom } from "./Room/Room";
 import RoomHistory from "./Room/RoomHistory";
+import { Logger } from "@nestjs/common";
 
 @WebSocketGateway({
   namespace: 'pong',
@@ -37,7 +38,6 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('join-queue')
   public handleJoinQueue(@ConnectedSocket() client: Socket) {
-    console.log("test");
     this.pongService.addClientToQueue(client);
   }
 

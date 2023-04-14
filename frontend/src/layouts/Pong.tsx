@@ -10,21 +10,14 @@ import Canvas from "../components/Canvas";
 function PlayerInfo({ player, isLeft }: { player: IClient, isLeft: boolean }) {
   return (
     <div className={`game-player-info ${isLeft ? 'game-player-info-left' : 'game-player-info-right'}`}>
-      {
-        (
-          player.avatar
-          && <img src={player.avatar}></img>
-        )
-        ||
-        <img id="game-player-info-avatar"
-          src="/assets/images/noavatar.png"
-          width={40}
-          height={40}
-          alt={player.name}
-          onClick={() => window.open('/profile/' + player.id, '_blank')}
-          title='See profile'
-        />
-      }
+      <img id="game-player-info-avatar"
+        src={player.avatar}
+        width={40}
+        height={40}
+        alt={player.name}
+        onClick={() => window.open('/profile/' + player.id, '_blank')}
+        title='See profile'
+      />
       <h4 id="game-player-info-username">{player.name}</h4>
     </div>
   );
@@ -98,8 +91,6 @@ function Pong({ role, roomId }: PongProps) {
     }
     else {
       socket.emit('game-results', roomId, (data: {room: IRoom}) => {
-        console.log('lol');
-        console.log(data);
         if (data.room) {
           roomRef.current = data.room;
           setRoom(roomRef.current);

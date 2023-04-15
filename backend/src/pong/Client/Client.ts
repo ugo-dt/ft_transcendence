@@ -10,6 +10,8 @@ export interface IClient {
   name: string,
   avatar: string,
   backgroundColor: string,
+  status: string,
+  rating: number,
 }
 
 class Client {
@@ -63,6 +65,8 @@ class Client {
       name: this._name,
       avatar: this._avatar,
       backgroundColor: this._backgroundColor,
+      status: this._status,
+      rating: this._rating,
     }
     return iClient;
   }
@@ -73,6 +77,8 @@ class Client {
       name: '',
       avatar: "http://localhost:3000/public/images/noavatar.png",
       backgroundColor: 'black',
+      status: STATUS_OFFLINE,
+      rating: 1200,
     }
     return iClient;
   }
@@ -83,13 +89,22 @@ class Client {
     return client;
   }
 
-  public static at(clientId: number): Client | null;
+  public static at(username: string): Client | null;
+  public static at(id: number): Client | null;
   public static at(clientSocket: Socket): Client | null;
-  public static at(client: number | Socket): Client | null {
+  public static at(client: number | Socket | string): Client | null {
     // Client ID
     if (typeof client === 'number') {
       for (const clt of Client.__clients_.values()) {
         if (clt._id === client) {
+          return clt;
+        }
+      }
+    }
+
+    else if (typeof client === 'string') {
+      for (const clt of Client.__clients_.values()) {
+        if (clt._name === client) {
           return clt;
         }
       }

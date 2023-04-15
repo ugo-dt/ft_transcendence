@@ -81,12 +81,28 @@ export class PongService {
     room.handleKey(client, direction, isPressed);
   }
 
+  public profile(id: string): IClient | null {
+    const client = Client.at(id);
+    if (client) {
+      return client.IClient();
+    }
+    return null;
+  }
+
   public users(): IClient[] {
     return Client.list();
   }
 
   public rooms(): IRoom[] {
     return Room.list();
+  }
+
+  public userHistory(id: string): IRoom[] | null {
+    const client = Client.at(id);
+    if (client) {
+      return RoomHistory.userHistory(client);
+    }
+    return null;
   }
 
   public history(): IRoom[] {

@@ -80,14 +80,14 @@ function RoomList() {
             </table>
             <div className="pages">
               <section>
-                <button className="pages-buttons-btn" onClick={() => roomListPage > 0 && setRoomListPage(roomListPage - 1)}>
+                <button className="pages-buttons-btn" disabled={roomListPage <= 0 ? true : false} onClick={() => roomListPage > 0 && setRoomListPage(roomListPage - 1)}>
                   Previous
                 </button>
-                <button className="pages-buttons-btn" onClick={() => roomListPage < roomList.length / PAGE_SIZE - 1 && setRoomListPage(roomListPage + 1)}>
+                <button className="pages-buttons-btn" disabled={roomListPage + 1 < Math.ceil(roomList.length / PAGE_SIZE) ? false : true} onClick={() => roomListPage < roomList.length / PAGE_SIZE - 1 && setRoomListPage(roomListPage + 1)}>
                   Next
                 </button>
               </section>
-              {'Page ' + (roomListPage + 1) + ' of ' + Math.floor(roomList.length / PAGE_SIZE + 1)}
+              {'Page ' + (roomListPage + 1) + ' of ' + Math.ceil(roomList.length / PAGE_SIZE)}
             </div> {/* className="pages" */}
           </div> /* className="room-list" */
         ) ||

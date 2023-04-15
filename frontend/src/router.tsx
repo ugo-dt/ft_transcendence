@@ -82,7 +82,7 @@ const router = createBrowserRouter([
         children: [
           {
             path: ":id",
-            element: <Game />
+            element: <Game />,
           }
         ]
       },

@@ -7,7 +7,7 @@ import { io } from 'socket.io-client'
 import { Context } from './context'
 
 function App() {
-  const serverUrl = "http://192.168.1.178:3000";
+  const serverUrl = "http://localhost:3000";
   const pongSocketRef = useRef(io(serverUrl + '/pong', {
     autoConnect: false,
   }));

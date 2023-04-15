@@ -1,3 +1,4 @@
+import { IClient } from "../Client/Client";
 import Room, { IRoom } from "./Room";
 
 namespace RoomHistory {
@@ -10,6 +11,17 @@ namespace RoomHistory {
 
   export function remove(room: Room) {
     __history_.delete(room.IRoom());
+  }
+
+  export function userHistory(Client: IClient): IRoom[] {
+    const history: IRoom[] = [];
+
+    for (const room of __history_.values()) {
+      if (room.left.id === Client.id || room.right.id === Client.id) {
+        history.push(room);
+      }
+    }
+    return history;
   }
 
   export function list(): IRoom[] {

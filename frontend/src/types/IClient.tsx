@@ -3,4 +3,6 @@ export interface IClient {
   name: string,
   avatar: string,
   backgroundColor: string,
+  status: string,
+  rating: number,
 }

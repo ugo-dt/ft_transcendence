@@ -1,15 +1,19 @@
+import { useContext } from "react";
 import "./style/Navbar.css"
 import { NavLink } from "react-router-dom";
+import { Context } from "../context";
 
 interface NavbarProps {
   isSignedIn: boolean,
 }
 
 function Navbar({ isSignedIn }: NavbarProps) {
+  const client = useContext(Context).client;
+
   return (
     <nav>
       <NavLink className={"NavLink"} to="/home">Home</NavLink>
-      <NavLink className={"NavLink"} to="/profile/me">Profile</NavLink>
+      <NavLink className={"NavLink"} to={`/profile/${client.name}`}>Profile</NavLink>
       <NavLink className={"NavLink"} to="/watch">Watch</NavLink>
       <NavLink className={"NavLink"} to="/rankings">Rankings</NavLink>
       <NavLink className={"NavLink"} to="/friends">Friends</NavLink>

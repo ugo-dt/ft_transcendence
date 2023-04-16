@@ -15,7 +15,7 @@ function PlayerInfo({ player, isLeft }: { player: IClient, isLeft: boolean }) {
         width={40}
         height={40}
         alt={player.name}
-        onClick={() => window.open('/profile/' + player.id, '_blank')}
+        onClick={() => window.open('/profile/' + player.name, '_blank')}
         title='See profile'
       />
       <h4 id="game-player-info-username">{player.name}</h4>

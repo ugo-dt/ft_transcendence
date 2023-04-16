@@ -24,7 +24,7 @@ function GameOver({ leftPlayer, rightPlayer }: GameOverProps) {
                 width={80}
                 height={80}
                 alt={leftPlayer.name}
-                onClick={() => window.open('/profile/' + leftPlayer.id, '_blank')}
+                onClick={() => window.open('/profile/' + leftPlayer.name, '_blank')}
               />
             </div>
             <div className="game-over-users-username">
@@ -47,7 +47,7 @@ function GameOver({ leftPlayer, rightPlayer }: GameOverProps) {
                 height={80}
                 alt={rightPlayer.name}
                 role="button"
-                onClick={() => window.open('/profile/' + rightPlayer.id, '_blank')}
+                onClick={() => window.open('/profile/' + rightPlayer.name, '_blank')}
               />
             </div>
             <div className="game-over-users-username">

@@ -18,8 +18,8 @@ export class PongService {
     if (!client) {
       return ;
     }
-    Logger.log(`Client disconnected: ${client.name} (id: ${client.id})`);    
-    Client.delete(clientSocket);
+    Logger.log(`Client disconnected: ${client.name} (id: ${client.id})`);
+    // Client.delete(clientSocket);
   }
 
   public addClientToQueue(clientSocket: Socket) {

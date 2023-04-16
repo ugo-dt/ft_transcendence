@@ -62,10 +62,10 @@ function RoomList() {
                       <td className="room-list-cell">
                         {room.id}
                       </td>
-                      <td className="room-list-cell room-list-cell-username" title="See profile" role="button" onClick={() => window.open('/profile/' + room.left.id, '_blank')}>
+                      <td className="room-list-cell room-list-cell-username" title="See profile" role="button" onClick={() => window.open('/profile/' + room.left.name, '_blank')}>
                         {room.left.name}
                       </td>
-                      <td className="room-list-cell room-list-cell-username" title="See profile" role="button" onClick={() => window.open('/profile/' + room.right.id, '_blank')}>
+                      <td className="room-list-cell room-list-cell-username" title="See profile" role="button" onClick={() => window.open('/profile/' + room.right.name, '_blank')}>
                         {room.right.name}
                       </td>
                       <td className="room-list-cell">

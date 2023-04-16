@@ -36,7 +36,7 @@ class Client {
   private constructor(socket: Socket) {
     this.__socket_ = socket;
     this._id = this.__newId();
-    this._name = socket.data.name || 'User' + this._id;
+    this._name = 'User' + socket.id;
     this._avatar = "http://localhost:3000/public/images/noavatar.png";
     this._backgroundColor = socket.data.backgroundColor;
     this._status = STATUS_ONLINE;
@@ -104,7 +104,7 @@ class Client {
 
     else if (typeof client === 'string') {
       for (const clt of Client.__clients_.values()) {
-        if (clt._name === client) {
+        if (clt._name.toLowerCase() === client.toLowerCase()) {
           return clt;
         }
       }

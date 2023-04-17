@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ChatGateway } from './chat.gateway';
-import { ChatService } from './chat.service';
+import { ChatService } from './services/chat.service';
 import { ChatController } from './chat.controller';
-import { ChannelsService } from './channels.service';
-import { UsersService } from './users.service';
+import { ChannelsService } from './services/channels.service';
+import { UsersService } from './services/users.service';
 
 @Module({
 	imports: [],

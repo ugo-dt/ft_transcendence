@@ -18,58 +18,72 @@
 // Access other users profile page
 //
 // TODO:
-// - handle isDm in createChannel
+// - implement isDm
+// - When no channel is selected user should not be typing
 // - Users should only see channels hes in and get notifications for these -> Add user interface a userChannels[]
-// - Add message Date
+// - Add message Date and user image in chat
 // - Maybe fix code structure
 
 import { useState, useEffect, useRef } from 'react';
 import { io } from "socket.io-client";
 
+import CreateChannelForm from '../layouts/CreateChannelForm';
 import { IChannel } from '../types/IChannel';
 import { IUser } from '../types/IUser';
 import { IMessage } from '../types/IMessage';
 import messageSound from "../../assets/sound/messageSound.mp3"
 import './style/Chat.css'
+import ChatWindow from '../layouts/ChatWindow';
+import Channels from '../layouts/Channels';
 
 function Chat() {
 	const [loggedIn, setLoggedIn] = useState<boolean>(false);
 	const messagesEndRef = useRef<(null) | HTMLLIElement>(null);
 	const [messageInputValue, setMessageInputValue] = useState("");
+	const inputRef = useRef<HTMLInputElement>(null);
 
+	const [isCreateChannelFormVisible, setIsCreateChannelFormVisible] = useState(false);
 	const [createChannelNameInputValue, setCreateChannelNameInputValue] = useState("");
 	const [createChannelPasswordInputValue, setCreateChannelPasswordInputValue] = useState("");
 	const [createChannelIsDm, setCreateChannelIsDm] = useState<boolean>(false);
 
 	const [createUserNameInputValue, setCreateUserInputValue] = useState("");
-	const [user, setUser] = useState<IUser>(({} as unknown) as IUser);
+	const user = useRef<IUser>({} as IUser);
 
 	const clientId = useRef('');
-	const [ChannelID, setChannelId] = useState<number>(0);
+	const [currentChannelId, setCurrentChannelId] = useState<number>(-1);
 	const [channels, setChannels] = useState<IChannel[]>([]);
 
 	const socket = useRef(io("http://localhost:3000/chat", {
 		autoConnect: false,
 	})).current;
 
-	function handleSubmitNewMessage(): void {
-		if (socket && socket.connected && messageInputValue.length > 0 && messageInputValue.match(/^ *$/) === null) {
+	function handleSubmitNewMessage(messageInputValue: string): void {
+		if (socket &&
+			socket.connected &&
+			messageInputValue.length > 0 &&
+			messageInputValue.match(/^ *$/) === null) {
 			const message: IMessage = {
 				content: messageInputValue.trim(),
-				senderId: user?.id,
-				senderName: user.name,
+				senderId: user.current?.id,
+				senderName: user.current.name,
 				timestamp: Date().toString(),
-				toChannel: ChannelID
+				toChannel: currentChannelId
 			};
-			socket.emit('createMessage', message);
+			socket.emit('create-message', message);
 			setMessageInputValue("");
+			socket.emit('get-all-channels', user.current, (response: IChannel[]) => {
+				setChannels(response);
+			})
+			if (loggedIn)
+				playSound();
 		}
 	}
 
 	function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
 		if (event.key === "Enter") {
 			event.preventDefault();
-			handleSubmitNewMessage();
+			handleSubmitNewMessage(messageInputValue);
 		}
 	};
 
@@ -80,47 +94,33 @@ function Chat() {
 		}
 	};
 
-	function handleKeyDown3(event: React.KeyboardEvent<HTMLInputElement>) {
-		if (event.key === "Enter") {
-			event.preventDefault();
-			createChannel();
-		}
-	};
-
 	function handleEscapeKey(event: KeyboardEvent) {
 		if (event.key === "Escape") {
 			event.preventDefault();
-			closeCreateChannelForm();
+			closeForm("form_create_channel");
 		}
+	}
+
+	function handleChannelClick(channelId: number) {
+		setCurrentChannelId(channelId);
 	}
 
 	function onConnect(): void {
 		console.log(`Connected with ID: ${socket.id}`);
 		clientId.current = socket.id;
-		socket.emit('getAllChannels', (response: IChannel[]) => {
-			setChannels(response);
-		})
+		if (loggedIn) {
+			socket.emit('get-all-channels', currentChannelId, (response: IChannel[]) => {
+				setChannels(response);
+			})
+		}
 	}
 
 	function onDisconnect(): void {
 		console.log("Disconnected.");
 	}
 
-	function onClear(): void {
-		socket.emit('getAllChannels', (response: IChannel[]) => {
-			setChannels(response);
-		})
-	}
-
-	function onCreatedMessage(): void {
-		socket.emit('getAllChannels', ChannelID, (response: IChannel[]) => {
-			setChannels(response);
-		})
-		playSound();
-	}
-
-	function onCreatedChannel(): void {
-		socket.emit('getAllChannels', ChannelID, (response: IChannel[]) => {
+	function onCleared(): void {
+		socket.emit('get-all-channels', user.current, (response: IChannel[]) => {
 			setChannels(response);
 		})
 	}
@@ -135,67 +135,76 @@ function Chat() {
 		new Audio(messageSound).play();
 	}
 
+	function inviteUser(userName: string): void {
+		socket.emit('invite-user', userName);
+	}
+
 	function createUser(): void {
-		const user: IUser = {
+		const newUser: IUser = {
 			name: createUserNameInputValue,
 			id: -1,
-			avatar: null
-		}
-		socket.emit('createUser', user, (response: IUser) => {
-			setUser(response);
+			avatar: null,
+			userChannels: []
+		};
+		socket.emit('create-user', newUser, (response: IUser) => {
+			user.current = response;
 		});
 		setLoggedIn(true);
 	}
 
-	function createChannel(): void {
+	function createChannel(createChannelNameInputValue: string, createChannelPasswordInputValue: string): void {
 		if (createChannelNameInputValue.match(/^ *$/))
 			alert("Channel Name can't be empty.");
 		else if (user) {
-			const channel: IChannel = {
+			const newChannel: IChannel = {
 				channelId: -1,
 				name: createChannelNameInputValue.trim(),
 				messageHistory: [],
 				password: createChannelPasswordInputValue,
 				isDm: createChannelIsDm,
-				users: [user],
-				admins: [user],
+				users: [user.current],
+				admins: [user.current],
 				banned: [],
 				muted: [],
 			}; // isDM will have to change
-
-			socket.emit('createChannel', channel, (response: IChannel[]) => {
-				setChannels(response);
+			socket.emit('create-channel', newChannel, (response: IChannel) => {
+				channels.push(response);
+				user.current.userChannels.push(response);
+				setCurrentChannelId(response.channelId);
+				socket.emit('get-all-channels', user, (response: IChannel[]) => {
+					setChannels(response);
+				})
 			})
-			closeCreateChannelForm();
-			setCreateChannelNameInputValue("");
-			setCreateChannelPasswordInputValue("");
+			closeForm("form_create_channel");
 		}
 	}
 
-	function openCreateChannelForm() {
-		const form = document.getElementById("form_create_channel");
+	const openForm = (formToOpen: string) => {
+		setIsCreateChannelFormVisible(!isCreateChannelFormVisible);
+		const form = document.getElementById(formToOpen);
 		if (form) {
 			form.style.visibility = "visible";
 		}
-	}
+	};
 
-	function closeCreateChannelForm() {
-		const form = document.getElementById("form_create_channel");
+	const closeForm = (formToClose: string) => {
+		setIsCreateChannelFormVisible(!isCreateChannelFormVisible);
+		const form = document.getElementById(formToClose);
 		if (form) {
 			form.style.visibility = "hidden";
 		}
-	}
+	};
 
 	function clearMessages(): void {
-		socket.emit('clear', ChannelID);
-		socket.emit('getAllChannels', (response: IChannel[]) => {
+		socket.emit('clear', currentChannelId);
+		socket.emit('get-all-channels', user.current, (response: IChannel[]) => {
 			setChannels(response);
 		})
 	}
 
 	function clearChannels(): void {
-		socket.emit('clearChannels');
-		socket.emit('getAllChannels', (response: IChannel[]) => {
+		socket.emit('clear-channels');
+		socket.emit('get-all-channels', user.current, (response: IChannel[]) => {
 			setChannels(response);
 		})
 	}
@@ -213,9 +222,7 @@ function Chat() {
 		socket.connect();
 		socket.on('connect', onConnect);
 		socket.on('disconnect', onDisconnect);
-		socket.on('createdMessage', onCreatedMessage);
-		socket.on('createdChannel', onCreatedChannel);
-		socket.on('clear', onClear);
+		socket.on('cleared', onCleared);
 		return () => {
 			// Cleans up after the component is unmounted.
 			// It removes all the event listeners that were added to the socket object
@@ -260,115 +267,25 @@ function Chat() {
 	return (
 		<>
 			<div id="div_main">
-				<form
-					id="form_create_channel">
-					<button
-						type="button"
-						id="button_close_create_channel"
-						onClick={closeCreateChannelForm}
-					>✕</button>
-					<label id="label_create_channel" htmlFor="email"><b>Channel Name</b></label>
-					<input
-						className="input_create_channel"
-						type="text"
-						placeholder="Channel Name"
-						name="Name"
-						value={createChannelNameInputValue}
-						onKeyDown={handleKeyDown3}
-						onChange={(e) => {
-							setCreateChannelNameInputValue(e.target.value);
-						}}
-					/>
-
-					<label id="label_create_channel" htmlFor="psw"><b>Password</b></label>
-					<input
-						className="input_create_channel"
-						type="password"
-						placeholder="Channel Password"
-						name="channelPassword"
-						value={createChannelPasswordInputValue}
-						onKeyDown={handleKeyDown3}
-						onChange={(e) => {
-							setCreateChannelPasswordInputValue(e.target.value);
-						}}
-					/>
-
-					<label id="label_create_channel" htmlFor="psw"><b>Is DM</b></label>
-					<input
-						className="input_create_channel"
-						type="checkbox"
-						name="isDm"
-						onKeyDown={handleKeyDown3}
-					/>
-
-					<button
-						type="button"
-						id="button_create_channel"
-						onClick={createChannel}>
-						Create Channel
-					</button>
-				</form>
-				<div id="div_channels">
-					<h2 id="h2_channel_title">Channels</h2>
-					{channels && channels.map((channel, index) => (
-						<button
-							onClick={() => setChannelId(index)}
-							id={index === ChannelID ? "button_channel_current" : "button_channel"}
-							key={index}>
-							{channel.name}
-						</button>
-					))}
-					<button
-						id="button_open_create"
-						onClick={openCreateChannelForm}
-					>+</button>
-				</div>
-				<div id="div_chat_window">
-					<h1 id="h1_main_title">Chat</h1>
-					<div id="div_messages_box">
-						<ul>
-							{channels && channels[ChannelID] && channels[ChannelID].messageHistory.map((message, index) => (
-								<li id={"li_messages"}
-									key={index}>
-									<b>{message.senderName}<br></br></b>
-									{message.content}
-								</li>
-							))}
-							<li ref={messagesEndRef} />
-						</ul>
-					</div>
-					<div id="div_input_box">
-						<input
-							autoFocus
-							placeholder='Type a message...'
-							id="div_input_bar"
-							type="text"
-							value={messageInputValue}
-							onKeyDown={handleKeyDown}
-							onChange={(e) => {
-								setMessageInputValue(e.target.value);
-							}}
-						/>
-						<button
-							type="button"
-							onClick={handleSubmitNewMessage}>
-							send
-						</button>
-						<button
-							onClick={scrollToBottom}
-							type="submit"
-						>scroll</button>
-						<button
-							onClick={clearMessages}
-							type="submit"
-						>clear</button>
-						<button
-							onClick={clearChannels}
-							type="submit"
-						>clear Channels</button>
-						<p id="debug_date">{Date().toString()}</p>
-					</div>
-				</div>
+				<CreateChannelForm
+					onSetCreateChannelNameInputValue={setCreateChannelNameInputValue}
+					onSetCreateChannelPasswordInputValue={setCreateChannelPasswordInputValue}
+					onSubmit={createChannel}
+					onClose={() => closeForm("form_create_channel")}
+				/>
+				<Channels
+					currentChannelId={currentChannelId}
+					user={user.current}
+					onHandleChannelClick={handleChannelClick}
+				/>
+				<ChatWindow
+					onClearChannels={clearChannels}
+					onClearMessages={clearMessages}
+					onHandleSubmitNewMessage={handleSubmitNewMessage}
+					onSetMessageInputValue={setMessageInputValue}
+					channels={channels}
+					currentChannelId={currentChannelId}
+				/>
 			</div>
 		</>
 	);

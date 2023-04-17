@@ -4,11 +4,11 @@
 import { Logger } from "@nestjs/common";
 import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
-import { ChannelsService } from "./channels.service";
+import { ChannelsService } from "./services/channels.service";
 import { CreateMessageDto } from "./createMessage.dto";
 import { CreateChannelDto } from "./createChannel.dto";
 import { CreateUserDto } from "./createUser.dto";
-import { UsersService } from "./users.service";
+import { UsersService } from "./services/users.service";
 
 @WebSocketGateway({
   namespace: 'chat',
@@ -28,52 +28,56 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.logger.log(`Client disconnected: ${client.id}`);
   }
 
-  @SubscribeMessage('createMessage')
+  @SubscribeMessage('create-message')
   async handlePushMessageToChannel(@ConnectedSocket() client: Socket, @MessageBody() createMessageDto: CreateMessageDto) {
-    const channel = await this.channelsService.getChannelById(createMessageDto.toChannel);
-
     this.channelsService.pushMessageToChannel(createMessageDto, createMessageDto.toChannel, client.id);
-    this.server.emit('createdMessage', channel);
+    this.server.emit('created-message');
   }
 
-  @SubscribeMessage('createChannel')
-  async handleCreateChannel(@MessageBody() CreateChannelDto: CreateChannelDto) {
-    this.logger.log('createChannel');
-    const channel = await this.channelsService.createChannel(CreateChannelDto);
-    this.server.emit('createdChannel', channel);
+  @SubscribeMessage('create-channel')
+  async handleCreateChannel(@MessageBody() createChannelDto: CreateChannelDto) {
+    this.logger.log('create-channel');
+	console.log("createChannelDto: ", createChannelDto);
+    const channel = await this.channelsService.createChannel(createChannelDto);
     return channel;
   }
 
-  @SubscribeMessage('createUser')
+  @SubscribeMessage('create-user')
   async handleCreateUser(@MessageBody() createUserDto: CreateUserDto) {
-    this.logger.log('createUser');
+    this.logger.log('create-user');
     const user = await this.usersService.create(createUserDto);
+	console.log("this.usersService.getAllUsers(): ", this.usersService.getAllUsers());
     return user;
   }
 
-  @SubscribeMessage('getAllChannels')
+  @SubscribeMessage('get-all-channels')
   handleGetAllChannels() {
-    this.logger.log('getAllChannels');
+    this.logger.log('get-all-channels');
     return this.channelsService.getAllChannels();
   }
 
-  @SubscribeMessage('getOneChannel')
+  @SubscribeMessage('get-one-channel')
   handleGetOneChannel(index: number) {
-    this.logger.log('getOneChannel');
+    this.logger.log('get-one-channel');
     return this.channelsService.getChannelById(index);
+  }
+
+  @SubscribeMessage('invite-user')
+  handleInviteUser(name: string) {
+    this.logger.log('invite-user');
   }
 
   @SubscribeMessage('clear')
   debugClearAllMessages(@MessageBody() index: number) {
     this.logger.log(`cleared all messages in channel: ${index}`);
-    this.server.emit('clear');
+    this.server.emit('cleared');
     this.channelsService.debugClearChannelMessages(index);
   }
 
-  @SubscribeMessage('clearChannels')
+  @SubscribeMessage('clear-channels')
   debugClearAllChannels() {
     this.logger.log(`cleared all channels`);
-    this.server.emit('clear');
+    this.server.emit('cleared');
     this.channelsService.debugClearAllChannels();
   }
 }

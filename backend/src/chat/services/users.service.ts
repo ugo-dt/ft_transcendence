@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { EntityUser } from './entities/user.entity';
-import { CreateUserDto } from './createUser.dto';
+import { EntityUser } from '../entities/user.entity';
+import { CreateUserDto } from '../createUser.dto';
 
 @Injectable()
 export class UsersService {
@@ -9,15 +9,14 @@ export class UsersService {
 	create(createUserDto: CreateUserDto) {
 		const user: EntityUser = {
 			name: createUserDto.name,
-			id: this.users.length + 1,
+			id: this.users.length,
 			avatar: createUserDto.avatar,
+			userChannels: []
 		};
-
 		this.users.push(user);
-
 		return user;
 	}
-	
+
 	getAllUsers() {
 		if (this.users)
 			return this.users;

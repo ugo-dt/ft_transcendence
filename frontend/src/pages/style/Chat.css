@@ -1,6 +1,8 @@
 #div_main {
 	display: flex;
-	background-color: #313336;
+	border-radius: 8px;
+	margin-top: 2%;
+	background-color: #313131;
 }
 
 #h1_main_title {
@@ -30,13 +32,14 @@
 	left: 35%;
 	color: white;
 	width: 500px;
-	height: 400px;
+	height: 350px;
 	display: flex;
 	flex-direction: column;
 	position: absolute;
 	z-index: 1;
 	background-color: rgb(54, 54, 54);
 	border-radius: 10px;
+	box-shadow: 0 10px 10px rgba(0, 0, 0, .12);
 }
 
 #button_close_create_channel {
@@ -85,9 +88,9 @@
 	border-style: none;
 	font-size: large;
 	color: white;
-	padding: 1%;
+	padding: 2%;
 	width: 90%;
-	margin-top: 5%;
+	margin-top: 10%;
 	margin-left: auto;
 	margin-right: auto;
 	cursor: pointer;
@@ -113,12 +116,19 @@
 	border-width: 1px;
 	background-color: rgb(28, 28, 28);
 	border-radius: 10px;
+	box-shadow: 0 10px 10px rgba(0, 0, 0, .12);
 }
 
 @media screen and (max-width : 750px) {
 	#div_channels {
 		width: 150px;
 	}
+}
+
+#div_buttons {
+	display: flex;
+	border: none;
+	outline: none;
 }
 
 #button_channel, #button_open_create, #button_channel_current {
@@ -160,9 +170,11 @@
 	border-radius: 5px;
 	overflow-y: scroll;
 	word-break: break-all;
+	box-shadow: 0 10px 10px rgba(0, 0, 0, .12);
 }
 
 #div_input_bar {
+	pointer-events: all;
 	color: white;
 	margin-top: 1%;
 	margin-bottom: 1%;
@@ -171,6 +183,7 @@
 	border-radius: 8px;
 	border-style: none;
 	background-color: #56575b;
+	box-shadow: 0 10px 10px rgba(0, 0, 0, .12);
 }
 
 #div_input_bar::placeholder {

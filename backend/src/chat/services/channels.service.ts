@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { EntityMessage } from './entities/message.entity'
-import { EntityChannel } from './entities/channel.entity';
-import { CreateChannelDto } from './createChannel.dto';
+import { EntityMessage } from '../entities/message.entity'
+import { EntityChannel } from '../entities/channel.entity';
+import { CreateChannelDto } from '../createChannel.dto';
+import { EntityUser } from '../entities/user.entity';
 
 @Injectable()
 export class ChannelsService {
@@ -17,7 +18,7 @@ export class ChannelsService {
 								}];
 
 	createChannel(createChannelDto: CreateChannelDto) {
-		const channel: EntityChannel = { channelId: this.channels.length,
+		const newChannel: EntityChannel = { channelId: this.channels.length,
 			name: createChannelDto.name,
 			messageHistory: [],
 			password: createChannelDto.password,
@@ -27,17 +28,33 @@ export class ChannelsService {
 			banned: createChannelDto.banned,
 			muted: createChannelDto.muted
 		};
-		if (channel.name === "" || channel.name.match(/^ *$/))
-			channel.name = "Default Channel Name";
-		this.channels.push(channel);
+		if (newChannel.name === "" || newChannel.name.match(/^ *$/))
+		newChannel.name = "Default Channel Name";
+		this.channels.push(newChannel);
 
-		return this.channels;
+		return newChannel;
 	}
 
 	pushMessageToChannel(message: EntityMessage, index: number, clientId: string) {
 		if (message.senderName === undefined)
-			message.senderName = 'Guest' + clientId;
+			message.senderName = 'Guest_' + clientId;
 		this.channels[index].messageHistory.push(message);
+	}
+
+	inviteUserToChannel(user: EntityUser, index: number) {
+		this.channels[index].users.push(user);
+	}
+
+	banUserFromChannel(user: EntityUser, index: number) {
+		this.channels[index].banned.push(user);
+	}
+
+	muteUserFromChannel(user: EntityUser, index: number) {
+		this.channels[index].muted.push(user);
+	}
+
+	kickUserFromChannel(user: EntityUser, index: number) {
+		this.channels[index].users.splice(user.id, 1);
 	}
 
 	getChannelById(index: number) {

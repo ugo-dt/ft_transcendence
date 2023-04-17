@@ -1,9 +1,7 @@
-import { BadRequestException, Controller, Get, HttpStatus, NotFoundException, Param, Post, Query } from '@nestjs/common';
+import { Controller, Delete, Get, NotFoundException, Param, Post, Query } from '@nestjs/common';
 import { PongService } from './pong.service';
 import { IRoom } from './Room/Room';
 import Client, { IClient } from './Client/Client';
-import { ConnectedSocket } from '@nestjs/websockets';
-import { Socket } from 'socket.io';
 
 @Controller('pong')
 export class PongController {
@@ -26,6 +24,34 @@ export class PongController {
   @Get('users/:username/friends')
   getFriends(@Param("username") username: string): IClient[] | null {
     return this.pongService.userFriendList(username);
+  }
+
+  @Post('friend-request')
+  sendFriendRequest(@Query("username") username: string, @Query("friendName") friendName: string) {
+    const client = Client.at(username);
+    if (client) {
+      const friend = Client.at(friendName);
+      if (friend) {
+        client.addFriend(friend);
+        return 'ok';
+      }
+      throw new NotFoundException(`unknown user (${friendName}`);
+    }
+    throw new NotFoundException(`unknown user (${username}`);
+  }
+
+  @Delete('friends/:id')
+  removeFriend(@Query("username") username: string, @Query("friendName") friendName: string): void {
+    const client = Client.at(username);
+    if (client) {
+      const friend = Client.at(friendName);
+      if (friend) {
+        client.removeFriend(friend);
+        return ;
+      }
+      throw new NotFoundException(`unknown user (${friendName}`);
+    }
+    throw new NotFoundException(`unknown user (${username}`);
   }
 
   @Get('rooms')

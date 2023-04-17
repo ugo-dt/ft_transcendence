@@ -23,13 +23,12 @@ function Friends() {
   }
 
   function filterFriends() {
-    var input, filter, table, tr, td, i, txtValue;
-    filter = inputValue.toUpperCase();
-    table = document.getElementById("friends-table");
-    tr = table!.getElementsByTagName("tr");
-    for (i = 0; i < tr.length; i++) {
-        td = tr[i].getElementsByTagName("td")[0];
-        txtValue = td.textContent || td.innerText;
+    const filter = inputValue.toUpperCase();
+    const table = document.getElementById("friends-table");
+    const tr = table!.getElementsByTagName("tr");
+    for (let i = 0; i < tr.length; i++) {
+        const td = tr[i].getElementsByTagName("td")[0];
+        const txtValue = td.textContent || td.innerText;
         if (txtValue.toUpperCase().indexOf(filter) > -1) {
             tr[i].style.display = "";
         } else {
@@ -42,8 +41,9 @@ function Friends() {
     function getFriendsList() {
       setFriendsList([] as IClient[]);
       setLoading(true); // Set loading state to true before making HTTP requests
-      const userUrl = serverUrl + '/api/pong/users';///' + client.name + '/friends';
+      const userUrl = serverUrl + '/api/pong/users/' + client.name + '/friends';
       axios.get(userUrl).then(res => {
+        console.log(res);
         setFriendsList(res.data);
       }).catch(err => {
       });
@@ -54,7 +54,7 @@ function Friends() {
 
   return (
     <div className="Friends">
-      <h1>Invite friends</h1>
+      <h1>Friends</h1>
       {(loading && <h2>Loading...</h2>) ||
         friendsList.length > 0 &&
         <div className="room-list">

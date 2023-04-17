@@ -12,7 +12,9 @@ import axios from "axios";
 import { useNavigate } from "react-router";
 
 function ProfileHeader({ profile }: { profile: IClient }) {
+  const [friendsList, setFriendsList] = useState([] as IClient[]);
   const client = useContext(Context).client;
+  const serverUrl = useContext(Context).serverUrl;
   const setClient = useContext(Context).setClient;
   const navigate = useNavigate();
   const [editUsernameValue, setEditUsernameValue] = useState("");
@@ -45,6 +47,12 @@ function ProfileHeader({ profile }: { profile: IClient }) {
 
   function onClickAddFriend() {
     console.log("add friend");
+    const requestUrl = serverUrl + '/api/pong/friend-request?username=' + client.name + '&friendName=' + profile.name;
+    axios.post(requestUrl).then(res => {
+      console.log(res);
+    }).catch(err => {
+      console.error(err);
+    });
   }
 
   function onClickChallenge() {

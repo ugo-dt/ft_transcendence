@@ -26,7 +26,6 @@ function App() {
   function onConnect() {
     setConnected(true);
     const userUrl = serverUrl + '/api/pong/users/user' + pongSocketRef.current.id;
-    console.log(userUrl);
 
     axios.get(userUrl).then(res => {
       setClient(res.data);

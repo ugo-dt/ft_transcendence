@@ -4,7 +4,7 @@ import "./style/Watch.css"
 function Watch() {
   return (
     <div className="Watch">
-      <h1>Spectate live games!</h1>
+      <h1>Live games</h1>
       <RoomList />
     </div>
   );

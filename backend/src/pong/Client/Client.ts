@@ -24,6 +24,7 @@ class Client {
   private _backgroundColor: string;
   private _status: _Status;
   private _rating: number;
+  private _friends: IClient[];
 
   private __newId(): number {
     let _new_id = 0;
@@ -41,6 +42,7 @@ class Client {
     this._backgroundColor = socket.data.backgroundColor;
     this._status = STATUS_ONLINE;
     this._rating = 1200;
+    this._friends = [];
   }
 
   public get __socket(): Socket { return this.__socket_; }
@@ -50,6 +52,7 @@ class Client {
   public get backgroundColor(): string { return this._backgroundColor; }
   public get status(): typeof STATUS_ONLINE | typeof STATUS_PLAYING | typeof STATUS_OFFLINE { return this._status; }
   public get rating(): number { return this._rating; }
+  public get friends(): IClient[] { return this._friends; }
 
   public set __socket(__socket_: Socket) { this.__socket_ = __socket_; }
   public set id(id: number) { this._id = id; }
@@ -58,7 +61,8 @@ class Client {
   public set backgroundColor(backgroundColor: string) { this._backgroundColor = backgroundColor; }
   public set status(status: _Status ) { this._status = status; }
   public set rating(rating: number) { this._rating = rating; }
-  
+  public set friends(friends: IClient[]) { this._friends = friends; }
+
   public IClient(): IClient {
     const iClient: IClient = {
       id: this._id,
@@ -69,6 +73,17 @@ class Client {
       rating: this._rating,
     }
     return iClient;
+  }
+
+  public addFriend(client: Client) {
+    this._friends.push(client.IClient());
+  }
+
+  public removeFriend(client: Client) {
+    const index = this._friends.indexOf(client.IClient());
+    if (index > -1) { // only splice array when item is found
+      this._friends.splice(index, 1); // 2nd parameter means remove one item only
+    }
   }
 
   public static nullIClient(): IClient {

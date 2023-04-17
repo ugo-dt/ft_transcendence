@@ -18,8 +18,12 @@
   padding: 0;
 }
 
+html {
+  color: var(--text-color);
+  background-color: var(--background-color);
+}
+
 .App {
-  height: 100vh;
   display: block;
   color: var(--text-color);
   background-color: var(--background-color);

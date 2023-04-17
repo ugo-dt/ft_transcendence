@@ -1,0 +1,12 @@
+.Friends {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  user-select: none;
+}
+
+#friends-search-bar {
+  padding: 5px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}

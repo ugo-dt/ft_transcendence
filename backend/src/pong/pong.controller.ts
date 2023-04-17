@@ -14,13 +14,18 @@ export class PongController {
     return this.pongService.users();
   }
 
-  @Get('users/:id')
-  getUser(@Param("id") id: string): IClient {
-    const client = this.pongService.profile(id);
+  @Get('users/:username')
+  getUser(@Param("username") username: string): IClient {
+    const client = this.pongService.profile(username);
     if (client) {
       return client;
     }
-    throw new NotFoundException(`unknown user (${id}`);
+    throw new NotFoundException(`unknown user (${username}`);
+  }
+  
+  @Get('users/:username/friends')
+  getFriends(@Param("username") username: string): IClient[] | null {
+    return this.pongService.userFriendList(username);
   }
 
   @Get('rooms')

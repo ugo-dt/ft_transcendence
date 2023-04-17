@@ -17,11 +17,11 @@ function ProfileHeader({ profile }: { profile: IClient }) {
   const navigate = useNavigate();
   const [editUsernameValue, setEditUsernameValue] = useState("");
 
-  function onClickUpload() {
+  function onClickEditAvatar() {
     console.log("upload");
   }
 
-  function onClickUsername() {
+  function onClickEditUsername() {
     if (editUsernameValue.length < 3 || editUsernameValue.length > 16) {
       return;
     }
@@ -38,6 +38,26 @@ function ProfileHeader({ profile }: { profile: IClient }) {
       console.error(err);
     });
   }
+  
+  function onClick2FA() {
+    console.log("2FA");
+  }
+
+  function onClickAddFriend() {
+    console.log("add friend");
+  }
+
+  function onClickChallenge() {
+    console.log("challenge");
+  }
+
+  function onClickMessage() {
+    console.log("message");
+  }
+
+  function onClickBlock() {
+    console.log("block");
+  }
 
   return (
     <div className="profile-header-container">
@@ -53,7 +73,7 @@ function ProfileHeader({ profile }: { profile: IClient }) {
             {/* TODO: only show this on user's own profile */}
             {
               profile.name === client.name &&
-              <div role="button" onClick={onClickUpload} className="upload-icon-wrapper">
+              <div role="button" onClick={onClickEditAvatar} className="upload-icon-wrapper">
                 <AddPhotoAlternateIcon className="upload-icon" fontSize="large" />
               </div>
             }
@@ -70,41 +90,41 @@ function ProfileHeader({ profile }: { profile: IClient }) {
           {
             profile.name !== client.name &&
             <div className="profile-header-actions">
-              <div role="button" className="profile-header-actions-btn add-friend-btn"> {/** TODO: change to remove friend if already friend */}
+              <div role="button" className="profile-header-actions-btn add-friend-btn"
+                onClick={onClickAddFriend}
+              > {/** TODO: change to remove friend if already friend */}
                 <PersonAddAlt1Icon className="profile-header-actions-icon" /> Add friend
               </div>
-              <div role="button" className="profile-header-actions-btn challenge-btn">
+              <div role="button" className="profile-header-actions-btn challenge-btn"
+                onClick={onClickChallenge}
+              >
                 <SportsTennisIcon className="profile-header-actions-icon" /> Challenge
               </div>
-              <div role="button" className="profile-header-actions-btn message-btn">
+              <div role="button" className="profile-header-actions-btn message-btn"
+                onClick={onClickMessage}
+              >
                 <ChatIcon className="profile-header-actions-icon" /> Message
               </div>
-              <div role="button" className="profile-header-actions-btn block-btn">
+              <div role="button" className="profile-header-actions-btn block-btn"
+                onClick={onClickBlock}
+              >
                 <BlockIcon className="profile-header-actions-icon" /> Block
               </div>
             </div>
             ||
             <div className="profile-header-actions">
-              <div role="button" className="profile-header-actions-btn edit-profile-btn">
+              <div role="button" className="profile-header-actions-btn edit-profile-btn"
+                onClick={onClickEditUsername}
+              >
                 <EditIcon className="profile-header-actions-icon" /> Edit username
               </div>
-              <div role="button" className="profile-header-actions-btn edit-profile-btn">
+              <div role="button" className="profile-header-actions-btn edit-profile-btn"
+                onClick={onClick2FA}
+              >
                 <VpnKeyIcon className="profile-header-actions-icon" /> Enable 2FA
               </div>
             </div>
           }
-          {/* <div>
-                <label htmlFor="name">Edit username</label>
-                <input name="name" id="name" type="text" value={editUsernameValue}
-                onChange={(e) => setEditUsernameValue(e.target.value)}
-                />
-                </div>
-                <div>
-                <button onClick={onClickUsername}>Update</button>
-              </div> */}
-          {/* <button>
-                Enable 2FA
-              </button> */}
         </section>
       </div>
     </div>

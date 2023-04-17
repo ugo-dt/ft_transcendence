@@ -3,14 +3,17 @@ import Room, { IRoom } from "./Room";
 
 namespace RoomHistory {
   /** This set contains all the played rooms */
-  const __history_ = new Set<IRoom>;
+  const __history_: IRoom[] = [];
 
   export function add(room: Room) {
-    __history_.add(room.IRoom());
+    __history_.unshift(room.IRoom());
   }
 
   export function remove(room: Room) {
-    __history_.delete(room.IRoom());
+    const index = __history_.indexOf(room.IRoom());
+    if (index > -1) { // only splice array when item is found
+      __history_.splice(index, 1); // 2nd parameter means remove one item only
+    }
   }
 
   export function userHistory(Client: IClient): IRoom[] {
@@ -25,7 +28,7 @@ namespace RoomHistory {
   }
 
   export function list(): IRoom[] {
-    return Array.from(__history_);
+    return __history_;
   }
 
   export function at(roomId: number): IRoom | null;

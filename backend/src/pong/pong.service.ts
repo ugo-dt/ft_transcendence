@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
-import Client, { IClient } from './Client/Client';
+import Client, { IClient, STATUS_OFFLINE } from './Client/Client';
 import Queue from './Matchmaking/Queue';
 import Room, { IRoom } from './Room/Room';
 import RoomHistory from './Room/RoomHistory';
@@ -18,6 +18,7 @@ export class PongService {
     if (!client) {
       return ;
     }
+    client.status = STATUS_OFFLINE;
     Logger.log(`Client disconnected: ${client.name} (id: ${client.id})`);
     // Client.delete(clientSocket);
   }
@@ -91,6 +92,14 @@ export class PongService {
 
   public users(): IClient[] {
     return Client.list();
+  }
+
+  public userFriendList(username: string): IClient[] | null {
+    const client = Client.at(username);
+    if (client) {
+      return client.friends;
+    }
+    return null;
   }
 
   public rooms(): IRoom[] {

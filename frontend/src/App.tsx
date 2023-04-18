@@ -7,6 +7,7 @@ import { CssBaseline } from '@mui/material'
 import { IClient } from './types'
 import Navbar from './layouts/Navbar'
 import axios from 'axios'
+import Requests from './components/Requests'
 
 function App() {
   const serverUrl = "http://localhost:3000";
@@ -23,6 +24,7 @@ function App() {
     setClient,
   };
 
+  // todo: change this
   function onConnect() {
     setConnected(true);
     const userUrl = serverUrl + '/api/pong/users/user' + pongSocketRef.current.id;

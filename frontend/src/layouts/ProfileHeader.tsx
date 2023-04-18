@@ -1,7 +1,8 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { IClient, IRoom } from "../types";
 import { Context } from "../context";
 import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
+import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
 import SportsTennisIcon from '@mui/icons-material/SportsTennis';
 import ChatIcon from '@mui/icons-material/Chat';
 import BlockIcon from '@mui/icons-material/Block';
@@ -10,6 +11,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import axios from "axios";
 import { useNavigate } from "react-router";
+import Requests from "../components/Requests";
 
 function ProfileHeader({ profile }: { profile: IClient }) {
   const [friendsList, setFriendsList] = useState([] as IClient[]);
@@ -18,41 +20,47 @@ function ProfileHeader({ profile }: { profile: IClient }) {
   const setClient = useContext(Context).setClient;
   const navigate = useNavigate();
   const [editUsernameValue, setEditUsernameValue] = useState("");
+  const [isFriend, setIsFriend] = useState(false);
 
   function onClickEditAvatar() {
     console.log("upload");
   }
 
-  function onClickEditUsername() {
+  function editUsername() {
     if (editUsernameValue.length < 3 || editUsernameValue.length > 16) {
       return;
     }
 
-    const url = "http://localhost:3000/api/pong/username?username=" + client.name + "&value=" + editUsernameValue;
-    console.log(url);
-
-    axios.post(url).then(res => {
-      setClient(res.data);
-      navigate("/profile/" + res.data.name);
-      window.location.reload();
-      setEditUsernameValue("");
+    Requests.editUsername(client.name, editUsernameValue).then((res: IClient | null) => {
+      if (res) {
+        setClient(res);
+        navigate("/profile/" + res.name);
+      }
     }).catch(err => {
       console.error(err);
     });
+    setEditUsernameValue("");
   }
   
+  function openEditUsernameForm() {
+    console.log("edit");
+  }
+
+  function closeEditUsernameForm() {
+  }
+
   function onClick2FA() {
     console.log("2FA");
   }
 
   function onClickAddFriend() {
-    console.log("add friend");
-    const requestUrl = serverUrl + '/api/pong/friend-request?username=' + client.name + '&friendName=' + profile.name;
-    axios.post(requestUrl).then(res => {
-      console.log(res);
-    }).catch(err => {
-      console.error(err);
-    });
+    Requests.addFriend(client.name, profile.name);
+    setIsFriend(true);
+  }
+
+  function onClickRemoveFriend() {
+    Requests.removeFriend(client.name, profile.name);
+    setIsFriend(false);
   }
 
   function onClickChallenge() {
@@ -67,6 +75,15 @@ function ProfileHeader({ profile }: { profile: IClient }) {
     console.log("block");
   }
 
+  useEffect(() => {
+    Requests.getFriendList(client.name).then(list => {
+      if (list) {
+        if (list.find(c => c.name === profile.name))
+          setIsFriend(true);
+      }
+    });
+  }, [])
+
   return (
     <div className="profile-header-container">
       <div className="profile-header-info">
@@ -78,7 +95,6 @@ function ProfileHeader({ profile }: { profile: IClient }) {
               height={120}
               alt={profile.name}
             />
-            {/* TODO: only show this on user's own profile */}
             {
               profile.name === client.name &&
               <div role="button" onClick={onClickEditAvatar} className="upload-icon-wrapper">
@@ -98,11 +114,20 @@ function ProfileHeader({ profile }: { profile: IClient }) {
           {
             profile.name !== client.name &&
             <div className="profile-header-actions">
-              <div role="button" className="profile-header-actions-btn add-friend-btn"
-                onClick={onClickAddFriend}
-              > {/** TODO: change to remove friend if already friend */}
-                <PersonAddAlt1Icon className="profile-header-actions-icon" /> Add friend
-              </div>
+              {
+                !isFriend &&
+                <div role="button" className="profile-header-actions-btn add-friend-btn"
+                  onClick={onClickAddFriend}
+                > <PersonAddAlt1Icon className="profile-header-actions-icon" /> Add friend
+                </div>
+              }
+              {
+                isFriend &&
+                <div role="button" className="profile-header-actions-btn add-friend-btn"
+                  onClick={onClickRemoveFriend}
+                > <PersonRemoveIcon className="profile-header-actions-icon" /> Remove friend
+                </div>
+              }
               <div role="button" className="profile-header-actions-btn challenge-btn"
                 onClick={onClickChallenge}
               >
@@ -122,7 +147,7 @@ function ProfileHeader({ profile }: { profile: IClient }) {
             ||
             <div className="profile-header-actions">
               <div role="button" className="profile-header-actions-btn edit-profile-btn"
-                onClick={onClickEditUsername}
+                onClick={openEditUsernameForm}
               >
                 <EditIcon className="profile-header-actions-icon" /> Edit username
               </div>

@@ -16,45 +16,42 @@
 //	Enable 2FA
 
 import { useContext, useEffect, useState } from "react";
-import { Navigate, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import "./style/Profile.css"
 import "../layouts/style/RoomList.css"
 import ProfileHistory from "../layouts/ProfileHistory";
 import ProfileHeader from "../layouts/ProfileHeader";
-import axios from "axios";
 import { IClient, IRoom } from "../types";
 import { Context } from "../context";
+import Requests from "../components/Requests";
 
 function Profile() {
-  const serverUrl = useContext(Context).serverUrl;
-  const [profile, setProfile] = useState({} as IClient);
-  const [history, setHistory] = useState([] as IRoom[]);
-  const [loading, setLoading] = useState(true); // Set initial loading state to true
+  const client = useContext(Context).client;
+  const [profile, setProfile] = useState<IClient | null>(null);
+  const [history, setHistory] = useState<IRoom[]>([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  
+
   useEffect(() => {
-    
-    function getProfile() {
+    async function getProfile() {
       if (window.location.pathname === '/profile' || window.location.pathname === '/profile/') {
-        navigate("/home");
+        navigate("/profile/" + client.name);
       }
-      setProfile({} as IClient);
-      setLoading(true); // Set loading state to true before making HTTP requests
-      const profileName = window.location.pathname.split("/").pop();
-      const userUrl = serverUrl + '/api/pong/users/' + profileName;
-      axios.get(userUrl).then(res => {
-        setProfile(res.data);
-      }).catch(err => {
-        navigate("/home");
+      setLoading(true);
+      const profileName = window.location.pathname.split("/").pop()!;
+
+      Requests.getProfile(profileName).then((profileData) => {
+        if (!profileData) {
+          navigate("/home")
+        };
+        setProfile(profileData);
       });
-      const historyUrl = serverUrl + '/api/pong/history/' + profileName;
-      axios.get(historyUrl).then(res => {
-        setHistory(res.data);
-      }).catch(err => {
-        console.error(err);
+
+      Requests.getUserMatchHistory(profileName).then((historyData) => {;
+        setHistory(historyData);
       });
       setLoading(false);
-    } 
+    }
     getProfile();
   }, []);
 
@@ -62,7 +59,7 @@ function Profile() {
     <div className="Profile">
       {
         loading ? (<h2>Loading...</h2>) : (
-          profile.name ? (
+          profile != null ? (
             <>
               <ProfileHeader profile={profile} />
               <ProfileHistory history={history} profileId={profile.id} />

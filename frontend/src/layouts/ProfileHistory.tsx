@@ -14,9 +14,6 @@ function ProfileHistory({ history, profileId }: { history: IRoom[], profileId: n
               <tbody>
                 <tr title="Room info" className="room-list-row">
                   <td className="room-list-cell">
-                    Room ID
-                  </td>
-                  <td className="room-list-cell">
                     Left player
                   </td>
                   <td className="room-list-cell">
@@ -29,9 +26,6 @@ function ProfileHistory({ history, profileId }: { history: IRoom[], profileId: n
                 {
                   history.slice(historyPage * pageSize, historyPage * pageSize + pageSize).map((room) => (
                     <tr className="room-list-row" key={room.id}>
-                      <td className="room-list-cell">
-                        {room.id}
-                      </td>
                       <td className="room-list-cell room-list-cell-username" title="See profile" role="button"
                         onClick={() => window.open('/profile/' + room.left.name, '_blank')}>
                         {room.left.name}

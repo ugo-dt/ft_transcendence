@@ -85,4 +85,9 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
   public handleKeyDownUnpressed(@ConnectedSocket() client: Socket) {
     this.pongService.handleKey(client, "down", false);
   }
+
+  @SubscribeMessage('challenge')
+  public handleChallenge(@ConnectedSocket() client: Socket, opponent: string) {
+    this.pongService.startChallenge();
+  }
 }

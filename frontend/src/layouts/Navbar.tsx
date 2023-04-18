@@ -13,9 +13,9 @@ function Navbar({ isSignedIn }: NavbarProps) {
   return (
     <nav>
       <NavLink className={"NavLink"} to="/home">Home</NavLink>
-      <NavLink className={"NavLink"} to={`/profile/${client.name}`}>Profile</NavLink>
+      <NavLink className={"NavLink"} to="/profile" >Profile</NavLink>
       <NavLink className={"NavLink"} to="/watch">Watch</NavLink>
-      <NavLink className={"NavLink"} to="/rankings">Rankings</NavLink>
+      <NavLink className={"NavLink"} to="/leaderboards">Leaderboards</NavLink>
       <NavLink className={"NavLink"} to="/friends">Friends</NavLink>
       <NavLink className="NavLink" to="/messages">Messages</NavLink>
       {

@@ -80,9 +80,9 @@ class Client {
   }
 
   public removeFriend(client: Client) {
-    const index = this._friends.indexOf(client.IClient());
-    if (index > -1) { // only splice array when item is found
-      this._friends.splice(index, 1); // 2nd parameter means remove one item only
+    const index = this._friends.findIndex(c => c.name === client.name);
+    if (index > -1) {
+      this._friends.splice(index, 1);
     }
   }
 

@@ -11,9 +11,10 @@ import { IClient } from "../types";
 import { Context } from "../context";
 import axios from "axios";
 import "./style/Friends.css"
+import Requests from "../components/Requests";
 
 function Friends() {
-  const [friendsList, setFriendsList] = useState([] as IClient[]);
+  const [friendsList, setFriendsList] = useState<IClient[]>([]);
   const client = useContext(Context).client;
   const serverUrl = useContext(Context).serverUrl;
   const [loading, setLoading] = useState(true);
@@ -27,13 +28,13 @@ function Friends() {
     const table = document.getElementById("friends-table");
     const tr = table!.getElementsByTagName("tr");
     for (let i = 0; i < tr.length; i++) {
-        const td = tr[i].getElementsByTagName("td")[0];
-        const txtValue = td.textContent || td.innerText;
-        if (txtValue.toUpperCase().indexOf(filter) > -1) {
-            tr[i].style.display = "";
-        } else {
-            tr[i].style.display = "none";
-        }
+      const td = tr[i].getElementsByTagName("td")[0];
+      const txtValue = td.textContent || td.innerText;
+      if (txtValue.toUpperCase().indexOf(filter) > -1) {
+        tr[i].style.display = "";
+      } else {
+        tr[i].style.display = "none";
+      }
     }
   }
 
@@ -41,11 +42,8 @@ function Friends() {
     function getFriendsList() {
       setFriendsList([] as IClient[]);
       setLoading(true); // Set loading state to true before making HTTP requests
-      const userUrl = serverUrl + '/api/pong/users/' + client.name + '/friends';
-      axios.get(userUrl).then(res => {
-        console.log(res);
-        setFriendsList(res.data);
-      }).catch(err => {
+      Requests.getFriendList(client.name).then(listData => {
+        setFriendsList(listData);
       });
       setLoading(false);
     }
@@ -56,36 +54,55 @@ function Friends() {
     <div className="Friends">
       <h1>Friends</h1>
       {(loading && <h2>Loading...</h2>) ||
-        friendsList.length > 0 &&
-        <div className="room-list">
-          <input type="text" id="friends-search-bar" onChange={(e) => setInputValue(e.target.value)} onKeyUp={filterFriends} placeholder="Search by username" title="Type in a name"
-            value={inputValue}
-          ></input>
-          <table className="room-list-table" id="friends-table">
-            <tbody>
-              {
-                friendsList.map((friend) => (
-                  <tr className="room-list-row" key={friend.id}>
-                    <td className="room-list-cell">
-                      {friend.name}
-                    </td>
-                    <td className="room-list-cell room-list-cell-username" title="See profile" role="button" onClick={() => window.open('/profile/' + friend.name, '_blank')}>
-                      {friend.rating}
-                    </td>
-                    <td className="room-list-cell room-list-cell-username" title="See profile" role="button" onClick={() => window.open('/profile/' + friend.name, '_blank')}>
-                      {friend.status}
-                    </td>
-                    <td className="room-list-cell">
-                      <button title="Watch game" onClick={() => handleInvite(friend.name)}>
-                        Invite
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              }
-            </tbody>
-          </table>
-        </div> /* className="room-list" */
+        (
+          friendsList.length > 0 &&
+          <div className="room-list">
+            <input type="text" id="friends-search-bar" onChange={(e) => setInputValue(e.target.value)} onKeyUp={filterFriends} placeholder="Search by username" title="Type in a name"
+              value={inputValue}
+            ></input>
+            <table className="room-list-table">
+              <tbody>
+                <tr title="Room info" className="room-list-row">
+                  <td className="room-list-cell">
+                    Username
+                  </td>
+                  <td className="room-list-cell">
+                    Rating
+                  </td>
+                  <td className="room-list-cell">
+                    Status
+                  </td>
+                  <td className="room-list-cell">
+                    Invite
+                  </td>
+                </tr>
+              </tbody>
+              <tbody id="friends-table">
+                {
+                  friendsList.map((friend) => (
+                    <tr className="room-list-row" key={friend.id}>
+                      <td className="room-list-cell room-list-cell-username" title="See profile" role="button" onClick={() => window.open('/profile/' + friend.name, '_blank')}>
+                        {friend.name}
+                      </td>
+                      <td className="room-list-cell">
+                        {friend.rating}
+                      </td>
+                      <td className="room-list-cell">
+                        {friend.status.charAt(0).toLocaleUpperCase() + friend.status.slice(1)}
+                      </td>
+                      <td className="room-list-cell">
+                        <button title="Watch game" onClick={() => handleInvite(friend.name)}>
+                          Invite
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                }
+              </tbody>
+            </table>
+          </div> /* className="room-list" */
+        ) ||
+        <h3>Friends list is empty.</h3>
       }
     </div>
   );

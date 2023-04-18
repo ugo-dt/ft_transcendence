@@ -30,7 +30,6 @@ function PlayOnline() {
           return { minutes, seconds: seconds % 60 };
         });
       }, 1000);
-      console.log('Joined queue.');
     }
     else {
       socket.emit('leave-queue');
@@ -38,7 +37,6 @@ function PlayOnline() {
       setInQueue(false);
       window.clearInterval(intervalRef.current);
       setTimer({minutes: 0, seconds: 0});
-      console.log('Left queue.');
     }
   }
 
@@ -47,22 +45,15 @@ function PlayOnline() {
       return ;
     }
     inGame.current = true;
-    console.log("Started game", data);
     const gameUrl = "/game/" + data.roomId;
     navigate(gameUrl, { state: { roomId: data.roomId, role: 'player' } });
   }
 
-  function onEndGame() {
-    console.log("game ends");
-  }
-
   useEffect(() => {
     socket.on('startGame', (data: any) => { onStartGame(data) });
-    socket.on('endGame', onEndGame);
 
     return () => {
       socket.off('startGame', (data: any) => { onStartGame(data) });
-      socket.off('endGame', onEndGame);
     };
   }, []);
 

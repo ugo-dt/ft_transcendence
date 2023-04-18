@@ -21,12 +21,12 @@ export class PongController {
     throw new NotFoundException(`unknown user (${username}`);
   }
   
-  @Get('users/:username/friends')
+  @Get('friends/:username')
   getFriends(@Param("username") username: string): IClient[] | null {
     return this.pongService.userFriendList(username);
   }
 
-  @Post('friend-request')
+  @Post('add-friend')
   sendFriendRequest(@Query("username") username: string, @Query("friendName") friendName: string) {
     const client = Client.at(username);
     if (client) {
@@ -40,28 +40,23 @@ export class PongController {
     throw new NotFoundException(`unknown user (${username}`);
   }
 
-  @Delete('friends/:id')
-  removeFriend(@Query("username") username: string, @Query("friendName") friendName: string): void {
+  @Delete('remove-friend')
+  removeFriend(@Query("username") username: string, @Query("friendName") friendName: string) {
     const client = Client.at(username);
     if (client) {
       const friend = Client.at(friendName);
       if (friend) {
         client.removeFriend(friend);
-        return ;
+        return 'ok';
       }
       throw new NotFoundException(`unknown user (${friendName}`);
     }
     throw new NotFoundException(`unknown user (${username}`);
   }
 
-  @Get('rooms')
-  getRooms(): IRoom[] {
-    return this.pongService.rooms();
-  }
-
-  @Get('history/:id')
-  getUserHistory(@Param("id") id: string): IRoom[] | null {
-    return this.pongService.userHistory(id);
+  @Get('history/:username')
+  getUserHistory(@Param("username") username: string): IRoom[] {
+    return this.pongService.userHistory(username);
   }
 
   @Get('history')
@@ -69,13 +64,23 @@ export class PongController {
     return this.pongService.history();
   }
 
-  @Post('username')
-  changeUsername(@Query("username") username: string, @Query("value") value: string): IClient | null {
+  @Post('edit-username')
+  changeUsername(@Query("username") username: string, @Query("newUsername") newUsername: string): IClient | null {
     const client = Client.at(username);
     if (client) {
-      client.name = value;
+      client.name = newUsername;
       return client.IClient();
     }
     return null;
+  }
+
+  @Get('rankings')
+  getRankings(): IClient[] {
+    return this.pongService.rankings();
+  }
+
+  @Get('rooms')
+  getRooms(): IRoom[] {
+    return this.pongService.rooms();
   }
 }

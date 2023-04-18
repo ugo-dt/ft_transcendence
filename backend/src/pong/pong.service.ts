@@ -102,19 +102,27 @@ export class PongService {
     return null;
   }
 
+  public rankings(): IClient[] {
+    const users = Client.list().slice(0, 50);
+    return users.sort((a, b) => (a.rating > b.rating) ? -1 : 1);
+  }
+
   public rooms(): IRoom[] {
     return Room.list();
   }
 
-  public userHistory(id: string): IRoom[] | null {
+  public userHistory(id: string): IRoom[] {
     const client = Client.at(id);
     if (client) {
       return RoomHistory.userHistory(client);
     }
-    return null;
+    return [];
   }
 
   public history(): IRoom[] {
     return RoomHistory.list();
+  }
+
+  public startChallenge() {
   }
 }

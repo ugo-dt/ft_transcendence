@@ -80,13 +80,6 @@ function Chat() {
 		}
 	}
 
-	function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
-		if (event.key === "Enter") {
-			event.preventDefault();
-			handleSubmitNewMessage(messageInputValue);
-		}
-	};
-
 	function handleKeyDown2(event: React.KeyboardEvent<HTMLInputElement>) {
 		if (event.key === "Enter") {
 			event.preventDefault();
@@ -98,6 +91,7 @@ function Chat() {
 		if (event.key === "Escape") {
 			event.preventDefault();
 			closeForm("form_create_channel");
+			closeForm("form_channel_settings")
 		}
 	}
 
@@ -135,8 +129,15 @@ function Chat() {
 		new Audio(messageSound).play();
 	}
 
-	function inviteUser(userName: string): void {
-		socket.emit('invite-user', userName);
+	function inviteUser(userName: string, toChannel: number): void {
+		socket.emit('invite-user', {userName, toChannel}, (response: {data: IUser | null}) => {
+			if (response.data === null)
+				alert('User not found.')
+			else
+			{
+				console.log(response);
+			}
+		})
 	}
 
 	function createUser(): void {
@@ -277,6 +278,7 @@ function Chat() {
 					currentChannelId={currentChannelId}
 					user={user.current}
 					onHandleChannelClick={handleChannelClick}
+					onInviteUser={inviteUser}
 				/>
 				<ChatWindow
 					onClearChannels={clearChannels}

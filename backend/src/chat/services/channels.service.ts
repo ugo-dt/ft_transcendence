@@ -3,6 +3,7 @@ import { EntityMessage } from '../entities/message.entity'
 import { EntityChannel } from '../entities/channel.entity';
 import { CreateChannelDto } from '../createChannel.dto';
 import { EntityUser } from '../entities/user.entity';
+import { UsersService } from './users.service';
 
 @Injectable()
 export class ChannelsService {
@@ -35,14 +36,25 @@ export class ChannelsService {
 		return newChannel;
 	}
 
+	findUserWithUserName(userName: string, usersService: UsersService): EntityUser | undefined {
+		const array: EntityUser[] = usersService.getAllUsers() as EntityUser[];
+		return (array.find(user => user.name === userName));
+	}
+
 	pushMessageToChannel(message: EntityMessage, index: number, clientId: string) {
-		if (message.senderName === undefined)
+		if (message.senderName === undefined || message.senderName === "")
 			message.senderName = 'Guest_' + clientId;
 		this.channels[index].messageHistory.push(message);
 	}
 
-	inviteUserToChannel(user: EntityUser, index: number) {
-		this.channels[index].users.push(user);
+	pushUserToChannel(userName: string, index: number, usersService: UsersService): EntityUser | undefined{
+		const user: EntityUser | undefined = this.findUserWithUserName(userName, usersService)
+		if (user !== undefined)
+		{
+			this.channels[index].users.push(user as EntityUser);
+			return this.findUserWithUserName(userName, usersService);
+		}
+		return undefined;
 	}
 
 	banUserFromChannel(user: EntityUser, index: number) {

@@ -24,6 +24,7 @@ const CreateChannelForm = ({
 
 	const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
 		if (event.key === 'Enter') {
+			event.preventDefault();
 			handleSubmit();
 		}
 	};
@@ -42,7 +43,7 @@ const CreateChannelForm = ({
 
 	return (
 		<form id="form_create_channel">
-			<button type="button" id="button_close_create_channel" onClick={onClose}>
+			<button type="button" className="button_close_create_channel" onClick={onClose}>
 				✕
 			</button>
 			<label id="label_create_channel" htmlFor="text">

@@ -21,6 +21,8 @@
 }
 
 #h2_channel_title {
+	margin-right: 20%;
+	margin-left: auto;
 	color: white;
 	text-align: center;
 	margin-bottom: 15px;
@@ -42,7 +44,7 @@
 	box-shadow: 0 10px 10px rgba(0, 0, 0, .12);
 }
 
-#button_close_create_channel {
+.button_close_create_channel {
 	cursor: pointer;
 	margin-left: auto;
 	font-size: x-large;
@@ -53,7 +55,7 @@
 	width: 8%;
 }
 
-#button_close_create_channel:hover {
+.button_close_create_channel:hover {
 	background-color: #4a4a4a;
 }
 
@@ -162,6 +164,75 @@
 	font-size: xx-large;
 }
 
+#div_top_module {
+	display: flex;
+	flex-direction: row-reverse;
+}
+
+#button_channel_settings, #img_channel_settings{
+	margin-right: 3%;
+	user-select: none;
+	height: 30px;
+	width: 30px;
+}
+
+#button_channel_settings {
+	cursor: pointer;
+	background-color: #464646;
+	background: none;
+	outline: none;
+	border: none;
+}
+#h3_channel_settings_title, #label_channel_settings {
+	margin-left: auto;
+	margin-right: auto;
+}
+
+#form_channel_settings {
+	visibility: hidden;
+	top: 15%;
+	left: 12%;
+	color: white;
+	width: 270px;
+	height: 170px;
+	display: flex;
+	flex-direction: column;
+	position: absolute;
+	z-index: 1;
+	background-color: rgb(54, 54, 54);
+	border-radius: 10px;
+	box-shadow: 0 10px 10px rgba(0, 0, 0, .12);
+}
+
+#input_channel_settings {
+	margin-left: auto;
+	margin-right: auto;
+	width: 80%;
+	color: white;
+	padding: 3%;
+	width: 70%;
+	border-radius: 5px;
+	border-style: none;
+	background-color: #5b5b5b;
+}
+
+.button_channel_settings {
+	font-size: medium;
+	cursor: pointer;
+	color: white;
+	border: none;
+	padding: 10px;
+	border-radius: 5px;
+	background-color: #6d6d6d;
+	box-shadow: 0 10px 10px rgba(0, 0, 0, .12);
+	margin-top: 20px;
+	margin-left: 12px;
+}
+
+.button_channel_settings:hover {
+	background-color: #989898;
+}
+
 #div_messages_box {
 	color: white;
 	height: 100%;
@@ -186,11 +257,11 @@
 	box-shadow: 0 10px 10px rgba(0, 0, 0, .12);
 }
 
-#div_input_bar::placeholder {
+#div_input_bar::placeholder, #input_channel_settings::placeholder {
 	color: rgb(208, 208, 208);
 }
 
-#div_input_bar:focus {
+#div_input_bar:focus, #input_channel_settings:focus {
     outline-width: 0;
 	color: white;
 }

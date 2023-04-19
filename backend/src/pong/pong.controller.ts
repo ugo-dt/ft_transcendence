@@ -74,6 +74,20 @@ export class PongController {
     return null;
   }
 
+  @Get('is-valid-username')
+  isValidUsername(@Query("username") username: string): string {
+    if (username.length < 3) {
+      return 'too short';
+    }
+    if (username.length > 15) {
+      return 'too long';
+    }
+    if (!(Client.at(username))) {
+      return 'ok';
+    }
+    return 'already in use';
+  }
+
   @Get('rankings')
   getRankings(): IClient[] {
     return this.pongService.rankings();

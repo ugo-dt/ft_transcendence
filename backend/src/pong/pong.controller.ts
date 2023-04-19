@@ -6,20 +6,6 @@ import Client, { IClient } from './Client/Client';
 @Controller('pong')
 export class PongController {
   constructor(private readonly pongService: PongService) { }
-
-  @Get('users')
-  getAllUsers(): IClient[] {
-    return this.pongService.users();
-  }
-
-  @Get('users/:username')
-  getUser(@Param("username") username: string): IClient {
-    const client = this.pongService.profile(username);
-    if (client) {
-      return client;
-    }
-    throw new NotFoundException(`unknown user (${username}`);
-  }
   
   @Get('friends/:username')
   getFriends(@Param("username") username: string): IClient[] | null {
@@ -62,30 +48,6 @@ export class PongController {
   @Get('history')
   getHistory(): IRoom[] {
     return this.pongService.history();
-  }
-
-  @Post('edit-username')
-  changeUsername(@Query("username") username: string, @Query("newUsername") newUsername: string): IClient | null {
-    const client = Client.at(username);
-    if (client) {
-      client.name = newUsername;
-      return client.IClient();
-    }
-    return null;
-  }
-
-  @Get('is-valid-username')
-  isValidUsername(@Query("username") username: string): string {
-    if (username.length < 3) {
-      return 'too short';
-    }
-    if (username.length > 15) {
-      return 'too long';
-    }
-    if (!(Client.at(username))) {
-      return 'ok';
-    }
-    return 'already in use';
   }
 
   @Get('rankings')

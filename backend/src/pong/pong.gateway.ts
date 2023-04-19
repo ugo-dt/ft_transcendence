@@ -5,6 +5,7 @@ import Queue from "./Matchmaking/Queue";
 import { IRoom } from "./Room/Room";
 import RoomHistory from "./Room/RoomHistory";
 import { Logger } from "@nestjs/common";
+import { IClient } from "./Client/Client";
 
 @WebSocketGateway({
   namespace: 'pong',
@@ -25,10 +26,7 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }, 1000);
   }
 
-  public async handleConnection(client: Socket, ...args: any[]) {
-    // get correct values from db later
-    client.data.name = 'Username';
-    client.data.backgroundColor = 'black';
+  public async handleConnection(client: Socket) {
     this.pongService.handleUserConnected(client);
   }
   

@@ -1,4 +1,5 @@
 import { Socket } from "socket.io";
+import Elo from "../Matchmaking/Elo";
 
 export const STATUS_ONLINE = 'online';
 export const STATUS_PLAYING = 'playing';
@@ -7,7 +8,8 @@ export type _Status = typeof STATUS_ONLINE | typeof STATUS_PLAYING | typeof STAT
 
 export interface IClient {
   id: number,
-  name: string,
+  id42: number,
+  username: string,
   avatar: string,
   backgroundColor: string,
   status: string,
@@ -19,11 +21,12 @@ class Client {
 
   private __socket_: Socket;
   private _id: number;
-  private _name: string;
+  private _id42: number;
+  private _username: string;
   private _avatar: string;
-  private _backgroundColor: string;
   private _status: _Status;
   private _rating: number;
+  private _backgroundColor: string;
   private _friends: IClient[];
 
   private __newId(): number {
@@ -36,18 +39,19 @@ class Client {
 
   private constructor(socket: Socket) {
     this.__socket_ = socket;
-    this._id = this.__newId();
-    this._name = 'User' + socket.id;
-    this._avatar = "http://localhost:3000/public/images/noavatar.png";
-    this._backgroundColor = socket.data.backgroundColor;
-    this._status = STATUS_ONLINE;
-    this._rating = 1200;
-    this._friends = [];
+    this._id = parseInt(socket.handshake.query.id as string);
+    this._username = socket.handshake.query.username as string;
+    this._avatar = socket.handshake.query.avatar as string;
+    this._status = socket.handshake.query.status as _Status;
+    this._rating = parseInt(socket.handshake.query.rating as string);
+    this._backgroundColor = socket.handshake.query.backgroundColor as string;
+    this._friends = []; // todo: get friends from db
   }
 
   public get __socket(): Socket { return this.__socket_; }
   public get id(): number { return this._id; }
-  public get name(): string { return this._name; }
+  public get id42(): number { return this._id42; }
+  public get username(): string { return this._username; }
   public get avatar(): string { return this._avatar; }
   public get backgroundColor(): string { return this._backgroundColor; }
   public get status(): typeof STATUS_ONLINE | typeof STATUS_PLAYING | typeof STATUS_OFFLINE { return this._status; }
@@ -56,7 +60,8 @@ class Client {
 
   public set __socket(__socket_: Socket) { this.__socket_ = __socket_; }
   public set id(id: number) { this._id = id; }
-  public set name(name: string) { this._name = name; }
+  public set id42(id42: number) { this._id42 = id42; }
+  public set username(username: string) { this._username = username; }
   public set avatar(avatar: string) { this._avatar = avatar; }
   public set backgroundColor(backgroundColor: string) { this._backgroundColor = backgroundColor; }
   public set status(status: _Status ) { this._status = status; }
@@ -66,7 +71,8 @@ class Client {
   public IClient(): IClient {
     const iClient: IClient = {
       id: this._id,
-      name: this._name,
+      id42: this._id42,
+      username: this._username,
       avatar: this._avatar,
       backgroundColor: this._backgroundColor,
       status: this._status,
@@ -80,22 +86,10 @@ class Client {
   }
 
   public removeFriend(client: Client) {
-    const index = this._friends.findIndex(c => c.name === client.name);
+    const index = this._friends.findIndex(c => c.username === client.username);
     if (index > -1) {
       this._friends.splice(index, 1);
     }
-  }
-
-  public static nullIClient(): IClient {
-    const iClient: IClient = {
-      id: -1,
-      name: '',
-      avatar: "http://localhost:3000/public/images/noavatar.png",
-      backgroundColor: 'black',
-      status: STATUS_OFFLINE,
-      rating: 1200,
-    }
-    return iClient;
   }
 
   public static new(clientSocket: Socket): Client {
@@ -119,7 +113,7 @@ class Client {
 
     else if (typeof client === 'string') {
       for (const clt of Client.__clients_.values()) {
-        if (clt._name.toLowerCase() === client.toLowerCase()) {
+        if (clt._username.toLowerCase() === client.toLowerCase()) {
           return clt;
         }
       }

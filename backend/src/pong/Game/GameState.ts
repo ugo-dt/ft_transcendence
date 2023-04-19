@@ -38,8 +38,8 @@ export class GameState {
   constructor(left: Client, right: Client) {
     this._canvasWidth = CANVAS_WIDTH;
     this._canvasHeight = CANVAS_HEIGHT;
-    this._leftPlayer = new Player(0, left.name, left.avatar, true, left.backgroundColor);
-    this._rightPlayer = new Player(1, right.name, left.avatar, false, right.backgroundColor);
+    this._leftPlayer = new Player(0, left.username, left.avatar, true, left.backgroundColor);
+    this._rightPlayer = new Player(1, right.username, left.avatar, false, right.backgroundColor);
     this._leftPaddle = new Paddle(20);
     this._rightPaddle = new Paddle(615);
     this._ball = new Ball(this._canvasWidth / 2, this._canvasHeight / 2, "white", false);

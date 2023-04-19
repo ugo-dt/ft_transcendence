@@ -8,8 +8,8 @@ import RoomHistory from "./RoomHistory";
 
 export interface IRoom {
   id: number,
-  left: IClient,
-  right: IClient,
+  left: IClient | null,
+  right: IClient | null,
   gameState: IGameState,
 }
 
@@ -58,8 +58,8 @@ class Room {
   public IRoom(): IRoom {
     const iRoom: IRoom = {
       id: this._id,
-      left: this._left ? this._left.IClient() : Client.nullIClient(),
-      right: this._right ? this._right.IClient() : Client.nullIClient(),
+      left: this._left ? this._left.IClient() : null,
+      right: this._right ? this._right.IClient() : null,
       gameState: this._gameState.IGameState(),
     };
     return iRoom;
@@ -120,8 +120,8 @@ class Room {
   private _emitGame(server: Server, leftPlayer: Client, rightPlayer: Client) {
     const room = {
       id: this._id,
-      left: { id: leftPlayer.id, name: leftPlayer.name, avatar: leftPlayer.avatar },
-      right: { id: rightPlayer.id, name: rightPlayer.name, avatar: rightPlayer.avatar },
+      left: { id: leftPlayer.id, name: leftPlayer.username, avatar: leftPlayer.avatar },
+      right: { id: rightPlayer.id, name: rightPlayer.username, avatar: rightPlayer.avatar },
       gameState: this._gameState.IGameState(),
     }
     server.to(this._id.toString()).emit('update', room);

@@ -1,31 +1,37 @@
 import { Exclude } from "class-transformer";
-import {
-	Column,
-	Entity,
-	PrimaryGeneratedColumn
-} from "typeorm";
+import {Column, Entity, PrimaryGeneratedColumn} from "typeorm";
 
 @Entity()
 export class User {
-	@PrimaryGeneratedColumn()
-	id: number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-	@Column()
-	@Exclude()
-	accessToken: string;
+  @Column()
+  @Exclude()
+  accessToken: string;
 
-	@Column()
-	@Exclude()
-	refreshToken: string;
+  @Column()
+  @Exclude()
+  refreshToken: string;
 
-	@Column()
-	id42: number;
+  @Column()
+  id42: number;
 
-	@Column()
-	username: string;
+  @Column()
+  username: string;
 
-	@Column()
-	avatar: string;
+  @Column()
+  avatar: string;
 
-	// add, rating, wins and losses
+  @Column()
+  status: string;
+
+  @Column()
+  rating: number;
+
+  @Column()
+  backgroundColor: string;
+
+  // @Column()
+  // friends: User[];
 }

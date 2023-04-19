@@ -11,6 +11,10 @@ namespace Queue {
     __queue_.set(client, __date_.getTime());
   }
 
+  export function has(client: Client) {
+    return __queue_.has(client);
+  }
+
   export function remove(client: Client): void;
   export function remove(clientId: number): void;
   export function remove(client: Client | number): void {

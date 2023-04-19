@@ -20,6 +20,9 @@ namespace RoomHistory {
     const history: IRoom[] = [];
 
     for (const room of __history_.values()) {
+      if (!room.left || !room.right) {
+        continue ;
+      }
       if (room.left.id === Client.id || room.right.id === Client.id) {
         history.push(room);
       }

@@ -9,8 +9,13 @@ import RoomHistory from './Room/RoomHistory';
 export class PongService {
 
   public async handleUserConnected(clientSocket: Socket): Promise<void> {
-    const client = Client.new(clientSocket);
-    Logger.log(`Client connected: ${client.name} (id: ${client.id})`);
+    let client = Client.at(clientSocket.handshake.query.username as string);
+    if (!client) {
+      client = Client.new(clientSocket);
+      Logger.log(`Client created: ${client.username} (id: ${client.id})`);
+      return ;
+    }
+    Logger.log(`Client connected: ${client.username} (id: ${client.id})`);
   }
 
   public async handleUserDisconnect(clientSocket: Socket): Promise<void> {
@@ -19,13 +24,24 @@ export class PongService {
       return ;
     }
     client.status = STATUS_OFFLINE;
-    Logger.log(`Client disconnected: ${client.name} (id: ${client.id})`);
+    Logger.log(`Client disconnected: ${client.username} (id: ${client.id})`);
     // Client.delete(clientSocket);
+  }
+
+  public updateClient(clientSocket: Socket) {
+    const client = Client.at(clientSocket.handshake.query.username as string);
+    if (!client) {
+      return 'user not found';
+    }
+    client.__socket = clientSocket;
   }
 
   public addClientToQueue(clientSocket: Socket) {
     const client = Client.at(clientSocket);
     if (!client) {
+      return ;
+    }
+    if (Queue.has(client)) {
       return ;
     }
     Queue.add(client);

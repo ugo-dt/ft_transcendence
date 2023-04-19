@@ -22,9 +22,9 @@ import { join } from 'path';
       entities: [User],
       synchronize: true // remove for production
     }),
-    PongModule,
     UsersModule,
     AuthModule,
+    PongModule,
     ChatModule
   ],
   controllers: [],

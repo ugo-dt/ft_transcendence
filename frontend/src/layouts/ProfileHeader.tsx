@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
-import { IClient } from "../types";
-import { Context } from "../context";
+import { IUser } from "../types";
+import { Context, UserContext } from "../context";
 import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
 import SportsTennisIcon from '@mui/icons-material/SportsTennis';
@@ -12,8 +12,8 @@ import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import Requests from "../components/Requests";
 import EditUsernameForm from "./EditUsernameForm";
 
-function ProfileHeader({ profile }: { profile: IClient }) {
-  const client = useContext(Context).client;
+function ProfileHeader({ profile }: { profile: IUser }) {
+  const client = useContext(UserContext).user!;
   const [isFriend, setIsFriend] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
 
@@ -30,12 +30,12 @@ function ProfileHeader({ profile }: { profile: IClient }) {
   }
 
   function onClickAddFriend() {
-    Requests.addFriend(client.name, profile.name);
+    Requests.addFriend(client.username, profile.username);
     setIsFriend(true);
   }
 
   function onClickRemoveFriend() {
-    Requests.removeFriend(client.name, profile.name);
+    Requests.removeFriend(client.username, profile.username);
     setIsFriend(false);
   }
 
@@ -52,9 +52,9 @@ function ProfileHeader({ profile }: { profile: IClient }) {
   }
 
   useEffect(() => {
-    Requests.getFriendList(client.name).then(list => {
+    Requests.getFriendList(client.username).then(list => {
       if (list) {
-        if (list.find(c => c.name === profile.name))
+        if (list.find(c => c.username === profile.username))
           setIsFriend(true);
       }
     });
@@ -69,10 +69,10 @@ function ProfileHeader({ profile }: { profile: IClient }) {
               src={profile.avatar}
               width={120}
               height={120}
-              alt={profile.name}
+              alt={profile.username}
             />
             {
-              profile.name === client.name &&
+              profile.username === client.username &&
               <div role="button" onClick={onClickEditAvatar} className="upload-icon-wrapper">
                 <AddPhotoAlternateIcon className="upload-icon" fontSize="large" />
               </div>
@@ -81,14 +81,14 @@ function ProfileHeader({ profile }: { profile: IClient }) {
         </section>
         <section className="profile-header-content">
           <div className="profile-header-details-container">
-            <h1 id="profile-header-details-username">{profile.name}</h1>
+            <h1 id="profile-header-details-username">{profile.username}</h1>
           </div>
           <div className="profile-header-details">
             <h3 id="profile-header-details-rating">Rating: {profile.rating}</h3>
             <h3 id="profile-header-details-status">{profile.status.charAt(0).toLocaleUpperCase() + profile.status.slice(1)}</h3>
           </div>
           {
-            profile.name !== client.name &&
+            profile.username !== client.username &&
             <div className="profile-header-actions">
               {
                 !isFriend &&
@@ -137,7 +137,7 @@ function ProfileHeader({ profile }: { profile: IClient }) {
         </section>
       </div>
       {
-        isFormOpen && <EditUsernameForm clientName={client.name} onClose={handleClickForm} />
+        isFormOpen && <EditUsernameForm clientName={client.username} onClose={handleClickForm} />
       }
     </div>
   )

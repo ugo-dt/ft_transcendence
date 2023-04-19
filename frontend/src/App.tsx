@@ -1,37 +1,40 @@
 import './App.css'
 import { useEffect, useRef, useState } from 'react'
 import { Outlet } from 'react-router-dom'
-import { Context } from './context'
-import { io } from 'socket.io-client'
+import { Context, UserContext } from './context'
+import { Socket, io } from 'socket.io-client'
 import { CssBaseline } from '@mui/material'
-import { IClient } from './types'
+import { IUser } from './types'
 import Navbar from './layouts/Navbar'
-import axios from 'axios'
+import axios from "axios";
+import { DefaultEventsMap } from '@socket.io/component-emitter'
 
 function App() {
   const serverUrl = "http://localhost:3000";
-  const pongSocketRef = useRef(io(serverUrl + '/pong', {
-    autoConnect: false,
-  }));
-  const [client, setClient] = useState({} as IClient);
+  const socket = useRef<Socket<DefaultEventsMap, DefaultEventsMap> | null>(null);
   const [connected, setConnected] = useState(true);
+  const [user, setUser] = useState<IUser | null>(null);
 
   const contextValue = {
     serverUrl,
-    pongSocketRef,
-    client,
+    pongSocket: socket,
   };
 
-  // todo: change this
-  function onConnect() {
-    setConnected(true);
-    const userUrl = serverUrl + '/api/pong/users/user' + pongSocketRef.current.id;
-
-    axios.get(userUrl).then(res => {
-      setClient(res.data);
-    }).catch(err => {
-      console.error(err);
+  async function connect(data: IUser) {
+    socket.current = io(serverUrl + '/pong', {
+      autoConnect: false,
+      query: data,
     });
+    if (socket) {
+      socket.current.on('connect', onConnect);
+      socket.current.on('disconnect', onDisconnect);      
+      socket.current.connect();
+    }
+  }
+
+  async function onConnect() {
+
+    setConnected(true);
     // console.log(`Connected to ${serverUrl}.`);
   }
 
@@ -41,21 +44,45 @@ function App() {
   }
 
   useEffect(() => {
-    pongSocketRef.current.on('connect', onConnect);
-    pongSocketRef.current.on('disconnect', onDisconnect);
-    pongSocketRef.current.connect();
+    const controller = new AbortController();
+
+    const fct = async () => {
+      try {
+        const {data} = await axios.get(
+          "http://localhost:3000/api/users/me",
+          {
+            withCredentials: true,
+            signal: controller.signal
+          }
+        );
+        if (data) {
+          setUser(data);
+          connect(data);
+        }
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.code === "ERR_CANCELED") {
+          console.error("Request has been canceled!");
+        } else {
+          console.error(error);
+        }
+      }
+    }
+    fct();
 
     return () => {
-      pongSocketRef.current.disconnect();
-      pongSocketRef.current.removeAllListeners();
+      controller.abort();
+      if (socket.current) {
+        socket.current.disconnect();
+        socket.current.removeAllListeners();
+      }
     };
   }, []);
 
   return (
     <div className="App">
-      <Context.Provider value={contextValue}>
-        <CssBaseline />
-        <Navbar isSignedIn={true} />
+      <CssBaseline />
+      <UserContext.Provider value={{user, setUser}}>
+        <Navbar />
         {
           !connected &&
           <div className="alert-disconnected">
@@ -64,8 +91,10 @@ function App() {
             </h3>
           </div>
         }
-        <Outlet />
-      </Context.Provider>
+        <Context.Provider value={contextValue}>
+          <Outlet />
+        </Context.Provider>
+      </UserContext.Provider>
     </div>
   )
 }

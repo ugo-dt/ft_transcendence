@@ -23,13 +23,13 @@ function GameOver({ leftPlayer, rightPlayer }: GameOverProps) {
                 src={leftPlayer.avatar}
                 width={80}
                 height={80}
-                alt={leftPlayer.name}
-                onClick={() => window.open('/profile/' + leftPlayer.name.toLowerCase(), '_blank')}
+                alt={leftPlayer.username}
+                onClick={() => window.open('/profile/' + leftPlayer.username.toLowerCase(), '_blank')}
               />
             </div>
             <div className="game-over-users-username">
               {
-                leftPlayer.name
+                leftPlayer.username
               }
             </div>
           </div>
@@ -45,14 +45,14 @@ function GameOver({ leftPlayer, rightPlayer }: GameOverProps) {
                 src={rightPlayer.avatar}
                 width={80}
                 height={80}
-                alt={rightPlayer.name}
+                alt={rightPlayer.username}
                 role="button"
-                onClick={() => window.open('/profile/' + rightPlayer.name.toLowerCase(), '_blank')}
+                onClick={() => window.open('/profile/' + rightPlayer.username.toLowerCase(), '_blank')}
               />
             </div>
             <div className="game-over-users-username">
               {
-                rightPlayer.name
+                rightPlayer.username
               }
             </div>
           </div>

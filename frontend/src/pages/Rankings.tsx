@@ -5,26 +5,22 @@
 //
 //  See their current ranking
 
-import { useContext, useEffect, useState } from "react";
-import { IClient } from "../types";
-import { Context } from "../context";
-import axios from "axios";
+import { useEffect, useState } from "react";
+import { IUser } from "../types";
 import "../layouts/style/RoomList.css"
 import "./style/Rankings.css"
+import Requests from "../components/Requests";
 
 function Rankings() {
-  const [playerList, setPlayerList] = useState([] as IClient[]);
-  const client = useContext(Context).client;
-  const serverUrl = useContext(Context).serverUrl;
+  const [playerList, setPlayerList] = useState([] as IUser[]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     function getPlayerList() {
-      setPlayerList([] as IClient[]);
+      setPlayerList([] as IUser[]);
       setLoading(true); // Set loading state to true before making HTTP requests
-      const userUrl = serverUrl + '/api/pong/rankings';
-      axios.get(userUrl).then(res => {
-        setPlayerList(res.data);
+      Requests.getRankings().then(res => {
+        setPlayerList(res);
       }).catch(err => {
         console.error(err);
       });
@@ -35,7 +31,7 @@ function Rankings() {
 
   return (
     <div className="Rankings">
-      <h1>Rankings</h1>
+      <h1>Ratings</h1>
       {(loading && <h2>Loading...</h2>) ||
         (
           playerList.length > 0 &&
@@ -59,10 +55,10 @@ function Rankings() {
                       <td className="room-list-cell">
                         {index + 1}
                       </td>
-                      <td className="room-list-cell room-list-cell-username" title="See profile" role="button" onClick={() => window.open('/profile/' + player.name.toLowerCase(), '_blank')}>
-                        {player.name}
+                      <td className="room-list-cell room-list-cell-username" title="See profile" role="button" onClick={() => window.open('/profile/' + player.username.toLowerCase(), '_blank')}>
+                        {player.username}
                       </td>
-                      <td className="room-list-cell room-list-cell-username" title="See profile" role="button" onClick={() => window.open('/profile/' + player.name.toLowerCase(), '_blank')}>
+                      <td className="room-list-cell room-list-cell-username" title="See profile" role="button" onClick={() => window.open('/profile/' + player.username.toLowerCase(), '_blank')}>
                         {player.rating}
                       </td>
                     </tr>

@@ -1,10 +1,10 @@
-import { IClient } from "./IClient";
+import { IUser } from "./IUser";
 import { IGameState } from "./IGameState";
 
 export interface IRoom {
   id: number,
-  left: IClient,
-  right: IClient,
+  left: IUser,
+  right: IUser,
   gameState: IGameState,
   gameOver: boolean,
 }

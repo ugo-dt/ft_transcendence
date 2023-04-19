@@ -11,9 +11,9 @@ export class AuthService {
 		const options = {
 			grant_type: "authorization_code",
 			client_id: "u-s4t2ud-323464d0d3ecfc69260024761223d14b72b291dda193e39d980e413305d530d4",
-			client_secret: "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",
+			client_secret: "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",
 			code: authCode,
-			redirect_uri: "http://localhost:5173/auth"
+			redirect_uri: "http://localhost:5173"
 		};
 		const {data} = await firstValueFrom(this.httpService.post("https://api.intra.42.fr/oauth/token", options).pipe(catchError(() => {
 			throw new ForbiddenException("invalid authorization code");
@@ -48,7 +48,7 @@ export class AuthService {
 		const options = {
 			grant_type: "refresh_token",
 			client_id: "u-s4t2ud-323464d0d3ecfc69260024761223d14b72b291dda193e39d980e413305d530d4",
-			client_secret: "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",
+			client_secret: "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",
 			refresh_token: user.refreshToken
 		};
 		const {data} = await firstValueFrom(this.httpService.post("https://api.intra.42.fr/oauth/token", options).pipe(catchError(() => {

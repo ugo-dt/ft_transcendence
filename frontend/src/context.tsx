@@ -1,15 +1,21 @@
-import { createContext } from 'react';
+import { createContext, useRef } from 'react';
 import { Socket }from 'socket.io-client'
-import { IClient } from './types';
+import { IUser } from './types';
+import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 
 interface ContextValue {
   serverUrl: string,
-  pongSocketRef: React.MutableRefObject<Socket>,
-  client: IClient,
+  pongSocket: React.MutableRefObject<Socket<DefaultEventsMap, DefaultEventsMap> | null>
 }
 
 export const Context = createContext<ContextValue>({
   serverUrl: "",
-  pongSocketRef: {} as React.MutableRefObject<Socket>,
-  client: {} as IClient,
+  pongSocket: {} as React.MutableRefObject<Socket<DefaultEventsMap, DefaultEventsMap> | null>,
 });
+
+interface AuthContextValue {
+  user: IUser | null;
+  setUser: React.Dispatch<React.SetStateAction<IUser | null>>;
+}
+
+export const UserContext = createContext<AuthContextValue>({user: null, setUser: () => {}});

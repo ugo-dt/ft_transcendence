@@ -19,6 +19,8 @@
 .Home {
   display: flex;
   justify-content: center;
+  flex-direction: column;
+  align-items: center;
   user-select: none;
 }
 
@@ -31,11 +33,12 @@ h1 {
   font-size: xx-large;
 }
 
-.home-content {
+.home-main-content {
   background-color: var(--home-content-background-color);
   border: 1px solid var(--home-content-border-color);
   border-radius: 6px;
-  background: radial-gradient(180% 45% at top center, var(--home-content-radial-gradient-color) 30%,transparent 0);
+  width: fit-content;
+  background: radial-gradient(130% 44% at top center, var(--home-content-radial-gradient-color) 30%,transparent 0);
 }
 
 .home-sections {

@@ -1,21 +1,22 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { IRoom } from "../types";
-import { Context } from "../context";
+import Requests from "../components/Requests";
 import "./style/RoomList.css"
 
 const PAGE_SIZE: number = 10;
 
 function RoomList() {
   const navigate = useNavigate();
-  const socket = useContext(Context).pongSocketRef.current;
   const [roomList, setRoomList] = useState([] as IRoom[]);
   const [roomListPage, setRoomListPage] = useState(0);
   const [loading, setLoading] = useState(true);
 
   function _getRoomList() {
-    socket.emit('get-room-list', (data: IRoom[]) => {
-      setRoomList(data.sort((a, b) => a.id - b.id));
+    Requests.getRoomList().then(res => {
+      setRoomList(res.sort((a, b) => a.id - b.id));
+    }).catch(err => {
+      console.error(err);
     });
   }
 
@@ -62,11 +63,11 @@ function RoomList() {
                       <td className="room-list-cell">
                         {room.id}
                       </td>
-                      <td className="room-list-cell room-list-cell-username" title="See profile" role="button" onClick={() => window.open('/profile/' + room.left.name.toLowerCase(), '_blank')}>
-                        {room.left.name}
+                      <td className="room-list-cell room-list-cell-username" title="See profile" role="button" onClick={() => window.open('/profile/' + room.left.username.toLowerCase(), '_blank')}>
+                        {room.left.username}
                       </td>
-                      <td className="room-list-cell room-list-cell-username" title="See profile" role="button" onClick={() => window.open('/profile/' + room.right.name.toLowerCase(), '_blank')}>
-                        {room.right.name}
+                      <td className="room-list-cell room-list-cell-username" title="See profile" role="button" onClick={() => window.open('/profile/' + room.right.username.toLowerCase(), '_blank')}>
+                        {room.right.username}
                       </td>
                       <td className="room-list-cell">
                         <button title="Watch game" onClick={() => handleWatch(room.id)}>

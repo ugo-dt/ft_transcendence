@@ -57,7 +57,7 @@ function Chat() {
 			const message: IMessage = {
 				content: messageInputValue.trim(),
 				senderId: user?.id,
-				senderName: user.name,
+				senderName: user.username,
 				timestamp: Date().toString(),
 				toChannel: ChannelID
 			};
@@ -137,9 +137,13 @@ function Chat() {
 
 	function createUser(): void {
 		const user: IUser = {
-			name: createUserNameInputValue,
+			username: createUserNameInputValue,
 			id: -1,
-			avatar: null
+			avatar: '',
+			id42: -1,
+			status: 'online',
+			rating: 1200,
+			backgroundColor: 'black',
 		}
 		socket.emit('createUser', user, (response: IUser) => {
 			setUser(response);

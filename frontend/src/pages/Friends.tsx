@@ -7,16 +7,16 @@
  */
 
 import { useContext, useEffect, useState } from "react";
-import { IClient } from "../types";
-import { Context } from "../context";
-import axios from "axios";
+import { IUser } from "../types";
+import { UserContext } from "../context";
 import "./style/Friends.css"
 import Requests from "../components/Requests";
+import { useNavigate } from "react-router";
 
 function Friends() {
-  const [friendsList, setFriendsList] = useState<IClient[]>([]);
-  const client = useContext(Context).client;
-  const serverUrl = useContext(Context).serverUrl;
+  const navigate = useNavigate();
+  const [friendsList, setFriendsList] = useState<IUser[]>([]);
+  const client = useContext(UserContext).user;
   const [loading, setLoading] = useState(true);
   const [inputValue, setInputValue] = useState("");
 
@@ -40,9 +40,13 @@ function Friends() {
 
   useEffect(() => {
     function getFriendsList() {
-      setFriendsList([] as IClient[]);
+      if (!client) {
+        navigate("/home");
+        return ;
+      }
+      setFriendsList([] as IUser[]);
       setLoading(true); // Set loading state to true before making HTTP requests
-      Requests.getFriendList(client.name).then(listData => {
+      Requests.getFriendList(client.username).then(listData => {
         setFriendsList(listData);
       });
       setLoading(false);
@@ -81,8 +85,8 @@ function Friends() {
                 {
                   friendsList.map((friend) => (
                     <tr className="room-list-row" key={friend.id}>
-                      <td className="room-list-cell room-list-cell-username" title="See profile" role="button" onClick={() => window.open('/profile/' + friend.name, '_blank')}>
-                        {friend.name}
+                      <td className="room-list-cell room-list-cell-username" title="See profile" role="button" onClick={() => window.open('/profile/' + friend.username, '_blank')}>
+                        {friend.username}
                       </td>
                       <td className="room-list-cell">
                         {friend.rating}
@@ -91,7 +95,7 @@ function Friends() {
                         {friend.status.charAt(0).toLocaleUpperCase() + friend.status.slice(1)}
                       </td>
                       <td className="room-list-cell">
-                        <button title="Watch game" onClick={() => handleInvite(friend.name)}>
+                        <button title="Watch game" onClick={() => handleInvite(friend.username)}>
                           Invite
                         </button>
                       </td>

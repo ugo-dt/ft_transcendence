@@ -17,25 +17,29 @@
 
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import "./style/Profile.css"
-import "../layouts/style/RoomList.css"
 import ProfileHistory from "../layouts/ProfileHistory";
 import ProfileHeader from "../layouts/ProfileHeader";
-import { IClient, IRoom } from "../types";
-import { Context } from "../context";
+import { IUser, IRoom } from "../types";
+import { UserContext } from "../context";
 import Requests from "../components/Requests";
+import "./style/Profile.css"
+import "../layouts/style/RoomList.css"
 
 function Profile() {
-  const client = useContext(Context).client;
-  const [profile, setProfile] = useState<IClient | null>(null);
+  const client = useContext(UserContext).user;
+  const [profile, setProfile] = useState<IUser | null>(null);
   const [history, setHistory] = useState<IRoom[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     async function getProfile() {
+      if (!client) {
+        navigate("/home");
+        return ;
+      }
       if (window.location.pathname === '/profile' || window.location.pathname === '/profile/') {
-        navigate("/profile/" + client.name.toLowerCase());
+        navigate("/profile/" + client.username.toLowerCase());
       }
       setLoading(true);
       const profileName = window.location.pathname.split("/").pop()!;

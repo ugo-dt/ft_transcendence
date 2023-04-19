@@ -27,12 +27,12 @@ function ProfileHistory({ history, profileId }: { history: IRoom[], profileId: n
                   history.slice(historyPage * pageSize, historyPage * pageSize + pageSize).map((room) => (
                     <tr className="room-list-row" key={room.id}>
                       <td className="room-list-cell room-list-cell-username" title="See profile" role="button"
-                        onClick={() => window.open('/profile/' + room.left.name.toLowerCase(), '_blank')}>
-                        {room.left.name}
+                        onClick={() => window.open('/profile/' + room.left.username.toLowerCase(), '_blank')}>
+                        {room.left.username}
                       </td>
                       <td className="room-list-cell room-list-cell-username" title="See profile" role="button"
-                        onClick={() => window.open('/profile/' + room.right.name.toLowerCase(), '_blank')}>
-                        {room.right.name}
+                        onClick={() => window.open('/profile/' + room.right.username.toLowerCase(), '_blank')}>
+                        {room.right.username}
                       </td>
                       <td className="room-list-cell">
                         {(

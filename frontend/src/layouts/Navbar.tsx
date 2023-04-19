@@ -1,29 +1,56 @@
 import { useContext } from "react";
 import "./style/Navbar.css"
-import { NavLink } from "react-router-dom";
-import { Context } from "../context";
+import { NavLink, useNavigate } from "react-router-dom";
+import { UserContext } from "../context";
+import axios from "axios";
 
-interface NavbarProps {
-  isSignedIn: boolean,
+export default function Navbar() {
+  const {user, setUser} = useContext(UserContext);
+  const navigate = useNavigate();
+
+  async function signOut() {
+    try {
+      const res = await axios.post(
+        "http://localhost:3000/api/auth/signout",
+        {},
+        {
+          withCredentials: true
+        }
+      );
+      setUser(null);
+      navigate('/');
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  if (user) { return <NavBarConnected signOut={signOut} />; }
+  return <NavBarNotConnected />
 }
 
-function Navbar({ isSignedIn }: NavbarProps) {
-  const client = useContext(Context).client;
+interface NavBarProps {
+  signOut: () => Promise<void>;
+}
 
+function NavBarConnected({signOut}: NavBarProps) {
   return (
     <nav>
-      <NavLink className={"NavLink"} to="/home">Home</NavLink>
-      <NavLink className={"NavLink"} to="/profile" >Profile</NavLink>
-      <NavLink className={"NavLink"} to="/watch">Watch</NavLink>
-      <NavLink className={"NavLink"} to="/leaderboards">Leaderboards</NavLink>
-      <NavLink className={"NavLink"} to="/friends">Friends</NavLink>
+      <NavLink className="NavLink" to="/home">Home</NavLink>
+      <NavLink className="NavLink" to="/profile">Profile</NavLink>
+      <NavLink className="NavLink" to="/watch">Watch</NavLink>
+      <NavLink className="NavLink" to="/leaderboard">Leaderboard</NavLink>
+      <NavLink className="NavLink" to="/friends">Friends</NavLink>
       <NavLink className="NavLink" to="/messages">Messages</NavLink>
-      {
-        (isSignedIn && <NavLink className="NavLink" to="/signout">Sign out</NavLink>)
-                    || <NavLink className="NavLink" to="/signin">Sign in with 42</NavLink>
-      }
+      <NavLink className="NavLink" to="" onClick={signOut}>Sign out</NavLink>
     </nav>
   );
 }
 
-export default Navbar;
+function NavBarNotConnected() {
+  return (
+    <nav>
+      <NavLink className="NavLink" to="/">Home</NavLink>
+      <NavLink className="NavLink" to="https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-323464d0d3ecfc69260024761223d14b72b291dda193e39d980e413305d530d4&redirect_uri=http%3A%2F%2Flocalhost%3A5173&response_type=code">Sign in with 42</NavLink>
+    </nav>
+  );
+}

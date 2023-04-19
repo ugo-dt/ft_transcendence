@@ -1,12 +1,12 @@
-import { DEBUG_MODE, DEMO_MODE } from "../constants";
+import { DEMO_MODE } from "../constants";
 import { IPlayer } from "../types";
 import PongBot from "./PongBot";
 
 const PongDemo = () => {
   const leftPlayerDemo: IPlayer = {
     id: 0,
-    name: "",
-    avatar: null,
+    username: "Com1",
+    avatar: '',
     isLeft: true,
     isCom: true,
     score: 0,
@@ -14,8 +14,8 @@ const PongDemo = () => {
   };
   const rightPlayerDemo: IPlayer = {
     id: 1,
-    name: "Computer",
-    avatar: null,
+    username: "Com2",
+    avatar: '',
     isLeft: false,
     isCom: true,
     score: 0,

@@ -1,8 +1,9 @@
 import { useNavigate } from "react-router";
 import Form, { FormValue } from "../components/Form";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import Requests from "../components/Requests";
-import { IClient } from "../types";
+import { IUser } from "../types";
+import { UserContext } from "../context";
 
 interface EditUsernameProps {
   clientName: string,
@@ -14,6 +15,7 @@ function EditUsernameForm({
   onClose,
 }: EditUsernameProps) {
   const navigate = useNavigate();
+  const setUser = useContext(UserContext).setUser;
   const [editUsernameValue, setEditUsernameValue] = useState("");
   const [isValid, setIsValid] = useState(false);
   const [error, setError] = useState("");
@@ -52,9 +54,10 @@ function EditUsernameForm({
     if (!isValid) {
       return;
     }
-    Requests.editUsername(clientName, editUsernameValue).then((res: IClient | null) => {
+    Requests.editUsername(clientName, editUsernameValue).then((res: IUser | null) => {
       if (res) {
-        navigate("/profile/" + res.name.toLowerCase());
+        setUser(res);
+        navigate("/profile/" + res.username.toLowerCase());
       }
     }).catch(err => {
       console.error(err);

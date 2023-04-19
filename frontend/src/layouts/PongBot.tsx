@@ -57,7 +57,7 @@ const PongDebug = ({
             </div>
 
             <div className="debug-info-cell">
-              <h4>{gameState.leftPlayer.name + ((gameState.leftPaddle.isCom && " (COM)") || " (Human)")}</h4>
+              <h4>{gameState.leftPlayer.username + ((gameState.leftPaddle.isCom && " (COM)") || " (Human)")}</h4>
               <button onClick={() => setRightIsCom(!gameState.leftPaddle.isCom)}>
                 {((gameState.leftPaddle.isCom && "Set as Human") || "Set as COM")}
               </button>
@@ -70,7 +70,7 @@ const PongDebug = ({
             </div>
 
             <div className="debug-info-cell">
-              <h4>{gameState.rightPlayer.name + ((gameState.rightPaddle.isCom && " (COM)") || " (Human)")}</h4>
+              <h4>{gameState.rightPlayer.username + ((gameState.rightPaddle.isCom && " (COM)") || " (Human)")}</h4>
               <button onClick={() => setRightIsCom(!gameState.rightPaddle.isCom)}>
                 {((gameState.rightPaddle.isCom && "Set as Human") || "Set as COM")}
               </button>

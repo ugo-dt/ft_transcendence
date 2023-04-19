@@ -10,7 +10,7 @@ function usePlayer(_player: IPlayer): [
   return [
     {
       id: _player.id,
-      name: _player.name,
+      username: _player.username,
       avatar: _player.avatar,
       isLeft: _player.isLeft,
       isCom: _player.isCom,

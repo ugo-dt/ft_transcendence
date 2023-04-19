@@ -2,23 +2,23 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { useKeyState } from "use-key-state";
 import { Context } from "../context";
-import { IClient, IGameState, IPaddle, IPlayer, IRoom } from "../types";
+import { IUser, IGameState, IPaddle, IRoom } from "../types";
 import { CANVAS_DEFAULT_FOREGROUND_COLOR, CANVAS_DEFAULT_NET_COLOR, CANVAS_DEFAULT_NET_GAP, TARGET_FPS } from "../constants";
 import GameOver from "./GameOver";
 import Canvas from "../components/Canvas";
 
-function PlayerInfo({ player, isLeft }: { player: IClient, isLeft: boolean }) {
+function PlayerInfo({ player, isLeft }: { player: IUser, isLeft: boolean }) {
   return (
     <div className={`game-player-info ${isLeft ? 'game-player-info-left' : 'game-player-info-right'}`}>
       <img id="game-player-info-avatar"
         src={player.avatar}
         width={40}
         height={40}
-        alt={player.name}
-        onClick={() => window.open('/profile/' + player.name.toLowerCase(), '_blank')}
+        alt={player.username}
+        onClick={() => window.open('/profile/' + player.username.toLowerCase(), '_blank')}
         title='See profile'
       />
-      <h4 id="game-player-info-username">{player.name}</h4>
+      <h4 id="game-player-info-username">{player.username}</h4>
     </div>
   );
 }

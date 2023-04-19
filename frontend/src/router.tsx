@@ -8,7 +8,6 @@ import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
 import Rankings from "./pages/Rankings";
-import SignIn from "./pages/SignIn";
 import GameBot from "./pages/GameBot";
 import Play from "./pages/Play";
 import PlayOnline from "./pages/PlayOnline";
@@ -33,12 +32,8 @@ const router = createBrowserRouter([
         ]
       },
       {
-        path: "signin",
-        element: <SignIn />,
-      },
-      {
         path: "play",
-        element: <Game />
+        element: <Play />
       },
       {
         path: "messages",
@@ -49,7 +44,7 @@ const router = createBrowserRouter([
         element: <Friends />,
       },
       {
-        path: "leaderboards",
+        path: "leaderboard",
         element: <Rankings />,
       },
       {

@@ -35,7 +35,7 @@ function Profile() {
   useEffect(() => {
     async function getProfile() {
       if (window.location.pathname === '/profile' || window.location.pathname === '/profile/') {
-        navigate("/profile/" + client.name);
+        navigate("/profile/" + client.name.toLowerCase());
       }
       setLoading(true);
       const profileName = window.location.pathname.split("/").pop()!;

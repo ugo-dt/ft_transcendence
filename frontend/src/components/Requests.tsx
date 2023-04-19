@@ -5,7 +5,8 @@ namespace Requests {
   const __requests_url_base_ = "http://localhost:3000/api/" + 'pong/'
 
   const __url_users_base_ = __requests_url_base_ + 'users/';
-  const __url_edit_username = __requests_url_base_ + 'edit-username/';
+  const __url_edit_username_ = __requests_url_base_ + 'edit-username/';
+  const __url_valid_username_ = __requests_url_base_ + 'is-valid-username/';
 
   const __url_friends_base_ = __requests_url_base_ + 'friends/'
   const __url_add_friend_ = __requests_url_base_ + 'add-friend/'
@@ -68,7 +69,11 @@ namespace Requests {
   }
 
   export async function editUsername(username: string, newUsername: string): Promise<IClient | null> {
-    return await _postRequest(__url_edit_username + '?username=' + username + '&newUsername=' + newUsername);
+    return await _postRequest(__url_edit_username_ + '?username=' + username + '&newUsername=' + newUsername);
+  }
+
+  export async function isValidUsername(newUsername: string): Promise<string | null> {
+    return await _getRequest(__url_valid_username_ + '?username=' + newUsername);
   }
 }
 

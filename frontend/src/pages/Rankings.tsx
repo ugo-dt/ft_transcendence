@@ -59,10 +59,10 @@ function Rankings() {
                       <td className="room-list-cell">
                         {index + 1}
                       </td>
-                      <td className="room-list-cell room-list-cell-username" title="See profile" role="button" onClick={() => window.open('/profile/' + player.name, '_blank')}>
+                      <td className="room-list-cell room-list-cell-username" title="See profile" role="button" onClick={() => window.open('/profile/' + player.name.toLowerCase(), '_blank')}>
                         {player.name}
                       </td>
-                      <td className="room-list-cell room-list-cell-username" title="See profile" role="button" onClick={() => window.open('/profile/' + player.name, '_blank')}>
+                      <td className="room-list-cell room-list-cell-username" title="See profile" role="button" onClick={() => window.open('/profile/' + player.name.toLowerCase(), '_blank')}>
                         {player.rating}
                       </td>
                     </tr>

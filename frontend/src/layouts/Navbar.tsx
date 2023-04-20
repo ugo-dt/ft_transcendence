@@ -3,9 +3,10 @@ import "./style/Navbar.css"
 import { NavLink, useNavigate } from "react-router-dom";
 import { UserContext } from "../context";
 import axios from "axios";
+import { IUser } from "../types";
 
 export default function Navbar() {
-  const {user, setUser} = useContext(UserContext);
+  const { user, setUser } = useContext(UserContext);
   const navigate = useNavigate();
 
   async function signOut() {
@@ -24,19 +25,20 @@ export default function Navbar() {
     }
   }
 
-  if (user) { return <NavBarConnected signOut={signOut} />; }
+  if (user) { return <NavBarConnected user={user} signOut={signOut} />; }
   return <NavBarNotConnected />
 }
 
 interface NavBarProps {
+  user: IUser | null;
   signOut: () => Promise<void>;
 }
 
-function NavBarConnected({signOut}: NavBarProps) {
+function NavBarConnected({ user, signOut }: NavBarProps) {
   return (
     <nav>
       <NavLink className="NavLink" to="/home">Home</NavLink>
-      <NavLink className="NavLink" to="/profile">Profile</NavLink>
+      <NavLink className="NavLink" to={`/profile/${user ? user.username.toLowerCase() : ''}`}>Profile</NavLink>
       <NavLink className="NavLink" to="/watch">Watch</NavLink>
       <NavLink className="NavLink" to="/leaderboard">Leaderboard</NavLink>
       <NavLink className="NavLink" to="/friends">Friends</NavLink>

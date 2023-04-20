@@ -9,11 +9,11 @@ import BlockIcon from '@mui/icons-material/Block';
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import EditIcon from '@mui/icons-material/Edit';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
-import Requests from "../components/Requests";
+import Request from "../components/Request";
 import EditUsernameForm from "./EditUsernameForm";
 
 function ProfileHeader({ profile }: { profile: IUser }) {
-  const client = useContext(UserContext).user!;
+  const client = useContext(UserContext).user;
   const [isFriend, setIsFriend] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
 
@@ -30,12 +30,18 @@ function ProfileHeader({ profile }: { profile: IUser }) {
   }
 
   function onClickAddFriend() {
-    Requests.addFriend(client.username, profile.username);
+    if (!client) {
+      return ; // todo: redirect to sign in
+    }
+    Request.addFriend(client.username, profile.username);
     setIsFriend(true);
   }
 
   function onClickRemoveFriend() {
-    Requests.removeFriend(client.username, profile.username);
+    if (!client) {
+      return ;
+    }
+    Request.removeFriend(client.username, profile.username);
     setIsFriend(false);
   }
 
@@ -52,13 +58,12 @@ function ProfileHeader({ profile }: { profile: IUser }) {
   }
 
   useEffect(() => {
-    Requests.getFriendList(client.username).then(list => {
-      if (list) {
-        if (list.find(c => c.username === profile.username))
-          setIsFriend(true);
+    if (client && profile && profile.friends && profile.friends.length > 0) {
+      if (profile.friends.find(f => f.username === client.username)) {
+        setIsFriend(true);
       }
-    });
-  }, [])
+    }
+  }, []);
 
   return (
     <div className="profile-header-container">
@@ -72,7 +77,7 @@ function ProfileHeader({ profile }: { profile: IUser }) {
               alt={profile.username}
             />
             {
-              profile.username === client.username &&
+              client && profile.username === client.username &&
               <div role="button" onClick={onClickEditAvatar} className="upload-icon-wrapper">
                 <AddPhotoAlternateIcon className="upload-icon" fontSize="large" />
               </div>
@@ -88,7 +93,20 @@ function ProfileHeader({ profile }: { profile: IUser }) {
             <h3 id="profile-header-details-status">{profile.status.charAt(0).toLocaleUpperCase() + profile.status.slice(1)}</h3>
           </div>
           {
-            profile.username !== client.username &&
+            client && profile.username === client.username &&
+            <div className="profile-header-actions">
+              <div role="button" className="profile-header-actions-btn edit-profile-btn"
+                onClick={handleClickForm}
+              >
+                <EditIcon className="profile-header-actions-icon" /> Edit username
+              </div>
+              <div role="button" className="profile-header-actions-btn edit-profile-btn"
+                onClick={onClick2FA}
+              >
+                <VpnKeyIcon className="profile-header-actions-icon" /> Enable 2FA
+              </div>
+            </div>
+            ||
             <div className="profile-header-actions">
               {
                 !isFriend &&
@@ -120,24 +138,11 @@ function ProfileHeader({ profile }: { profile: IUser }) {
                 <BlockIcon className="profile-header-actions-icon" /> Block
               </div>
             </div>
-            ||
-            <div className="profile-header-actions">
-              <div role="button" className="profile-header-actions-btn edit-profile-btn"
-                onClick={handleClickForm}
-              >
-                <EditIcon className="profile-header-actions-icon" /> Edit username
-              </div>
-              <div role="button" className="profile-header-actions-btn edit-profile-btn"
-                onClick={onClick2FA}
-              >
-                <VpnKeyIcon className="profile-header-actions-icon" /> Enable 2FA
-              </div>
-            </div>
           }
         </section>
       </div>
       {
-        isFormOpen && <EditUsernameForm clientName={client.username} onClose={handleClickForm} />
+        isFormOpen && <EditUsernameForm onClose={handleClickForm} />
       }
     </div>
   )

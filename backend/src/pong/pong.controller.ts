@@ -1,11 +1,13 @@
 import { Controller, Delete, Get, NotFoundException, Param, Post, Query } from '@nestjs/common';
 import { PongService } from './pong.service';
+import { UsersService } from 'src/users/users.service';
 import { IRoom } from './Room/Room';
 import Client, { IClient } from './Client/Client';
+import { User } from 'src/users/entities/user.entity';
 
 @Controller('pong')
 export class PongController {
-  constructor(private readonly pongService: PongService) { }
+  constructor(private readonly pongService: PongService, private readonly usersService: UsersService) { }
   
   @Get('friends/:username')
   getFriends(@Param("username") username: string): IClient[] | null {
@@ -49,10 +51,11 @@ export class PongController {
   getHistory(): IRoom[] {
     return this.pongService.history();
   }
-
+  
   @Get('rankings')
-  getRankings(): IClient[] {
-    return this.pongService.rankings();
+  async getRankings(): Promise<User[]> {
+    const users = (await this.usersService.findAll()).sort((a, b) => (a.rating - b.rating));
+    return users.slice(0, 50);
   }
 
   @Get('rooms')

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { IRoom } from "../types";
-import Requests from "../components/Requests";
+import Request from "../components/Request";
 import "./style/RoomList.css"
 
 const PAGE_SIZE: number = 10;
@@ -13,7 +13,7 @@ function RoomList() {
   const [loading, setLoading] = useState(true);
 
   function _getRoomList() {
-    Requests.getRoomList().then(res => {
+    Request.getRoomList().then(res => {
       setRoomList(res.sort((a, b) => a.id - b.id));
     }).catch(err => {
       console.error(err);

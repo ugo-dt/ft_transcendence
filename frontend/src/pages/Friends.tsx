@@ -9,16 +9,17 @@
 import { useContext, useEffect, useState } from "react";
 import { IUser } from "../types";
 import { UserContext } from "../context";
-import "./style/Friends.css"
-import Requests from "../components/Requests";
+import Request from "../components/Request";
 import { useNavigate } from "react-router";
+import "./style/Friends.css"
 
 function Friends() {
-  const navigate = useNavigate();
-  const [friendsList, setFriendsList] = useState<IUser[]>([]);
   const client = useContext(UserContext).user;
+  const setUser = useContext(UserContext).setUser;
+  const [friendsList, setFriendsList] = useState<IUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [inputValue, setInputValue] = useState("");
+  const navigate = useNavigate();
 
   function handleInvite(friend: string) {
   }
@@ -40,26 +41,33 @@ function Friends() {
 
   useEffect(() => {
     function getFriendsList() {
-      if (!client) {
-        navigate("/home");
-        return ;
-      }
-      setFriendsList([] as IUser[]);
+      setFriendsList([]);
       setLoading(true); // Set loading state to true before making HTTP requests
-      Requests.getFriendList(client.username).then(listData => {
-        setFriendsList(listData);
-      });
+      if (client) {
+        Request.getProfile(client.username).then(res => {
+          if (res) {
+            setUser(res);
+            setFriendsList(res.friends);
+          }
+        }).catch(err => {
+          console.error(err);
+        });
+      }
       setLoading(false);
     }
     getFriendsList();
   }, []);
+
+  if (!client) {
+    return ;
+  }
 
   return (
     <div className="Friends">
       <h1>Friends</h1>
       {(loading && <h2>Loading...</h2>) ||
         (
-          friendsList.length > 0 &&
+          friendsList && friendsList.length > 0 &&
           <div className="room-list">
             <input type="text" id="friends-search-bar" onChange={(e) => setInputValue(e.target.value)} onKeyUp={filterFriends} placeholder="Search by username" title="Type in a name"
               value={inputValue}

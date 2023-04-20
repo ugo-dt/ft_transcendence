@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import { IUser } from "../types";
 import "../layouts/style/RoomList.css"
 import "./style/Rankings.css"
-import Requests from "../components/Requests";
+import Request from "../components/Request";
 
 function Rankings() {
   const [playerList, setPlayerList] = useState([] as IUser[]);
@@ -19,7 +19,7 @@ function Rankings() {
     function getPlayerList() {
       setPlayerList([] as IUser[]);
       setLoading(true); // Set loading state to true before making HTTP requests
-      Requests.getRankings().then(res => {
+      Request.getRankings().then(res => {
         setPlayerList(res);
       }).catch(err => {
         console.error(err);

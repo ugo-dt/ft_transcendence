@@ -21,10 +21,10 @@ export class UsersService {
     return this.repo.save(user);
   }
 
-  /** The ILike option allows matching of strings based on comparison with a pattern.
-   * The key word ILIKE can be used instead of LIKE to make the match case-insensitive
-   * according to the active locale. This is not in the SQL standard but is a PostgreSQL extension. */
   findOneUsername(username: string): Promise<User | null> {
+    /** The ILike option allows matching of strings based on comparison with a pattern.
+     * The key word ILIKE can be used instead of LIKE to make the match case-insensitive
+     * according to the active locale. This is not in the SQL standard but is a PostgreSQL extension. */
     return this.repo.findOneBy({ username: ILike(username) });
   }
 
@@ -40,15 +40,7 @@ export class UsersService {
     return this.repo.find();
   }
 
-  // async userFriendList(username: string): Promise<User[]> {
-  //   const user = await this.findOneUsername(username);
-  //   if (user) {
-  //     return user.friends;
-  //   }
-  //   return [];
-  // }
-
-  async update(id: number, attrs: Partial<User>): Promise<User> {
+  async update(id: number, attrs: Partial<User>): Promise<User> {    
     const user = await this.findOneId(id);
     if (!user) throw new NotFoundException("user not found");
     Object.assign(user, attrs);

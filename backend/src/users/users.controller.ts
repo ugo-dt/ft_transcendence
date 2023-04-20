@@ -1,4 +1,4 @@
-import { ClassSerializerInterceptor, Controller, Delete, Get, NotFoundException, Param, Post, Query, UseInterceptors } from '@nestjs/common';
+import { ClassSerializerInterceptor, Controller, Delete, Get, Param, Post, Query, UseInterceptors } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { User } from './entities/user.entity';
@@ -14,32 +14,30 @@ export class UsersController {
     return user;
   }
 
+  
+  @Get(":username")
+  async findUser(@Param("username") username: string) {
+    return this.usersService.findOneUsername(username);
+  }
+  
   @Get("all")
   findAllUsers() {
     return this.usersService.findAll();
   }
-
-  @Get(":username")
-  async findUser(@Param("username") username: string) {
-    const user = await this.usersService.findOneUsername(username);
-    if (!user) {
-      throw new NotFoundException("user not found");
-    }
-    return user;
-  }
-
+  
   @Delete(":id")
   removeUser(@Param("id") id: string) {
     return this.usersService.remove(parseInt(id));
   }
+  
+  @Post("edit/username/:value")
+  async editUsername(@CurrentUser() user: User, @Param("value") value: string) {
+    return await this.usersService.update(user.id, {username: value});
+  }
 
-  @Post('edit-username')
-  async changeUsername(@Query("username") username: string, @Query("newUsername") newUsername: string): Promise<User | null> {
-    const user = await this.usersService.findOneUsername(username);
-    if (!user) {
-      throw new NotFoundException("user not found");
-    };
-    return this.usersService.update(user.id, {username: newUsername});
+  @Post("edit/avatar/:value")
+  async editAvatar(@CurrentUser() user: User, @Param("value") value: string) {
+    return await this.usersService.update(user.id, {avatar: value});
   }
 
   @Get('edit/is-valid-username')
@@ -56,15 +54,4 @@ export class UsersController {
     }
     return 'already in use';
   }
-
-  @Get('rankings')
-  async getRankings(): Promise<User[]> {
-    const users = (await this.usersService.findAll()).slice(0, 50);
-    return users.sort((a, b) => (a.rating > b.rating) ? -1 : 1);
-  }
-
-  // @Get('friends/:username')
-  // async getFriends(@Param("username") username: string): Promise<User[]> {
-  //   return await this.usersService.userFriendList(username);
-  // }
 }

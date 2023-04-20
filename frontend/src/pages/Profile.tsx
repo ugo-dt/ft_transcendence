@@ -21,7 +21,7 @@ import ProfileHistory from "../layouts/ProfileHistory";
 import ProfileHeader from "../layouts/ProfileHeader";
 import { IUser, IRoom } from "../types";
 import { UserContext } from "../context";
-import Requests from "../components/Requests";
+import Request from "../components/Request";
 import "./style/Profile.css"
 import "../layouts/style/RoomList.css"
 
@@ -34,30 +34,32 @@ function Profile() {
 
   useEffect(() => {
     async function getProfile() {
-      if (!client) {
-        navigate("/home");
-        return ;
-      }
       if (window.location.pathname === '/profile' || window.location.pathname === '/profile/') {
-        navigate("/profile/" + client.username.toLowerCase());
+        return navigate("/home");
       }
       setLoading(true);
       const profileName = window.location.pathname.split("/").pop()!;
-
-      Requests.getProfile(profileName).then((profileData) => {
+      
+      Request.getProfile(profileName).then((profileData) => {
         if (!profileData) {
-          navigate("/home")
+          navigate("/home");
         };
         setProfile(profileData);
+      }).catch(err => {
+        console.error(err);
+        navigate("/home");
       });
-
-      Requests.getUserMatchHistory(profileName).then((historyData) => {;
+      Request.getUserMatchHistory(profileName).then((historyData) => {;
         setHistory(historyData);
       });
       setLoading(false);
     }
     getProfile();
   }, []);
+
+  // if (!client) {
+  //   return ;
+  // }
 
   return (
     <div className="Profile">

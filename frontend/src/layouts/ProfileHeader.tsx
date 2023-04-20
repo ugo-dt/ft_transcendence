@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { IUser } from "../types";
-import { Context, UserContext } from "../context";
+import { UserContext } from "../context";
 import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
 import SportsTennisIcon from '@mui/icons-material/SportsTennis';
@@ -11,18 +11,20 @@ import EditIcon from '@mui/icons-material/Edit';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import Request from "../components/Request";
 import EditUsernameForm from "./EditUsernameForm";
+import EditAvatarForm from "./EditAvatarForm";
 
 function ProfileHeader({ profile }: { profile: IUser }) {
   const client = useContext(UserContext).user;
   const [isFriend, setIsFriend] = useState(false);
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isAvatarFormOpen, setIsAvatarFormOpen] = useState(false);
+  const [isUsernameFormOpen, setIsUsernameFormOpen] = useState(false);
 
-  function handleClickForm() {
-    setIsFormOpen(!isFormOpen);
+  function onClickEditUsername() {
+    setIsUsernameFormOpen(!isUsernameFormOpen);
   }
 
   function onClickEditAvatar() {
-    console.log("upload");
+    setIsAvatarFormOpen(!isAvatarFormOpen);
   }
 
   function onClick2FA() {
@@ -33,7 +35,7 @@ function ProfileHeader({ profile }: { profile: IUser }) {
     if (!client) {
       return ; // todo: redirect to sign in
     }
-    Request.addFriend(client.username, profile.username);
+    Request.addFriend(profile.username);
     setIsFriend(true);
   }
 
@@ -41,7 +43,7 @@ function ProfileHeader({ profile }: { profile: IUser }) {
     if (!client) {
       return ;
     }
-    Request.removeFriend(client.username, profile.username);
+    Request.removeFriend(profile.username);
     setIsFriend(false);
   }
 
@@ -96,7 +98,7 @@ function ProfileHeader({ profile }: { profile: IUser }) {
             client && profile.username === client.username &&
             <div className="profile-header-actions">
               <div role="button" className="profile-header-actions-btn edit-profile-btn"
-                onClick={handleClickForm}
+                onClick={onClickEditUsername}
               >
                 <EditIcon className="profile-header-actions-icon" /> Edit username
               </div>
@@ -142,7 +144,10 @@ function ProfileHeader({ profile }: { profile: IUser }) {
         </section>
       </div>
       {
-        isFormOpen && <EditUsernameForm onClose={handleClickForm} />
+        isAvatarFormOpen && <EditAvatarForm onClose={onClickEditUsername} />
+      }
+      {
+        isUsernameFormOpen && <EditUsernameForm onClose={onClickEditUsername} />
       }
     </div>
   )

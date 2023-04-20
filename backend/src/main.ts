@@ -13,7 +13,7 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   app.enableCors({
     origin: [
-      `http://localhost:${clientPort}`,
+      `http://192.168.1.178:${clientPort}`,
     ],
     credentials: true,
   });

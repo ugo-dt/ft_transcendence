@@ -120,8 +120,8 @@ class Room {
   private _emitGame(server: Server, leftPlayer: Client, rightPlayer: Client) {
     const room = {
       id: this._id,
-      left: { id: leftPlayer.id, name: leftPlayer.username, avatar: leftPlayer.avatar },
-      right: { id: rightPlayer.id, name: rightPlayer.username, avatar: rightPlayer.avatar },
+      left: leftPlayer.IClient(),
+      right: rightPlayer.IClient(),
       gameState: this._gameState.IGameState(),
     }
     server.to(this._id.toString()).emit('update', room);

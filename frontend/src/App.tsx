@@ -8,9 +8,10 @@ import { IUser } from './types'
 import Navbar from './layouts/Navbar'
 import axios from "axios";
 import { DefaultEventsMap } from '@socket.io/component-emitter'
+import Request from './components/Request'
 
 function App() {
-  const serverUrl = "http://localhost:3000";
+  const serverUrl = "http://192.168.1.178:3000";
   const socket = useRef<Socket<DefaultEventsMap, DefaultEventsMap> | null>(null);
   const [connected, setConnected] = useState(true);
   const [user, setUser] = useState<IUser | null>(null);
@@ -27,13 +28,12 @@ function App() {
     });
     if (socket) {
       socket.current.on('connect', onConnect);
-      socket.current.on('disconnect', onDisconnect);      
+      socket.current.on('disconnect', onDisconnect);
       socket.current.connect();
     }
   }
 
   async function onConnect() {
-
     setConnected(true);
     // console.log(`Connected to ${serverUrl}.`);
   }
@@ -44,33 +44,20 @@ function App() {
   }
 
   useEffect(() => {
-    const controller = new AbortController();
-
-    const fct = async () => {
-      try {
-        const {data} = await axios.get(
-          "http://localhost:3000/api/users/me",
-          {
-            withCredentials: true,
-            signal: controller.signal
-          }
-        );
-        if (data) {
-          setUser(data);
-          connect(data);
-        }
-      } catch (error) {
-        if (axios.isAxiosError(error) && error.code === "ERR_CANCELED") {
-          console.error("Request has been canceled!");
-        } else {
-          console.error(error);
-        }
+    Request.me().then(res => {
+      if (res) {
+        setUser(res);
+        connect(res);
       }
-    }
-    fct();
+    }).catch(err => {
+      if (axios.isAxiosError(err) && err.code === "ERR_CANCELED") {
+        console.error("Request has been canceled!");
+      } else {
+        console.error(err);
+      }
+    });
 
     return () => {
-      controller.abort();
       if (socket.current) {
         socket.current.disconnect();
         socket.current.removeAllListeners();
@@ -81,7 +68,7 @@ function App() {
   return (
     <div className="App">
       <CssBaseline />
-      <UserContext.Provider value={{user, setUser}}>
+      <UserContext.Provider value={{ user, setUser }}>
         <Navbar />
         {
           !connected &&

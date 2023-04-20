@@ -10,10 +10,10 @@ export class AuthService {
   async getResourceOwnerAccessToken(authCode: string) {
     const options = {
       grant_type: "authorization_code",
-      client_id: "u-s4t2ud-323464d0d3ecfc69260024761223d14b72b291dda193e39d980e413305d530d4",
-      client_secret: "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",
+      client_id: "u-s4t2ud-0e31b61fc51b301f5e0594458baf1b0981c4106aff593588c1abb9708b7421c5",
+      client_secret: "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",
       code: authCode,
-      redirect_uri: "http://localhost:5173"
+      redirect_uri: "http://192.168.1.178:5173"
     };
     const { data } = await firstValueFrom(this.httpService.post("https://api.intra.42.fr/oauth/token", options).pipe(catchError(() => {
       throw new ForbiddenException("invalid authorization code");
@@ -57,8 +57,8 @@ export class AuthService {
     if (!user) throw new BadRequestException("invalid user id");
     const options = {
       grant_type: "refresh_token",
-      client_id: "u-s4t2ud-323464d0d3ecfc69260024761223d14b72b291dda193e39d980e413305d530d4",
-      client_secret: "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",
+      client_id: "u-s4t2ud-0e31b61fc51b301f5e0594458baf1b0981c4106aff593588c1abb9708b7421c5",
+      client_secret: "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",
       refresh_token: user.refreshToken
     };
     const { data } = await firstValueFrom(this.httpService.post("https://api.intra.42.fr/oauth/token", options).pipe(catchError(() => {

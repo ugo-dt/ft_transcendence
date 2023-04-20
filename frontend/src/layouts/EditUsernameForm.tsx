@@ -4,7 +4,6 @@ import { useContext, useState } from "react";
 import Request from "../components/Request";
 import { IUser } from "../types";
 import { UserContext } from "../context";
-import axios from "axios";
 
 interface EditUsernameProps {
   onClose: () => void,
@@ -22,6 +21,7 @@ function EditUsernameForm({
   const formValues: FormValue[] = [
     {
       value: editUsernameValue,
+      type: 'text',
       placeholder: 'New username',
       info: 'Username must be between 3 and 15 characters',
       error: error,

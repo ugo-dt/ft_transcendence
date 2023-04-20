@@ -12,13 +12,14 @@ import "./style/Rankings.css"
 import Request from "../components/Request";
 
 function Rankings() {
-  const [playerList, setPlayerList] = useState([] as IUser[]);
+  const [playerList, setPlayerList] = useState<IUser[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     function getPlayerList() {
-      setPlayerList([] as IUser[]);
+      setPlayerList([]);
       setLoading(true); // Set loading state to true before making HTTP requests
+      
       Request.getRankings().then(res => {
         setPlayerList(res);
       }).catch(err => {
@@ -34,7 +35,7 @@ function Rankings() {
       <h1>Ratings</h1>
       {(loading && <h2>Loading...</h2>) ||
         (
-          playerList.length > 0 &&
+          playerList && playerList.length > 0 &&
           <div className="room-list">
             <table className="room-list-table" id="rankings-table">
               <tbody>

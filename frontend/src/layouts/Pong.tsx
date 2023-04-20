@@ -7,7 +7,7 @@ import { CANVAS_DEFAULT_FOREGROUND_COLOR, CANVAS_DEFAULT_NET_COLOR, CANVAS_DEFAU
 import GameOver from "./GameOver";
 import Canvas from "../components/Canvas";
 
-function PlayerInfo({ player, isLeft }: { player: IUser, isLeft: boolean }) {
+function PlayerInfo({ player, isLeft }: { player: IUser, isLeft: boolean }) {  
   return (
     <div className={`game-player-info ${isLeft ? 'game-player-info-left' : 'game-player-info-right'}`}>
       <img id="game-player-info-avatar"
@@ -30,15 +30,18 @@ interface PongProps {
 
 function Pong({ role, roomId }: PongProps) {
   const navigate = useNavigate();
-  const socket = useContext(Context).pongSocketRef.current;
+  const socket = useContext(Context).pongSocket.current;
   const [canvas] = useState(new Canvas(650, 480, null));
   const roomRef = useRef<IRoom>({} as IRoom);
-  const [room, setRoom] = useState<IRoom>({} as IRoom);
+  const [room, setRoom] = useState<IRoom | null>(null);
   const keyboardState = useKeyState().keyStateQuery;
   const gameInterval = useRef<NodeJS.Timer | undefined>(undefined);
   const [gameOver, setGameOver] = useState(false);
 
   function _updateKeyState() {
+    if (!socket) {
+      return ;
+    }
     if (keyboardState.pressed('w') || keyboardState.pressed('up')) {
       socket.emit('upKeyPressed');
     }
@@ -79,6 +82,10 @@ function Pong({ role, roomId }: PongProps) {
   }
 
   function _update() {
+    if (!socket) {
+      return ;
+    }  
+    
     if (roomRef.current.gameState) {
       const gameState: IGameState = roomRef.current.gameState;
       
@@ -102,7 +109,7 @@ function Pong({ role, roomId }: PongProps) {
       });
       clearInterval(gameInterval.current);
       gameInterval.current = undefined;
-    }
+    }    
   }
 
   function onUpdate(data: IRoom) {
@@ -119,6 +126,9 @@ function Pong({ role, roomId }: PongProps) {
   }
 
   useEffect(() => {
+    if (!socket) {
+      return ;
+    }
     canvas.context = (document.getElementById("canvas") as HTMLCanvasElement).getContext("2d") as CanvasRenderingContext2D;
     if (role === 'spectator') {
       socket.emit('spectate', roomId);
@@ -147,11 +157,11 @@ function Pong({ role, roomId }: PongProps) {
           rightPlayer={room!.gameState.rightPlayer}
           />
         }
-        {room.left && <PlayerInfo player={room.left} isLeft={true} />}
+        {room && room.left && <PlayerInfo player={room.left} isLeft={true} />}
         <canvas id="canvas" width={650} height={480}>
           Your browser does not support the HTML 5 Canvas.
         </canvas>
-        {room.right && <PlayerInfo player={room.right} isLeft={false} />}
+        {room && room.right && <PlayerInfo player={room.right} isLeft={false} />}
       </div> {/* className="gameArea" */}
     </div>
   );

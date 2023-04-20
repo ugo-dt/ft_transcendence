@@ -4,7 +4,7 @@ import { useNavigate } from "react-router";
 import { Context } from "../context";
 
 function PlayOnline() {
-  const socket = useContext(Context).pongSocket.current!;
+  const socket = useContext(Context).pongSocket.current;
   const navigate = useNavigate();
   const inQueueRef = useRef(false);
   const [inQueue, setInQueue] = useState(false);
@@ -16,10 +16,13 @@ function PlayOnline() {
   const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
   function handleClick() {
+    if (!socket) {
+      return ;
+    }
     if (!socket.connected) {
       return ;
     }
-    if (!inQueueRef.current) {
+    if (!inQueueRef.current) {      
       socket.emit('join-queue');
       inQueueRef.current = true;
       setInQueue(true);
@@ -52,6 +55,7 @@ function PlayOnline() {
   useEffect(() => {
     if (!socket) {
       navigate("/home");
+      return ;
     }
     socket.on('startGame', (data: any) => { onStartGame(data) });
 

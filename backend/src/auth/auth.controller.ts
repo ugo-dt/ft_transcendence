@@ -17,7 +17,7 @@ export class AuthController {
       tokens.refresh_token,
       info.resource_owner_id,
       "User",
-      "http://localhost:3000/public/images/noavatar.png",
+      "http://192.168.1.178:3000/public/images/noavatar.png",
       'online',
       Elo.defaultRating,
       'black');

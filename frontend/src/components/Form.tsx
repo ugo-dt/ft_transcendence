@@ -3,6 +3,7 @@ import "./style/Form.css"
 
 export interface FormValue {
   value: string,
+  type: 'text' | 'file',
   label?: string,
   info?: string,
   error?: string,
@@ -49,7 +50,7 @@ function Form({
                 <section>
                   <input
                     id="form-input-field"
-                    type="text"
+                    type={value.type}
                     placeholder={value.placeholder}
                     value={value.value}
                     onChange={(e) => handleOnChange(value, e)}

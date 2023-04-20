@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { PongController } from './pong.controller';
 import { PongService } from './pong.service';
 import { PongGateway } from './pong.gateway';
-import { UsersService } from 'src/users/users.service';
 import { UsersModule } from 'src/users/users.module';
 
 @Module({

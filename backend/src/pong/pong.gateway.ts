@@ -4,8 +4,6 @@ import { PongService } from "./pong.service";
 import Queue from "./Matchmaking/Queue";
 import { IRoom } from "./Room/Room";
 import RoomHistory from "./Room/RoomHistory";
-import { Logger } from "@nestjs/common";
-import { IClient } from "./Client/Client";
 
 @WebSocketGateway({
   namespace: 'pong',
@@ -16,11 +14,7 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   constructor(private readonly pongService: PongService) {
     setInterval(() => {
-      // const queue: Client[] = Queue.list();
-      // if (queue.length >= 2) {
-      //   this.pongService.startGame(this.server, queue[0], queue[1]);
-      // }
-      if (Queue.size() >= 2) {
+      if (Queue.size() >= 1) {
         Queue.tryMatchPlayers(this.server, pongService);
       }
     }, 1000);

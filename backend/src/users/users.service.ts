@@ -40,16 +40,51 @@ export class UsersService {
     return this.repo.find();
   }
 
+  async rankings() {
+    const users = (await this.findAll()).sort((a, b) => (a.rating - b.rating));
+    return users.slice(0, 50);
+  }
+
+  // async addFriend(id: number, friendName: string): Promise<User> {
+  //   const user = await this.findOneId(id);
+  //   const friend = await this.findOneUsername(friendName);
+  //   if (!user) {
+  //     throw new NotFoundException("user not found");
+  //   }
+  //   if (!friend) {
+  //     throw new NotFoundException("friend not found");
+  //   }
+  //   user.friends.push(friend);
+  //   return this.repo.save(user);
+  // }
+
+  // async removeFriend(id: number, friendName: string): Promise<User> {
+  //   const user = await this.findOneId(id);
+  //   if (!user) {
+  //     throw new NotFoundException("user not found");
+  //   }  
+  //   const index = user.friends.findIndex(friend => friend.username === friendName);
+  //   if (index === -1) {
+  //     throw new NotFoundException("no such friend");
+  //   }
+  //   user.friends.splice(index, 1);
+  //   return this.repo.save(user);
+  // }
+
   async update(id: number, attrs: Partial<User>): Promise<User> {    
     const user = await this.findOneId(id);
-    if (!user) throw new NotFoundException("user not found");
+    if (!user) {
+      throw new NotFoundException("user not found");
+    }
     Object.assign(user, attrs);
     return this.repo.save(user);
   }
 
   async remove(id: number): Promise<User> {
     const user = await this.findOneId(id);
-    if (!user) throw new NotFoundException("user not found");
+    if (!user) {
+      throw new NotFoundException("user not found");
+    }
     return this.repo.remove(user);
   }
 }

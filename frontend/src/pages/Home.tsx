@@ -5,43 +5,28 @@ import axios from "axios";
 import { useContext, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { UserContext } from "../context";
+import Request from "../components/Request";
 
 function Home() {
   const navigate = useNavigate();
   const [parameters] = useSearchParams();
-  const {user, setUser} = useContext(UserContext);
+  const setUser = useContext(UserContext).setUser;
 
-	useEffect(() => {
-    const controller = new AbortController();
-
-		const fct = async () => {
-      try {
-        const {data} = await axios.post(
-          "http://localhost:3000/api/auth/signin",
-          {
-            code: parameters.get("code"),
-          },
-          {
-            withCredentials: true,
-            signal: controller.signal,
-          }
-        );
-        setUser(data);
+  useEffect(() => {
+    if (parameters.get("code")) {
+      Request.signIn(parameters.get("code")).then().then(res => {
+        setUser(res);
         navigate("/home");
-      } catch (error) {
-        if (axios.isAxiosError(error) && error.code === "ERR_CANCELED") {
+        window.location.reload();
+      }).catch(err => {
+        if (axios.isAxiosError(err) && err.code === "ERR_CANCELED") {
           console.error("Request has been canceled!");
         } else {
-          console.error(error);
+          console.error(err);
         }
-      }
+      });
     }
-
-    if (parameters.get("code")) { fct(); }
-    return () => {
-      controller.abort();
-    };
-	}, []);
+  }, []);
 
   return (
     <div className="Home">

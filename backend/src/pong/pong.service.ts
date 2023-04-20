@@ -1,12 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
-import Client, { IClient, STATUS_OFFLINE } from './Client/Client';
+import Client, { IClient, STATUS_OFFLINE, _Status } from './Client/Client';
 import Queue from './Matchmaking/Queue';
 import Room, { IRoom } from './Room/Room';
 import RoomHistory from './Room/RoomHistory';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class PongService {
+
+  constructor(private readonly usersService: UsersService) { }
 
   public async handleUserConnected(clientSocket: Socket): Promise<void> {
     let client = Client.at(clientSocket.handshake.query.username as string);
@@ -15,6 +18,7 @@ export class PongService {
       Logger.log(`Client created: ${client.username} (id: ${client.id})`);
       return ;
     }
+    this.updateClient(clientSocket);
     Logger.log(`Client connected: ${client.username} (id: ${client.id})`);
   }
 
@@ -34,6 +38,13 @@ export class PongService {
       return 'user not found';
     }
     client.__socket = clientSocket;
+    client.id = parseInt(clientSocket.handshake.query.id as string);
+    client.id42 = parseInt(clientSocket.handshake.query.id42 as string);
+    client.username = clientSocket.handshake.query.username as string;
+    client.avatar = clientSocket.handshake.query.avatar as string;
+    client.status = clientSocket.handshake.query.status as _Status;
+    client.rating = parseInt(clientSocket.handshake.query.rating as string);
+    client.backgroundColor = clientSocket.handshake.query.backgroundColor as string;
   }
 
   public addClientToQueue(clientSocket: Socket) {
@@ -127,8 +138,8 @@ export class PongService {
     return Room.list();
   }
 
-  public userHistory(id: string): IRoom[] {
-    const client = Client.at(id);
+  public userHistory(username: string): IRoom[] {
+    const client = Client.at(username);
     if (client) {
       return RoomHistory.userHistory(client);
     }

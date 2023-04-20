@@ -12,7 +12,7 @@ export default function Navbar() {
   async function signOut() {
     try {
       const res = await axios.post(
-        "http://localhost:3000/api/auth/signout",
+        "http://192.168.1.178:3000/api/auth/signout",
         {},
         {
           withCredentials: true
@@ -52,7 +52,7 @@ function NavBarNotConnected() {
   return (
     <nav>
       <NavLink className="NavLink" to="/">Home</NavLink>
-      <NavLink className="NavLink" to="https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-323464d0d3ecfc69260024761223d14b72b291dda193e39d980e413305d530d4&redirect_uri=http%3A%2F%2Flocalhost%3A5173&response_type=code">Sign in with 42</NavLink>
+      <NavLink className="NavLink" to="https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-0e31b61fc51b301f5e0594458baf1b0981c4106aff593588c1abb9708b7421c5&redirect_uri=http%3A%2F%2F192.168.1.178%3A5173&response_type=code">Sign in with 42</NavLink>
     </nav>
   );
 }

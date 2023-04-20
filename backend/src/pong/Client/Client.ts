@@ -1,5 +1,4 @@
 import { Socket } from "socket.io";
-import Elo from "../Matchmaking/Elo";
 
 export const STATUS_ONLINE = 'online';
 export const STATUS_PLAYING = 'playing';
@@ -74,9 +73,9 @@ class Client {
       id42: this._id42,
       username: this._username,
       avatar: this._avatar,
-      backgroundColor: this._backgroundColor,
       status: this._status,
       rating: this._rating,
+      backgroundColor: this._backgroundColor,
     }
     return iClient;
   }

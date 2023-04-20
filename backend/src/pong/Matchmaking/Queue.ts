@@ -54,9 +54,11 @@ namespace Queue {
   }
 
   export function tryMatchPlayers(server: Server, pongService: PongService): void {
+    //todo: revert this after tests
     const player1 = Array.from<Client>(__queue_.keys())[0];
-    const joinTime1 = __queue_.get(player1)!;
-    const player2 = _findBestMatch(player1, joinTime1);
+    const player2 = player1;
+    // const joinTime1 = __queue_.get(player1)!;
+    // const player2 = _findBestMatch(player1, joinTime1);
 
     if (player2) {
       pongService.startGame(server, player1, player2);

@@ -15,18 +15,16 @@
 // 	Set a nickame
 //	Enable 2FA
 
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import ProfileHistory from "../layouts/ProfileHistory";
 import ProfileHeader from "../layouts/ProfileHeader";
 import { IUser, IRoom } from "../types";
-import { UserContext } from "../context";
 import Request from "../components/Request";
 import "./style/Profile.css"
 import "../layouts/style/RoomList.css"
 
 function Profile() {
-  const client = useContext(UserContext).user;
   const [profile, setProfile] = useState<IUser | null>(null);
   const [history, setHistory] = useState<IRoom[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,24 +40,20 @@ function Profile() {
       
       Request.getProfile(profileName).then((profileData) => {
         if (!profileData) {
-          navigate("/home");
+          return navigate("/home");
         };
         setProfile(profileData);
+        Request.getUserMatchHistory(profileData.username).then((historyData) => {;        
+          setHistory(historyData);
+        });
       }).catch(err => {
         console.error(err);
         navigate("/home");
-      });
-      Request.getUserMatchHistory(profileName).then((historyData) => {;
-        setHistory(historyData);
       });
       setLoading(false);
     }
     getProfile();
   }, []);
-
-  // if (!client) {
-  //   return ;
-  // }
 
   return (
     <div className="Profile">

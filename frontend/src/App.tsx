@@ -15,13 +15,20 @@ function App() {
   const socket = useRef<Socket<DefaultEventsMap, DefaultEventsMap> | null>(null);
   const [connected, setConnected] = useState(true);
   const [user, setUser] = useState<IUser | null>(null);
+  const [loadingSocket, setLoadingSocket] = useState(true);
 
   const contextValue = {
     serverUrl,
     pongSocket: socket,
+    loadingSocket: loadingSocket,
+    setLoadingSocket: setLoadingSocket,
   };
 
   async function connect(data: IUser) {
+    if (socket.current && socket.current.connected) {
+      setLoadingSocket(false);
+      return ;
+    }
     socket.current = io(serverUrl + '/pong', {
       autoConnect: false,
       query: data,
@@ -30,6 +37,7 @@ function App() {
       socket.current.on('connect', onConnect);
       socket.current.on('disconnect', onDisconnect);
       socket.current.connect();
+      setLoadingSocket(false);
     }
   }
 
@@ -71,7 +79,7 @@ function App() {
       <UserContext.Provider value={{ user, setUser }}>
         <Navbar />
         {
-          !connected &&
+          user && !connected && 
           <div className="alert-disconnected">
             <h3>
               You are disconnected. Please refresh the page.

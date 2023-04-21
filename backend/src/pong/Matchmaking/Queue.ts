@@ -42,11 +42,11 @@ namespace Queue {
     const maxEloDiff = Elo.kFactor * Math.max(1, timeInQueue);
 
     const eligiblePlayers = Array.from<Client>(__queue_.keys()).filter(
-      p => p.id !== player.id && Math.abs(player.rating - p.rating) <= maxEloDiff
+      p => p.user.id !== player.user.id && Math.abs(player.user.rating - p.user.rating) <= maxEloDiff
     );
 
     if (eligiblePlayers.length > 0) {
-      eligiblePlayers.sort((a, b) => Math.abs(player.rating - a.rating) - Math.abs(player.rating - b.rating));
+      eligiblePlayers.sort((a, b) => Math.abs(player.user.rating - a.user.rating) - Math.abs(player.user.rating - b.user.rating));
       return eligiblePlayers[0];
     }
 

@@ -10,15 +10,17 @@ import { IUser } from "../types";
 import "../layouts/style/RoomList.css"
 import "./style/Rankings.css"
 import Request from "../components/Request";
+import { useNavigate } from "react-router";
 
 function Rankings() {
+  const navigate = useNavigate();
   const [playerList, setPlayerList] = useState<IUser[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     function getPlayerList() {
       setPlayerList([]);
-      setLoading(true); // Set loading state to true before making HTTP requests
+      setLoading(true);
       
       Request.getRankings().then(res => {
         setPlayerList(res);
@@ -56,10 +58,10 @@ function Rankings() {
                       <td className="room-list-cell">
                         {index + 1}
                       </td>
-                      <td className="room-list-cell room-list-cell-username" title="See profile" role="button" onClick={() => window.open('/profile/' + player.username.toLowerCase(), '_blank')}>
+                      <td className="room-list-cell room-list-cell-username" title="See profile" role="button" onClick={() => navigate('/profile/' + player.username.toLowerCase())}>
                         {player.username}
                       </td>
-                      <td className="room-list-cell room-list-cell-username" title="See profile" role="button" onClick={() => window.open('/profile/' + player.username.toLowerCase(), '_blank')}>
+                      <td className="room-list-cell" title="See profile" role="button">
                         {player.rating}
                       </td>
                     </tr>

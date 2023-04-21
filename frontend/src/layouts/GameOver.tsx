@@ -1,14 +1,17 @@
-import { useState } from "react";
-import { IPlayer } from "../types";
+import { useNavigate } from "react-router";
+import { IUser } from "../types";
 import "./style/GameOver.css"
 
 interface GameOverProps {
-  leftPlayer: IPlayer,
-  rightPlayer: IPlayer,
+  left: IUser,
+  right: IUser,
+  winnerIsLeft: boolean,
+  leftScore: number,
+  rightScore: number,
 }
 
-function GameOver({ leftPlayer, rightPlayer }: GameOverProps) {
-  const [winnerIsLeft] = useState(leftPlayer.score > rightPlayer.score);
+function GameOver({ left, right, winnerIsLeft, leftScore, rightScore }: GameOverProps) {
+  const navigate = useNavigate();
 
   return (
     <div className="game-over-container">
@@ -20,41 +23,31 @@ function GameOver({ leftPlayer, rightPlayer }: GameOverProps) {
           <div className="game-over-users game-over-users-left">
             <div className={`game-over-users-avatar ${winnerIsLeft ? 'game-over-users-winner' : ''}`}>
               <img id="avatar-component"
-                src={leftPlayer.avatar}
+                src={left.avatar}
                 width={80}
                 height={80}
-                alt={leftPlayer.username}
-                onClick={() => window.open('/profile/' + leftPlayer.username.toLowerCase(), '_blank')}
+                alt={left.username}
+                role="button"
+                title="See profile"
+                onClick={() => navigate('/profile/' + left.username.toLowerCase())}
               />
             </div>
-            <div className="game-over-users-username">
-              {
-                leftPlayer.username
-              }
-            </div>
+            <div className="game-over-users-username">{left.username}</div>
           </div>
-          <div className="game-over-results-score">
-            {
-              leftPlayer.score + '-' +
-              rightPlayer.score
-            }
-          </div>
+          <div className="game-over-results-score">{leftScore + '-' + rightScore}</div>
           <div className="game-over-users game-over-users-right">
             <div className={`game-over-users-avatar ${winnerIsLeft ? '' : 'game-over-users-winner'}`}>
               <img id="avatar-component"
-                src={rightPlayer.avatar}
+                src={right.avatar}
                 width={80}
                 height={80}
-                alt={rightPlayer.username}
+                alt={right.username}
                 role="button"
-                onClick={() => window.open('/profile/' + rightPlayer.username.toLowerCase(), '_blank')}
+                title="See profile"
+                onClick={() => navigate('/profile/' + right.username.toLowerCase())}
               />
             </div>
-            <div className="game-over-users-username">
-              {
-                rightPlayer.username
-              }
-            </div>
+            <div className="game-over-users-username">{right.username}</div>
           </div>
         </div>
       </section>

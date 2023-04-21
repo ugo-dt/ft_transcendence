@@ -1,4 +1,4 @@
-import { IClient } from "../Client/Client";
+import Client from "../Client/Client";
 import Room, { IRoom } from "./Room";
 
 namespace RoomHistory {
@@ -16,14 +16,14 @@ namespace RoomHistory {
     }
   }
 
-  export function userHistory(Client: IClient): IRoom[] {
+  export function userHistory(client: Client): IRoom[] {
     const history: IRoom[] = [];
 
     for (const room of __history_.values()) {
       if (!room.left || !room.right) {
         continue ;
       }
-      if (room.left.id === Client.id || room.right.id === Client.id) {
+      if (room.left.id === client.user.id || room.right.id === client.user.id) {
         history.push(room);
       }
     }

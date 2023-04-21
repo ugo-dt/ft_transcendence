@@ -1,15 +1,17 @@
 import { Logger } from "@nestjs/common";
 import { Server } from "socket.io";
-import Client, { IClient, STATUS_ONLINE, STATUS_PLAYING } from "../Client/Client";
+import Client, { STATUS_ONLINE, STATUS_PLAYING } from "../Client/Client";
 import { GameState, IGameState } from "../Game";
 import { Player } from "../Game";
 import Elo from "../Matchmaking/Elo";
 import RoomHistory from "./RoomHistory";
+import { UsersService } from "src/users/users.service";
+import { User } from "src/users/entities/user.entity";
 
 export interface IRoom {
   id: number,
-  left: IClient | null,
-  right: IClient | null,
+  left: User | null,
+  right: User | null,
   gameState: IGameState,
 }
 
@@ -54,12 +56,12 @@ class Room {
   public set left(left: Client | null) { this._left = left; }
   public set right(right: Client | null) { this._right = right; }
   public set gameState(gameState: GameState) { this._gameState = gameState; }
-  
+
   public IRoom(): IRoom {
     const iRoom: IRoom = {
       id: this._id,
-      left: this._left ? this._left.IClient() : null,
-      right: this._right ? this._right.IClient() : null,
+      left: this._left ? this._left.user : null,
+      right: this._right ? this._right.user : null,
       gameState: this._gameState.IGameState(),
     };
     return iRoom;
@@ -67,7 +69,7 @@ class Room {
 
   public handleKey(client: Client, direction: string, isPressed: boolean) {
     if (this._left && this._right) {
-      const player: Player = client.__socket.id === this._left.__socket.id ? this._gameState.leftPlayer : this._gameState.rightPlayer;
+      const player: Player = client.socket.id === this._left.socket.id ? this._gameState.leftPlayer : this._gameState.rightPlayer;
 
       if (direction === "up") {
         if (isPressed) {
@@ -95,12 +97,12 @@ class Room {
     Room.delete(this);
   }
 
-  public endGame(server: Server) {
+  public endGame(server: Server, usersService: UsersService) {
     if (!this._left || !this._right) {
       return;
     }
-    this._left.status = STATUS_ONLINE;
-    this._right.status = STATUS_ONLINE;
+    usersService.update(this._left.user.id, { status: STATUS_ONLINE });
+    usersService.update(this._right.user.id, { status: STATUS_ONLINE });
     this.gameState.gameOver = true;
 
     server.to(this._id.toString()).emit('endGame', this.gameState.IGameState());
@@ -108,9 +110,11 @@ class Room {
     if (this._gameState.interval) {
       clearInterval(this._gameState.interval);
     }
-    const [newLeftRating, newRightRating] = Elo.updateRatings(this._left.rating, this._right.rating, this._gameState.leftPlayer.score > this._gameState.rightPlayer.score);
-    this._left.rating = newLeftRating;
-    this._right.rating = newRightRating;
+    console.log(this._left.user.rating, this._right.user.rating);
+    
+    const [newLeftRating, newRightRating] = Elo.updateRatings(this._left.user.rating, this._right.user.rating, this._gameState.leftPlayer.score > this._gameState.rightPlayer.score);
+    usersService.update(this._left.user.id, { rating: newLeftRating });
+    usersService.update(this._right.user.id, { rating: newRightRating });
     Logger.log(`Game ended (room: ${this._id}).`);
     Logger.log(`Ratings updated (left: ${newLeftRating}, right: ${newRightRating})`);
     RoomHistory.add(this);
@@ -120,22 +124,22 @@ class Room {
   private _emitGame(server: Server, leftPlayer: Client, rightPlayer: Client) {
     const room = {
       id: this._id,
-      left: leftPlayer.IClient(),
-      right: rightPlayer.IClient(),
+      left: leftPlayer.user,
+      right: rightPlayer.user,
       gameState: this._gameState.IGameState(),
     }
     server.to(this._id.toString()).emit('update', room);
   }
 
-  public startGame(server: Server): boolean {
+  public startGame(server: Server, usersService: UsersService): boolean {
     if (!this._left || !this._right) {
       return false;
     }
     const leftPlayer: Client = this._left;
     const rightPlayer: Client = this._right;
-    leftPlayer.status = STATUS_PLAYING;
-    rightPlayer.status = STATUS_PLAYING;
-    this._gameState = new GameState(leftPlayer, rightPlayer);
+    usersService.update(leftPlayer.user.id, { status: STATUS_PLAYING });
+    usersService.update(rightPlayer.user.id, { status: STATUS_PLAYING });
+    this._gameState = new GameState(leftPlayer.user.id, rightPlayer.user.id);
 
     server.to(this._id.toString()).emit('startGame', { roomId: this._id });
     this._emitGame(server, leftPlayer, rightPlayer);
@@ -145,52 +149,52 @@ class Room {
         this._gameState.current = Date.now();
         this._gameState.deltaTime = (this._gameState.current - this._gameState.previous) / 1000;
         if (this._gameState.gameOver) {
-          this.endGame(server);
+          this.endGame(server, usersService);
         }
         this._gameState.update();
         this._emitGame(server, leftPlayer, rightPlayer);
-        if (leftPlayer.__socket.disconnected && rightPlayer.__socket.disconnected) {
+        if (leftPlayer.socket.disconnected && rightPlayer.socket.disconnected) {
           this.abortGame();
         }
         this._gameState.previous = Date.now();
       }, 1000 / this._gameState.fps);
     }, 1000);
 
-    Logger.log(`Game started (room: ${this._id}, left: ${leftPlayer.id}, right: ${rightPlayer.id}).`);
+    Logger.log(`Game started (room: ${this._id}, left: ${leftPlayer.user.id}, right: ${rightPlayer.user.id}).`);
     return true;
   }
 
   public join(client: Client): boolean {
     if (!this._left) {
       this._left = client;
-      this._left.__socket.join(this._id.toString());
+      this._left.socket.join(this._id.toString());
       return true;
     }
     if (!this._right) {
       this._right = client;
-      this._right.__socket.join(this._id.toString());
+      this._right.socket.join(this._id.toString());
       return true;
     }
     return false;
   }
 
   public addSpectator(client: Client) {
-    client.__socket.join(this._id.toString());
+    client.socket.join(this._id.toString());
     this._spectators.add(client);
   }
 
   public removeSpectator(client: Client) {
-    client.__socket.leave(this._id.toString());
+    client.socket.leave(this._id.toString());
     this._spectators.delete(client);
   }
 
   public leave(client: Client | null) {
     if (this._left) {
-      this._left.__socket.leave(this._id.toString());
+      this._left.socket.leave(this._id.toString());
       return true;
     }
     if (this._right) {
-      this._right.__socket.leave(this._id.toString());
+      this._right.socket.leave(this._id.toString());
       return true;
     }
     return false;
@@ -204,7 +208,8 @@ class Room {
 
   public static with(client: Client): Room | null {
     for (const room of Room.__rooms_.values()) {
-      if ((room._left && room._left.id === client.id) || (room._right && room._right.id === client.id)) {
+      if ((room._left && room._left.user.id === client.user.id)
+        || (room._right && room._right.user.id === client.user.id)) {
         return room;
       }
     }

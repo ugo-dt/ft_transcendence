@@ -1,4 +1,4 @@
-import axios, { AxiosInstance } from "axios";
+import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 import { IUser, IRoom } from "../types";
 
 namespace __url_ {
@@ -48,7 +48,7 @@ class Request {
         if (error.response.status === 403 && !originalReq._retry) {
           console.log('request: error 403');
           originalReq._retry = true;
-          const url = __url_.__refresh_token_;          
+          const url = __url_.__refresh_token_;
           try {
             await axios.post(url);
             return axios(originalReq);
@@ -75,8 +75,8 @@ class Request {
     return data ? data : [];
   }
 
-  private static async __make_post_request_<T, U>(url: string, data?: U): Promise<T | null> {
-    return await Request.__axios_.post(url, data).then(res => {
+  private static async __make_post_request_<T>(url: string, data?: any, config?: AxiosRequestConfig<any> | undefined): Promise<T | null> {
+    return await Request.__axios_.post(url, data, config).then(res => {
       return res.data;
     }).catch(() => {
       return null;
@@ -111,8 +111,8 @@ class Request {
     return await Request.__make_get_request_(__url_.__users_base_ + '/' + username);
   }
 
-  public static async getUserMatchHistory(username: string): Promise<IRoom[]> {
-    return this.__make_array_get_request_(__url_.__history_ + '/' + username);
+  public static async getUserMatchHistory(id: number): Promise<IRoom[]> {
+    return this.__make_array_get_request_(__url_.__history_ + '/' + id);
   }
 
   public static async getRankings(): Promise<IUser[]> {
@@ -139,8 +139,16 @@ class Request {
     return await Request.__make_post_request_(__url_.__edit_username_, { username: newUsername });
   }
 
-  public static async editAvatar(newUsername: string): Promise<IUser | null> {
-    return await Request.__make_post_request_(__url_.__edit_avatar_, { avatar: newUsername });
+  public static async editAvatar(formData: FormData): Promise<IUser | null> {
+    return await Request.__make_post_request_(
+      __url_.__edit_avatar_,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
   }
 }
 

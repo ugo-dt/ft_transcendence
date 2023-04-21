@@ -1,9 +1,11 @@
-import { ClassSerializerInterceptor, Controller, Delete, Get, Param, Post, Query, UseInterceptors } from '@nestjs/common';
+import { ClassSerializerInterceptor, Controller, Delete, Get, Param, Post, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { User } from './entities/user.entity';
 import { CurrentUserInterceptor } from './interceptors/current-user.interceptor';
 import { MessageBody } from '@nestjs/websockets';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { createWriteStream } from 'fs';
 
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor, CurrentUserInterceptor)
@@ -16,42 +18,52 @@ export class UsersController {
   }
 
   @Get(":username")
-  async findUser(@Param("username") username: string) {
+  findUser(@Param("username") username: string): Promise<User | null> {
     return this.usersService.findOneUsername(username);
-  }  
-  
+  }
+
   @Get("get/all")
-  findAllUsers() {
+  findAllUsers(): Promise<User[]> {
     return this.usersService.findAll();
   }
 
   @Delete(":id")
-  removeUser(@Param("id") id: string) {
+  removeUser(@Param("id") id: string): Promise<User> {
     return this.usersService.remove(parseInt(id));
   }
-  
+
   @Get('get/rankings')
-  getRankings() {
-    return this.usersService.rankings();
+  async getRankings(): Promise<User[]> {
+    return await this.usersService.rankings();
   }
-  
+
   @Post("edit/username")
-  async editUsername(@CurrentUser() user: User, @MessageBody() data: {username: string}) {
-    return await this.usersService.update(user.id, {username: data.username});
+  async editUsername(@CurrentUser() user: User, @MessageBody() data: { username: string }): Promise<User> {
+    return await this.usersService.update(user.id, { username: data.username });
   }
 
+  // todo: add file validation
+  // https://docs.nestjs.com/techniques/file-upload#basic-example
   @Post("edit/avatar")
-  async editAvatar(@CurrentUser() user: User, @MessageBody() data: {avatar: string}) {
-    return await this.usersService.update(user.id, {avatar: data.avatar});
+  @UseInterceptors(FileInterceptor('image'))
+  async editAvatar(@CurrentUser() user: User, @UploadedFile() file: Express.Multer.File): Promise<User> {
+    const dirname = 'public/user';
+    const filename = user.id + '.' + Date.now() + '.' + file.mimetype.split("/").pop();
+    const fullpath = dirname + filename;
+    const writeStream = createWriteStream(fullpath);
+    writeStream.write(file.buffer);
+    writeStream.end();
+    return await this.usersService.update(user.id, {avatar: `http://192.168.1.178:3000/${fullpath}`});
   }
 
+  // todo: add friends
   @Post("add-friend/")
-  async addFriend(@CurrentUser() user: User, @MessageBody() data: {friendUsername: string}) {
+  async addFriend(@CurrentUser() user: User, @MessageBody() data: { friendUsername: string }) {
     // return await this.usersService.addFriend(user.id, data.friendUsername);
   }
 
   @Delete("remove-friend/:friendUsername")
-  async removeFriend(@CurrentUser() user: User, @MessageBody() data: {friendUsername: string}) {
+  async removeFriend(@CurrentUser() user: User, @MessageBody() data: { friendUsername: string }) {
     // return await this.usersService.removeFriend(user.id, data.friendUsername);
   }
 

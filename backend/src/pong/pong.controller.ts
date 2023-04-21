@@ -6,9 +6,9 @@ import { IRoom } from './Room/Room';
 export class PongController {
   constructor(private readonly pongService: PongService) { }
 
-  @Get('history/:username')
-  getUserHistory(@Param("username") username: string): IRoom[] {
-    return this.pongService.userHistory(username);
+  @Get('history/:id')
+  getUserHistory(@Param("id") id: number): IRoom[] {
+    return this.pongService.userHistory(id);
   }
 
   @Get('history')

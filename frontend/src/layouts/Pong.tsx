@@ -6,8 +6,11 @@ import { IUser, IGameState, IPaddle, IRoom } from "../types";
 import { CANVAS_DEFAULT_FOREGROUND_COLOR, CANVAS_DEFAULT_NET_COLOR, CANVAS_DEFAULT_NET_GAP, TARGET_FPS } from "../constants";
 import GameOver from "./GameOver";
 import Canvas from "../components/Canvas";
+import { io } from "socket.io-client";
 
-function PlayerInfo({ player, isLeft }: { player: IUser, isLeft: boolean }) {  
+function PlayerInfo({ player, isLeft }: { player: IUser, isLeft: boolean }) {
+  const navigate = useNavigate();
+
   return (
     <div className={`game-player-info ${isLeft ? 'game-player-info-left' : 'game-player-info-right'}`}>
       <img id="game-player-info-avatar"
@@ -15,7 +18,7 @@ function PlayerInfo({ player, isLeft }: { player: IUser, isLeft: boolean }) {
         width={40}
         height={40}
         alt={player.username}
-        onClick={() => window.open('/profile/' + player.username.toLowerCase(), '_blank')}
+        onClick={() => navigate('/profile/' + player.username.toLowerCase())}
         title='See profile'
       />
       <h4 id="game-player-info-username">{player.username}</h4>
@@ -30,29 +33,43 @@ interface PongProps {
 
 function Pong({ role, roomId }: PongProps) {
   const navigate = useNavigate();
-  const socket = useContext(Context).pongSocket.current;
+  const socket = useContext(Context).pongSocket;
+  const context = useContext(Context);
   const [canvas] = useState(new Canvas(650, 480, null));
-  const roomRef = useRef<IRoom>({} as IRoom);
+  const roomRef = useRef<IRoom | null>(null);
   const [room, setRoom] = useState<IRoom | null>(null);
   const keyboardState = useKeyState().keyStateQuery;
   const gameInterval = useRef<NodeJS.Timer | undefined>(undefined);
   const [gameOver, setGameOver] = useState(false);
 
+  async function connect(data: IUser) {
+    if (socket.current && socket.current.connected) {
+      return ;
+    }
+    socket.current = io("http://192.168.1.178:3000/pong", {
+      autoConnect: false,
+      query: data,
+    });
+    if (socket) {
+      socket.current.connect();
+    }
+  }
+
   function _updateKeyState() {
-    if (!socket) {
+    if (!socket.current) {
       return ;
     }
     if (keyboardState.pressed('w') || keyboardState.pressed('up')) {
-      socket.emit('upKeyPressed');
+      socket.current.emit('upKeyPressed');
     }
     else {
-      socket.emit('upKeyUnpressed');
+      socket.current.emit('upKeyUnpressed');
     }
     if (keyboardState.pressed('s') || keyboardState.pressed('down')) {
-      socket.emit('downKeyPressed');
+      socket.current.emit('downKeyPressed');
     }
     else {
-      socket.emit('downKeyUnpressed');
+      socket.current.emit('downKeyUnpressed');
     }
   }
 
@@ -60,10 +77,15 @@ function Pong({ role, roomId }: PongProps) {
     canvas.drawRect(paddle.x, paddle.y, paddle.width, paddle.height, paddle.color);
   }
 
-  function _render(gameState: IGameState) {
+  function _render() {
+    if (!roomRef.current) {
+      return ;
+    }
+    const gameState: IGameState = roomRef.current.gameState;
+
     canvas.clear();
-    canvas.drawRect(0, 0, canvas.width / 2, canvas.height, gameState.leftPlayer.backgroundColor);
-    canvas.drawRect(canvas.width / 2, 0, canvas.width, canvas.height, gameState.rightPlayer.backgroundColor);
+    canvas.drawRect(0, 0, canvas.width / 2, canvas.height, roomRef.current.left.backgroundColor);
+    canvas.drawRect(canvas.width / 2, 0, canvas.width, canvas.height, roomRef.current.right.backgroundColor);
 
     canvas.drawText(gameState.leftPlayer.score.toString(), canvas.width / 4, canvas.height / 5, CANVAS_DEFAULT_FOREGROUND_COLOR);
     canvas.drawText(gameState.rightPlayer.score.toString(), 3 * canvas.width / 4, canvas.height / 5, CANVAS_DEFAULT_FOREGROUND_COLOR);
@@ -82,22 +104,22 @@ function Pong({ role, roomId }: PongProps) {
   }
 
   function _update() {
-    if (!socket) {
+    if (!socket.current) {
       return ;
-    }  
-    
+    }
+    if (!roomRef.current) {
+      return ;
+    }    
     if (roomRef.current.gameState) {
-      const gameState: IGameState = roomRef.current.gameState;
-      
-      if (gameState.gameOver) {
+      if (roomRef.current.gameState.gameOver) {
         onEndGame();
         return;
       }
       _updateKeyState();
-      _render(gameState);
+      _render();
     }
     else {
-      socket.emit('game-results', roomId, (data: {room: IRoom}) => {
+      socket.current.emit('game-results', roomId, (data: {room: IRoom}) => {
         if (data.room) {
           roomRef.current = data.room;
           setRoom(roomRef.current);
@@ -114,7 +136,7 @@ function Pong({ role, roomId }: PongProps) {
 
   function onUpdate(data: IRoom) {
     roomRef.current = data;
-    setRoom(roomRef.current);
+    setRoom(roomRef.current);    
   }
 
   function onEndGame() {
@@ -126,26 +148,29 @@ function Pong({ role, roomId }: PongProps) {
   }
 
   useEffect(() => {
-    if (!socket) {
+    if (!socket.current) {
       return ;
     }
+
     canvas.context = (document.getElementById("canvas") as HTMLCanvasElement).getContext("2d") as CanvasRenderingContext2D;
     if (role === 'spectator') {
-      socket.emit('spectate', roomId);
+      socket.current.emit('spectate', roomId);
     }
-    socket.on('update', onUpdate);
-    socket.on('endGame', onEndGame);
+    socket.current.on('update', onUpdate);
+    socket.current.on('endGame', onEndGame);
     gameInterval.current = setInterval(_update, 1000 / TARGET_FPS);
 
     return () => {
-      if (role === 'spectator') {
-        socket.emit('stop-spectate', roomId);
-      }
       clearInterval(gameInterval.current);
-      socket.off('update', onUpdate);
-      socket.off('endGame', onEndGame);
+      if (socket.current) {
+        if (role === 'spectator') {
+          socket.current.emit('stop-spectate', roomId);
+        }
+        socket.current.off('update', onUpdate);
+        socket.current.off('endGame', onEndGame);
+      }
     }
-  }, []);
+  }, [context]);
 
   return (
     <div className="Pong">
@@ -153,8 +178,11 @@ function Pong({ role, roomId }: PongProps) {
         {
           gameOver &&
           <GameOver
-          leftPlayer={room!.gameState.leftPlayer}
-          rightPlayer={room!.gameState.rightPlayer}
+          left={room!.left}
+          right={room!.right}
+          winnerIsLeft={room!.gameState.leftPlayer.score > room!.gameState.rightPlayer.score}
+          leftScore={room!.gameState.leftPlayer.score}
+          rightScore={room!.gameState.rightPlayer.score}
           />
         }
         {room && room.left && <PlayerInfo player={room.left} isLeft={true} />}

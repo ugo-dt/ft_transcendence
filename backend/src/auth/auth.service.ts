@@ -2,6 +2,7 @@ import { HttpService } from '@nestjs/axios';
 import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { catchError, firstValueFrom } from 'rxjs';
 import { UsersService } from '../users/users.service';
+import Elo from 'src/pong/Matchmaking/Elo';
 
 @Injectable()
 export class AuthService {
@@ -36,18 +37,18 @@ export class AuthService {
     accessToken: string,
     refreshToken: string,
     id42: number,
-    username: string,
-    avatar: string,
-    status: string,
-    rating: number,
-    backgroundColor: string,
   ) {
     let user = await this.usersService.findOneId42(id42);
     if (!user) {
-      user = await this.usersService.create(accessToken, refreshToken, id42, username, avatar, status, rating, backgroundColor);
-      this.usersService.update(user.id, {username: username + user.id});
-    } else {
-      user = await this.usersService.update(user.id, { accessToken, refreshToken, id42, username, avatar, status, rating, backgroundColor });
+      user = await this.usersService.create(
+        accessToken,
+        refreshToken, id42,
+        "User",
+        "http://192.168.1.178:3000/public/images/noavatar.png",
+        'online',
+        Elo.defaultRating,
+        'black');
+      this.usersService.update(user.id, { username: user.username + user.id });
     }
     return user;
   }

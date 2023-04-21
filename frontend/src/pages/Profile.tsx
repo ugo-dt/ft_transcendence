@@ -16,7 +16,7 @@
 //	Enable 2FA
 
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import ProfileHistory from "../layouts/ProfileHistory";
 import ProfileHeader from "../layouts/ProfileHeader";
 import { IUser, IRoom } from "../types";
@@ -25,25 +25,30 @@ import "./style/Profile.css"
 import "../layouts/style/RoomList.css"
 
 function Profile() {
+  const state = useLocation().state;
+  const [info, setInfo] = useState("");
   const [profile, setProfile] = useState<IUser | null>(null);
   const [history, setHistory] = useState<IRoom[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (state) {
+      setInfo(state.info);
+    }
+    window.history.replaceState({}, document.title);
     async function getProfile() {
       if (window.location.pathname === '/profile' || window.location.pathname === '/profile/') {
         return navigate("/home");
       }
       setLoading(true);
       const profileName = window.location.pathname.split("/").pop()!;
-      
       Request.getProfile(profileName).then((profileData) => {
         if (!profileData) {
           return navigate("/home");
         };
         setProfile(profileData);
-        Request.getUserMatchHistory(profileData.username).then((historyData) => {;        
+        Request.getUserMatchHistory(profileData.id).then((historyData) => {;        
           setHistory(historyData);
         });
       }).catch(err => {
@@ -62,6 +67,7 @@ function Profile() {
           profile != null ? (
             <>
               <ProfileHeader profile={profile} />
+              <h3 id="profile-state-info">{info}&nbsp;</h3>
               <ProfileHistory history={history} profileId={profile.id} />
             </>
           ) : (<h2>Profile not found</h2>)

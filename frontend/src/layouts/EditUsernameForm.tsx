@@ -1,31 +1,31 @@
+import { useState } from "react";
 import { useNavigate } from "react-router";
-import Form, { FormValue } from "../components/Form";
-import { useContext, useState } from "react";
+import Form, { FormText } from "../components/Form";
 import Request from "../components/Request";
 import { IUser } from "../types";
-import { UserContext } from "../context";
 
 interface EditUsernameProps {
-  onClose: () => void,
+  onClose?: () => void,
 }
 
 function EditUsernameForm({
   onClose,
 }: EditUsernameProps) {
   const navigate = useNavigate();
-  const client = useContext(UserContext).user;
-  const setUser = useContext(UserContext).setUser;
   const [editUsernameValue, setEditUsernameValue] = useState("");
   const [isValid, setIsValid] = useState(false);
   const [error, setError] = useState("");
-  const formValues: FormValue[] = [
+  const formValues: FormText[] = [
     {
       value: editUsernameValue,
-      type: 'text',
+      label: '',
       placeholder: 'New username',
       info: 'Username must be between 3 and 15 characters',
+      isValid: isValid,
+      valid: 'Username is valid.',
       error: error,
-      onChange: (v: string) => {
+      onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
+        const v: string = event.target.value;
         setIsValid(false);
         if (v.length === 0) {
           setEditUsernameValue(v);
@@ -46,17 +46,17 @@ function EditUsernameForm({
         });
         setEditUsernameValue(v);
       },
-      isValid: isValid,
     },
   ];
 
-  async function editUsername() {
+  async function submitUsername(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     if (!isValid) {
       return;
     }
     Request.editUsername(editUsernameValue).then((res: IUser | null) => {
       if (res) {
-        navigate("/profile/" + res.username.toLowerCase());
+        navigate("/profile/" + res.username.toLowerCase(), {state: {info: 'Username updated successfully.'}})
         window.location.reload();
       }
     }).catch(err => {
@@ -68,9 +68,9 @@ function EditUsernameForm({
   return (
     <div className="modal-overlay">
       <Form
-        title="Edit username"
         values={formValues}
-        onSubmit={editUsername}
+        title="Set a new username"
+        onSubmit={submitUsername}
         onClose={onClose}
       />
     </div>

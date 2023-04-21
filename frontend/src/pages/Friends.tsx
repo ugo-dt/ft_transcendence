@@ -93,7 +93,7 @@ function Friends() {
                 {
                   friendsList.map((friend) => (
                     <tr className="room-list-row" key={friend.id}>
-                      <td className="room-list-cell room-list-cell-username" title="See profile" role="button" onClick={() => window.open('/profile/' + friend.username, '_blank')}>
+                      <td className="room-list-cell room-list-cell-username" title="See profile" role="button" onClick={() => navigate('/profile/' + friend.username)}>
                         {friend.username}
                       </td>
                       <td className="room-list-cell">

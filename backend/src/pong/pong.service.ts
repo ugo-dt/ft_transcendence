@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
-import Client, { IClient, STATUS_OFFLINE, _Status } from './Client/Client';
+import Client, { STATUS_OFFLINE } from './Client/Client';
 import Queue from './Matchmaking/Queue';
 import Room, { IRoom } from './Room/Room';
 import RoomHistory from './Room/RoomHistory';
@@ -8,18 +8,23 @@ import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class PongService {
-
   constructor(private readonly usersService: UsersService) { }
 
   public async handleUserConnected(clientSocket: Socket): Promise<void> {
-    let client = Client.at(clientSocket.handshake.query.username as string);
-    if (!client) {
-      client = Client.new(clientSocket);
-      Logger.log(`Client created: ${client.username} (id: ${client.id})`);
+    const id: number = parseInt(clientSocket.handshake.query.id as string);
+    const user = await this.usersService.findOneId(id);
+    if (!user) {
       return ;
     }
-    this.updateClient(clientSocket);
-    Logger.log(`Client connected: ${client.username} (id: ${client.id})`);
+    let client = Client.at(id);
+    if (!client) {
+      client = Client.new(user, clientSocket);
+    }
+    else {
+      client.user = user;
+      client.socket = clientSocket;
+    }
+    Logger.log(`Client connected: ${user.username} (id: ${user.id})`);
   }
 
   public async handleUserDisconnect(clientSocket: Socket): Promise<void> {
@@ -27,52 +32,37 @@ export class PongService {
     if (!client) {
       return ;
     }
-    client.status = STATUS_OFFLINE;
-    Logger.log(`Client disconnected: ${client.username} (id: ${client.id})`);
-    // Client.delete(clientSocket);
-  }
-
-  public updateClient(clientSocket: Socket) {
-    const client = Client.at(clientSocket.handshake.query.username as string);
-    if (!client) {
-      return 'user not found';
-    }
-    client.__socket = clientSocket;
-    client.id = parseInt(clientSocket.handshake.query.id as string);
-    client.id42 = parseInt(clientSocket.handshake.query.id42 as string);
-    client.username = clientSocket.handshake.query.username as string;
-    client.avatar = clientSocket.handshake.query.avatar as string;
-    client.status = clientSocket.handshake.query.status as _Status;
-    client.rating = parseInt(clientSocket.handshake.query.rating as string);
-    client.backgroundColor = clientSocket.handshake.query.backgroundColor as string;
+    this.removeClientFromQueue(clientSocket);
+    this.usersService.update(client.user.id, {status: STATUS_OFFLINE});
+    Logger.log(`Client disconnected: ${client.user.username} (id: ${client.user.id})`);
+    Client.delete(clientSocket);
   }
 
   public addClientToQueue(clientSocket: Socket) {
     const client = Client.at(clientSocket);
-    if (!client) {
-      return ;
-    }
-    if (Queue.has(client)) {
+    console.log(client);
+    
+    if (!client || Queue.has(client)) {
       return ;
     }
     Queue.add(client);
-    Logger.log(`Added client ${client.id} to queue.`);
+    Logger.log(`Added client ${client.user.id} to queue.`);
   }
 
   public removeClientFromQueue(clientSocket: Socket) {
     const client = Client.at(clientSocket);
-    if (!client) {
+    if (!client || !Queue.has(client)) {
       return ;
     }
     Queue.remove(client);
-    Logger.log(`Removed client ${client.id} from queue.`);
+    Logger.log(`Removed client ${client.user.id} from queue.`);
   }
 
   public startGame(server: Server, left: Client, right: Client) {
     Queue.remove(left);
     Queue.remove(right);
     const room = Room.new(left, right);
-    room.startGame(server);
+    room.startGame(server, this.usersService);
   }
 
   public spectateRoom(clientSocket: Socket, roomId: number) {
@@ -109,37 +99,14 @@ export class PongService {
     room.handleKey(client, direction, isPressed);
   }
 
-  public profile(id: string): IClient | null {
-    const client = Client.at(id);
-    if (client) {
-      return client.IClient();
-    }
-    return null;
-  }
-
-  public users(): IClient[] {
-    return Client.list();
-  }
-
-  public userFriendList(username: string): IClient[] | null {
-    const client = Client.at(username);
-    if (client) {
-      return client.friends;
-    }
-    return null;
-  }
-
-  public rankings(): IClient[] {
-    const users = Client.list().slice(0, 50);
-    return users.sort((a, b) => (a.rating > b.rating) ? -1 : 1);
-  }
-
   public rooms(): IRoom[] {
     return Room.list();
   }
 
-  public userHistory(username: string): IRoom[] {
-    const client = Client.at(username);
+  public userHistory(id: number): IRoom[] {
+    const client = Client.at(id);
+    console.log(client);
+
     if (client) {
       return RoomHistory.userHistory(client);
     }

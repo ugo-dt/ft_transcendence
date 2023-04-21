@@ -1,12 +1,16 @@
 import { useState } from "react";
 import { IRoom } from "../types";
+import { useNavigate } from "react-router";
+import "./style/ProfileHistory.css"
 
 function ProfileHistory({ history, profileId }: { history: IRoom[], profileId: number }) {
+  const navigate = useNavigate();
   const [historyPage, setHistoryPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
 
   return (
     <div className="profile-match-history" style={{ paddingBottom: '20px' }}>
+      <h2>Match History</h2>
       {
         history.length > 0 && (
           <div className="room-list">
@@ -27,11 +31,11 @@ function ProfileHistory({ history, profileId }: { history: IRoom[], profileId: n
                   history.slice(historyPage * pageSize, historyPage * pageSize + pageSize).map((room) => (
                     <tr className="room-list-row" key={room.id}>
                       <td className="room-list-cell room-list-cell-username" title="See profile" role="button"
-                        onClick={() => window.open('/profile/' + room.left.username.toLowerCase(), '_blank')}>
+                        onClick={() => navigate('/profile/' + room.left.username.toLowerCase())}>
                         {room.left.username}
                       </td>
                       <td className="room-list-cell room-list-cell-username" title="See profile" role="button"
-                        onClick={() => window.open('/profile/' + room.right.username.toLowerCase(), '_blank')}>
+                        onClick={() => navigate('/profile/' + room.right.username.toLowerCase())}>
                         {room.right.username}
                       </td>
                       <td className="room-list-cell">

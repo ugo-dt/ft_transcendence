@@ -12,6 +12,7 @@ import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import Request from "../components/Request";
 import EditUsernameForm from "./EditUsernameForm";
 import EditAvatarForm from "./EditAvatarForm";
+import "./style/ProfileHeader.css"
 
 function ProfileHeader({ profile }: { profile: IUser }) {
   const client = useContext(UserContext).user;
@@ -72,7 +73,7 @@ function ProfileHeader({ profile }: { profile: IUser }) {
       <div className="profile-header-info">
         <section>
           <div className="profile-header-avatar">
-            <img id="avatar-component"
+            <img id="profile-avatar-component"
               src={profile.avatar}
               width={120}
               height={120}
@@ -144,7 +145,7 @@ function ProfileHeader({ profile }: { profile: IUser }) {
         </section>
       </div>
       {
-        isAvatarFormOpen && <EditAvatarForm onClose={onClickEditUsername} />
+        isAvatarFormOpen && <EditAvatarForm onClose={onClickEditAvatar} />
       }
       {
         isUsernameFormOpen && <EditUsernameForm onClose={onClickEditUsername} />

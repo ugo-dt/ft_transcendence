@@ -1,53 +1,56 @@
-import { useState } from "react";
-import axios from "axios";
+import { useContext, useState } from "react";
+import Form, { FormFile } from "../components/Form";
+import Request from "../components/Request";
+import { UserContext } from "../context";
+import { useNavigate } from "react-router";
 
 interface EditAvatarProps {
-  onClose: () => void,
+  onClose?: () => void,
 }
 
 function EditAvatarForm({
   onClose,
 }: EditAvatarProps) {
+  const user = useContext(UserContext).user;
   const [file, setFile] = useState<File | null>(null);
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files.length > 0) {
-      setFile(event.target.files[0]);
+  const navigate = useNavigate();
+  const formValues: FormFile[] = [
+    {
+      value: file,
+      info: 'Image must be less than 1kb',
+      onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (event.target.files && event.target.files.length > 0) {
+          setFile(event.target.files[0]);
+        }
+      }
     }
-  };
+  ]
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const submitAvatar = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-  
-    if (!file) {
+    if (!user || !file) {
       return;
     }
-  
     const formData = new FormData();
     formData.append('image', file);
-  
-    try {
-      const response = await axios.post('/api/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-  
-      console.log('Image uploaded successfully:', response.data);
-    } catch (error) {
-      console.error('Error uploading image:', error);
-    }
+    Request.editAvatar(formData).then(res => {
+      if (res) {
+        window.location.reload();
+        navigate("/profile/" + user.username, {state: {info: 'Avatar updated successfully.'}});
+      }
+    }).catch(err => {
+      console.error('Error uploading image:', err);
+    });
   };
   
   return (
     <div className="modal-overlay">
       <Form
-        
-      />
-      <form onSubmit={handleSubmit}>
-        <input type="file" onChange={handleFileChange} />
-        <button type="submit">Upload</button>
-      </form>
+        values={formValues}
+        title="Set a new avatar"
+        onSubmit={submitAvatar}
+        onClose={onClose}
+        />
     </div>
   );
 }

@@ -51,14 +51,20 @@
 }
 
 .game-over-users-winner {
-  box-sizing: border-box;
-  border: 4px solid #45e450;
+  border: 6px solid #5ce065;
   transition: all .35s cubic-bezier(.84, 4.07, .5, -.21);
 }
 
 #avatar-component {
+  cursor: pointer;
+  box-shadow: 0px 0px 0px 1px rgba(0, 0, 0, .3);
   border-radius: 50%;
   display: block;
+}
+
+#avatar-component:hover {
+  opacity: .8;
+  transition: .5s;
 }
 
 .game-over-results-score {

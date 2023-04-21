@@ -55,8 +55,8 @@ export class ChatService {
 	}
 
 	public handleInviteUser(userSocket: Socket, data: any, server: Server) {
-		const channel: Channel | null = Channel.at(data.toChannel);
-		const user: User | null = User.at(data.userName);
+		const channel: Channel | null = Channel.at(data.currentChannelId);
+		const user: User | null = User.at(data.ChanneSettingslInputValue);
 		if (!user)
 			return {data: null};
 		if (channel){

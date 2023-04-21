@@ -111,17 +111,7 @@ function Chat() {
 		});
 	}
 
-	function inviteUser(userName: string, toChannel: number): void {
-		console.log("userName: ", userName);
-		console.log("toChannel: ", toChannel);
-		socket.emit('invite-user', { userName, toChannel }, (response: { data: IUser | null }) => {
-			if (response.data === null)
-				alert('User not found.')
-			else {
-				console.log(response);
-			}
-		})
-	}
+	
 
 	function createUser(): void {
 		socket.emit('create-user', createUserNameInputValue, (response: IUser) => {
@@ -238,7 +228,7 @@ function Chat() {
 					currentChannelId={currentChannelId}
 					channels={channels}
 					onHandleChannelClick={handleChannelClick}
-					onInviteUser={inviteUser}
+					socket={socket}
 				/>
 				<ChatWindow
 					currentChannelId={currentChannelId}

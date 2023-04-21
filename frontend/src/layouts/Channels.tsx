@@ -2,15 +2,16 @@ import { useEffect, useState } from "react";
 import { IUser } from "../types/IUser";
 import { IChannel } from "../types/IChannel";
 import { CHAT_GEAR_ICON } from "../constants";
+import { Socket } from "socket.io-client";
 
 interface ChannelsProps {
 	currentChannelId: number;
 	channels: IChannel[];
 	onHandleChannelClick: (channelId: number) => void;
-	onInviteUser: (username: string, toChannel: number) => void;
+	socket: Socket;
 }
 
-function Channels({ currentChannelId, channels, onHandleChannelClick, onInviteUser }: ChannelsProps) {
+function Channels({ currentChannelId, channels, onHandleChannelClick, socket }: ChannelsProps) {
 
 	const [isCreateChannelFormVisible, setIsCreateChannelFormVisible] = useState(false);
 	const [ChanneSettingslInputValue, setChanneSettingslInputValue] = useState("");
@@ -47,9 +48,15 @@ function Channels({ currentChannelId, channels, onHandleChannelClick, onInviteUs
 	}
 
 	function inviteUser(): void {
-		onInviteUser(ChanneSettingslInputValue, currentChannelId);
-		setChanneSettingslInputValue("");
-		closeForm("form_channel_settings");
+		socket.emit('invite-user', { ChanneSettingslInputValue, currentChannelId }, (response: { data: IUser | null }) => {
+			closeForm("form_channel_settings");
+			setChanneSettingslInputValue("");
+			if (response.data === null)
+				alert('User not found.')
+			else {
+				console.log(response);
+			}
+		})
 	}
 
 	return (

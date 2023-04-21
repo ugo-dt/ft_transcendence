@@ -28,3 +28,8 @@ export const PADDLE_DEFAULT_X_RIGHT: number = 615;
 export const PADDLE_DEFAULT_WIDTH: number = 15;
 export const PADDLE_DEFAULT_HEIGHT: number = 80;
 export const PADDLE_DEFAULT_VELOCITY: number = 10;
+
+/* Chat */
+
+export const CHAT_DEFAULT_AVATAR: string = "../../assets/images/noavatar.png";
+export const CHAT_GEAR_ICON: string = "../../../assets/images/gear_icon9.png";

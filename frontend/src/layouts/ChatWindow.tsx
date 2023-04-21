@@ -1,12 +1,15 @@
+import React from "react";
 import { useEffect, useRef, useState } from "react";
 import { IChannel } from "../types/IChannel";
+import { CHAT_DEFAULT_AVATAR } from "../constants";
+import messageSound from "../../assets/sound/messageSound.mp3"
 
 interface ChatWindowProps {
 	onHandleSubmitNewMessage: (arg0: string) => void;
 	onClearMessages: () => void;
 	onClearChannels: () => void;
 	onSetMessageInputValue: (arg0: string) => void;
-	channels: IChannel[];
+	channels: any[];
 	currentChannelId: number;
 }
 
@@ -17,7 +20,7 @@ const ChatWindow = ({ channels, onHandleSubmitNewMessage, onClearMessages, onCle
 	const [messageInputValue, setMessageInputValue] = useState("");
 
 	function handleSubmitMessage() {
-		onHandleSubmitNewMessage(messageInputValue);
+		onHandleSubmitNewMessage(messageInputValue.trim());
 		setMessageInputValue("");
 	}
 
@@ -41,18 +44,32 @@ const ChatWindow = ({ channels, onHandleSubmitNewMessage, onClearMessages, onCle
 		}
 	}
 
+	function playSound(): void {
+		new Audio(messageSound).play();
+	}
+
+	useEffect(() => {
+		scrollToBottom();
+	}, [channels]);
+
 	return (
 		<div id="div_chat_window">
 			<h1 id="h1_main_title">Chat</h1>
 			<div id="div_messages_box">
 				<ul>
-					{channels && channels[currentChannelId] && channels[currentChannelId].messageHistory.map((message, index) => (
-						<li id={"li_messages"}
-							key={index}>
-							<b>{message.senderName}<br></br></b>
-							{message.content}
-						</li>
-					))}
+					{channels && channels.map((channel: IChannel) => {
+						if (channel.id === currentChannelId) {
+							return channel.history.map((message: any, messageIndex: number) => (
+								<div id="div_message" key={messageIndex}>
+									<img id="img_avatar" src={CHAT_DEFAULT_AVATAR} alt="" width={40} height={40}/>
+									<li id={"li_messages"}>
+										<p><b>{message.sender} </b><small>{message.timestamp}</small></p>
+										{message.content}
+									</li>
+								</div>
+							))
+						}
+					})}
 					<li ref={messagesEndRef} />
 				</ul>
 			</div>

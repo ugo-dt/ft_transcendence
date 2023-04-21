@@ -1,15 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { IUser } from "../types/IUser";
+import { IChannel } from "../types/IChannel";
+import { CHAT_GEAR_ICON } from "../constants";
 
 interface ChannelsProps {
 	currentChannelId: number;
-	user: IUser;
+	channels: IChannel[];
 	onHandleChannelClick: (channelId: number) => void;
 	onInviteUser: (username: string, toChannel: number) => void;
 }
 
-
-function Channels({ currentChannelId, user, onHandleChannelClick, onInviteUser }: ChannelsProps) {
+function Channels({ currentChannelId, channels, onHandleChannelClick, onInviteUser }: ChannelsProps) {
 
 	const [isCreateChannelFormVisible, setIsCreateChannelFormVisible] = useState(false);
 	const [ChanneSettingslInputValue, setChanneSettingslInputValue] = useState("");
@@ -31,6 +32,7 @@ function Channels({ currentChannelId, user, onHandleChannelClick, onInviteUser }
 	};
 
 	function handleChannelClick(channelId: number) {
+		console.log("channelId: ", channelId);
 		onHandleChannelClick(channelId);
 	}
 
@@ -48,7 +50,6 @@ function Channels({ currentChannelId, user, onHandleChannelClick, onInviteUser }
 		onInviteUser(ChanneSettingslInputValue, currentChannelId);
 		setChanneSettingslInputValue("");
 		closeForm("form_channel_settings");
-		console.log(ChanneSettingslInputValue, currentChannelId);
 	}
 
 	return (
@@ -61,7 +62,7 @@ function Channels({ currentChannelId, user, onHandleChannelClick, onInviteUser }
 				>	
 					<img
 						id="img_channel_settings"
-						src="../../../assets/images/gear_icon9.png"
+						src={CHAT_GEAR_ICON}
 						draggable="false" />
 				</button>
 				<h2 id="h2_channel_title">Channels</h2>
@@ -100,13 +101,17 @@ function Channels({ currentChannelId, user, onHandleChannelClick, onInviteUser }
 					className="button_channel_settings"
 					type="button"
 					>mute</button>
+					<button
+					className="button_channel_settings"
+					type="button"
+					>admin</button>
 				</div>
 			</form>
-			{user.userChannels && user.userChannels.map((channel, index) => (
-				<div key={channel.channelId} id='div_buttons'>
+			{channels && channels.map((channel, index) => (
+				<div key={channel.id} id='div_buttons'>
 					<button
-						onClick={() => handleChannelClick(channel.channelId)}
-						id={channel.channelId === currentChannelId ? "button_channel_current" : "button_channel"}
+						onClick={() => handleChannelClick(channel.id)}
+						id={channel.id === currentChannelId ? "button_channel_current" : "button_channel"}
 						key={index}>
 						{channel.name}
 					</button>
@@ -117,6 +122,7 @@ function Channels({ currentChannelId, user, onHandleChannelClick, onInviteUser }
 				onClick={() => openForm("form_create_channel")}
 			>+</button>
 		</div>
+		
 	);
 }
 

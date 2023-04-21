@@ -15,11 +15,13 @@ const CreateChannelForm = ({
 	onClose }: CreateChannelFormProps) => {
 	const [createChannelNameInputValue, setCreateChannelNameInputValue] = useState("");
 	const [createChannelPasswordInputValue, setCreateChannelPasswordInputValue] = useState("");
+	const [createChannelDmInputValue, setCreateChannelDmInputValue] = useState("");
 
 	function handleSubmit() {
 		onSubmit(createChannelNameInputValue, createChannelPasswordInputValue);
 		setCreateChannelNameInputValue("");
 		setCreateChannelPasswordInputValue("");
+		setCreateChannelDmInputValue("");
 	}
 
 	const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -37,6 +39,10 @@ const CreateChannelForm = ({
 		}
 		if (name === "channelPassword") {
 			setCreateChannelPasswordInputValue(e.target.value);
+			onSetCreateChannelPasswordInputValue(e.target.value);
+		}
+		if (name === "DM") {
+			setCreateChannelDmInputValue(e.target.value);
 			onSetCreateChannelPasswordInputValue(e.target.value);
 		}
 	};
@@ -69,6 +75,18 @@ const CreateChannelForm = ({
 				name="channelPassword"
 				value={createChannelPasswordInputValue}
 				onKeyDown={handleKeyDown}
+				onChange={(e) => handleInputChange(e)}
+			/>
+
+			<label id="label_create_channel">
+				<b>DM</b>
+			</label>
+			<input
+				className="input_create_channel"
+				type="text"
+				placeholder="Add someone to DMs"
+				name="DM"
+				value={createChannelDmInputValue}
 				onChange={(e) => handleInputChange(e)}
 			/>
 

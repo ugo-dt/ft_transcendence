@@ -2,13 +2,13 @@ import { IMessage } from "./IMessage";
 import { IUser } from "./IUser";
 
 export interface IChannel {
-	channelId: number;
+	id: number;
 	name: string;
-	messageHistory: IMessage[];
+	history: any[];
 	password: string | null;
 	isDm: boolean;
-	users: IUser[];
-	admins: IUser[];
-	banned: IUser[];
-	muted: IUser[];
+	users: any[];
+	admins: any[];
+	banned: any[];
+	muted: any[];
 }

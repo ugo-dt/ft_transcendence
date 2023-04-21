@@ -19,10 +19,12 @@
 //
 // TODO:
 // - implement isDm
-// - When no channel is selected user should not be typing
+// - Leave Channel
 // - Users should only see channels hes in and get notifications for these -> Add user interface a userChannels[]
-// - Add message Date and user image in chat
-// - Maybe fix code structure
+// - Browse channels window
+// - All users and their rights on the right
+// - Hash channel passwords
+// - Show name and avatar under channels
 
 import { useState, useEffect, useRef } from 'react';
 import { io } from "socket.io-client";
@@ -31,30 +33,25 @@ import CreateChannelForm from '../layouts/CreateChannelForm';
 import { IChannel } from '../types/IChannel';
 import { IUser } from '../types/IUser';
 import { IMessage } from '../types/IMessage';
-import messageSound from "../../assets/sound/messageSound.mp3"
 import './style/Chat.css'
 import ChatWindow from '../layouts/ChatWindow';
 import Channels from '../layouts/Channels';
 
 function Chat() {
 	const [loggedIn, setLoggedIn] = useState<boolean>(false);
-	const messagesEndRef = useRef<(null) | HTMLLIElement>(null);
 	const [messageInputValue, setMessageInputValue] = useState("");
-	const inputRef = useRef<HTMLInputElement>(null);
 
 	const [isCreateChannelFormVisible, setIsCreateChannelFormVisible] = useState(false);
 	const [createChannelNameInputValue, setCreateChannelNameInputValue] = useState("");
 	const [createChannelPasswordInputValue, setCreateChannelPasswordInputValue] = useState("");
-	const [createChannelIsDm, setCreateChannelIsDm] = useState<boolean>(false);
 
 	const [createUserNameInputValue, setCreateUserInputValue] = useState("");
 	const user = useRef<IUser>({} as IUser);
-
-	const clientId = useRef('');
-	const [currentChannelId, setCurrentChannelId] = useState<number>(-1);
 	const [channels, setChannels] = useState<IChannel[]>([]);
 
-	const socket = useRef(io("http://localhost:3000/chat", {
+	const [currentChannelId, setCurrentChannelId] = useState<number>(-1);
+
+	const socket = useRef(io("http://192.168.1.136:3000/chat", {
 		autoConnect: false,
 	})).current;
 
@@ -63,20 +60,13 @@ function Chat() {
 			socket.connected &&
 			messageInputValue.length > 0 &&
 			messageInputValue.match(/^ *$/) === null) {
-			const message: IMessage = {
+			const message = {
 				content: messageInputValue.trim(),
-				senderId: user.current?.id,
-				senderName: user.current.name,
-				timestamp: Date().toString(),
 				toChannel: currentChannelId
 			};
 			socket.emit('create-message', message);
+			update();
 			setMessageInputValue("");
-			socket.emit('get-all-channels', user.current, (response: IChannel[]) => {
-				setChannels(response);
-			})
-			if (loggedIn)
-				playSound();
 		}
 	}
 
@@ -101,11 +91,8 @@ function Chat() {
 
 	function onConnect(): void {
 		console.log(`Connected with ID: ${socket.id}`);
-		clientId.current = socket.id;
 		if (loggedIn) {
-			socket.emit('get-all-channels', currentChannelId, (response: IChannel[]) => {
-				setChannels(response);
-			})
+			update();
 		}
 	}
 
@@ -113,42 +100,33 @@ function Chat() {
 		console.log("Disconnected.");
 	}
 
-	function onCleared(): void {
-		socket.emit('get-all-channels', user.current, (response: IChannel[]) => {
+	function onUpdate(): void {
+		console.log('update');
+		update();
+	}
+
+	function update(): void {
+		socket.emit('get-user-channels', user.current, (response: IChannel[]) => {
 			setChannels(response);
-		})
-	}
-
-	function scrollToBottom(): void {
-		if (messagesEndRef.current) {
-			messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-		}
-	}
-
-	function playSound(): void {
-		new Audio(messageSound).play();
+		});
 	}
 
 	function inviteUser(userName: string, toChannel: number): void {
-		socket.emit('invite-user', {userName, toChannel}, (response: {data: IUser | null}) => {
+		console.log("userName: ", userName);
+		console.log("toChannel: ", toChannel);
+		socket.emit('invite-user', { userName, toChannel }, (response: { data: IUser | null }) => {
 			if (response.data === null)
 				alert('User not found.')
-			else
-			{
+			else {
 				console.log(response);
 			}
 		})
 	}
 
 	function createUser(): void {
-		const newUser: IUser = {
-			name: createUserNameInputValue,
-			id: -1,
-			avatar: null,
-			userChannels: []
-		};
-		socket.emit('create-user', newUser, (response: IUser) => {
+		socket.emit('create-user', createUserNameInputValue, (response: IUser) => {
 			user.current = response;
+			update();
 		});
 		setLoggedIn(true);
 	}
@@ -157,36 +135,24 @@ function Chat() {
 		if (createChannelNameInputValue.match(/^ *$/))
 			alert("Channel Name can't be empty.");
 		else if (user) {
-			const newChannel: IChannel = {
+			const newChannel = {
 				channelId: -1,
 				name: createChannelNameInputValue.trim(),
-				messageHistory: [],
+				history: [],
 				password: createChannelPasswordInputValue,
-				isDm: createChannelIsDm,
+				isDm: false,
 				users: [user.current],
 				admins: [user.current],
 				banned: [],
 				muted: [],
-			}; // isDM will have to change
-			socket.emit('create-channel', newChannel, (response: IChannel) => {
-				channels.push(response);
-				user.current.userChannels.push(response);
-				setCurrentChannelId(response.channelId);
-				socket.emit('get-all-channels', user, (response: IChannel[]) => {
-					setChannels(response);
-				})
-			})
+			};
+			socket.emit('create-channel', newChannel, (channelResponse: IChannel) => {
+				setCurrentChannelId(channelResponse.id);
+				update();
+			});
 			closeForm("form_create_channel");
 		}
 	}
-
-	const openForm = (formToOpen: string) => {
-		setIsCreateChannelFormVisible(!isCreateChannelFormVisible);
-		const form = document.getElementById(formToOpen);
-		if (form) {
-			form.style.visibility = "visible";
-		}
-	};
 
 	const closeForm = (formToClose: string) => {
 		setIsCreateChannelFormVisible(!isCreateChannelFormVisible);
@@ -197,37 +163,31 @@ function Chat() {
 	};
 
 	function clearMessages(): void {
-		socket.emit('clear', currentChannelId);
-		socket.emit('get-all-channels', user.current, (response: IChannel[]) => {
-			setChannels(response);
+		socket.emit('clear-messages', currentChannelId);
+		socket.emit('get-user-channels', user.current, (response: any) => {
+			user.current.userChannels = response;
 		})
 	}
 
 	function clearChannels(): void {
 		socket.emit('clear-channels');
-		socket.emit('get-all-channels', user.current, (response: IChannel[]) => {
-			setChannels(response);
+		socket.emit('get-user-channels', user.current, (response: any) => {
+			user.current.userChannels = response;
 		})
 	}
-
-	useEffect(() => {
-		scrollToBottom();
-		document.addEventListener("keydown", handleEscapeKey);
-		return () => {
-			document.removeEventListener("keydown", handleEscapeKey);
-		};
-	}, [channels]);
 
 	useEffect(() => {
 		console.log("Connecting to server...");
 		socket.connect();
 		socket.on('connect', onConnect);
 		socket.on('disconnect', onDisconnect);
-		socket.on('cleared', onCleared);
+		socket.on('update', onUpdate);
+		document.addEventListener("keydown", handleEscapeKey);
 		return () => {
 			// Cleans up after the component is unmounted.
 			// It removes all the event listeners that were added to the socket object
 			// and disconnects the socket from the server.
+			document.removeEventListener("keydown", handleEscapeKey);
 			console.log("Disconnecting from server...");
 			socket.removeAllListeners();
 			socket.disconnect();
@@ -258,7 +218,7 @@ function Chat() {
 					</button><br />
 					<button
 						type="button"
-						onClick={() => setLoggedIn(true)}
+						onClick={createUser}
 					>Guest
 					</button>
 				</form>
@@ -276,17 +236,17 @@ function Chat() {
 				/>
 				<Channels
 					currentChannelId={currentChannelId}
-					user={user.current}
+					channels={channels}
 					onHandleChannelClick={handleChannelClick}
 					onInviteUser={inviteUser}
 				/>
 				<ChatWindow
-					onClearChannels={clearChannels}
-					onClearMessages={clearMessages}
+					currentChannelId={currentChannelId}
+					channels={channels}
 					onHandleSubmitNewMessage={handleSubmitNewMessage}
 					onSetMessageInputValue={setMessageInputValue}
-					channels={channels}
-					currentChannelId={currentChannelId}
+					onClearChannels={clearChannels}
+					onClearMessages={clearMessages}
 				/>
 			</div>
 		</>

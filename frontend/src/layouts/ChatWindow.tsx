@@ -5,28 +5,29 @@ import { CHAT_DEFAULT_AVATAR } from "../constants";
 import messageSound from "../../assets/sound/messageSound.mp3"
 
 interface ChatWindowProps {
-	onHandleSubmitNewMessage: (arg0: string) => void;
-	onClearMessages: () => void;
-	onClearChannels: () => void;
-	onSetMessageInputValue: (arg0: string) => void;
+	handleSubmitNewMessage: (arg0: string) => void;
+	clearMessages: () => void;
+	clearChannels: () => void;
+	setMessageInputValue: (arg0: string) => void;
 	channels: any[];
 	currentChannelId: number;
+	messageInputValue: string;
 }
 
-const ChatWindow = ({ channels, onHandleSubmitNewMessage, onClearMessages, onClearChannels, onSetMessageInputValue, currentChannelId }: ChatWindowProps) => {
+const ChatWindow = ({ channels,
+	handleSubmitNewMessage,
+	clearMessages,
+	clearChannels,
+	setMessageInputValue,
+	currentChannelId,
+	messageInputValue }: ChatWindowProps) => {
 
 	const messagesEndRef = useRef<(null) | HTMLLIElement>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
-	const [messageInputValue, setMessageInputValue] = useState("");
-
-	function handleSubmitMessage() {
-		onHandleSubmitNewMessage(messageInputValue.trim());
-		setMessageInputValue("");
-	}
 
 	const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
 		if (event.key === 'Enter') {
-			handleSubmitMessage();
+			handleSubmitNewMessage(messageInputValue);
 		}
 	};
 
@@ -34,7 +35,6 @@ const ChatWindow = ({ channels, onHandleSubmitNewMessage, onClearMessages, onCle
 		const { name } = e.target;
 		if (name === "input_bar") {
 			setMessageInputValue(e.target.value);
-			onSetMessageInputValue(e.target.value);
 		}
 	};
 
@@ -87,7 +87,7 @@ const ChatWindow = ({ channels, onHandleSubmitNewMessage, onClearMessages, onCle
 				/>
 				<button
 					type="button"
-					onClick={handleSubmitMessage}>
+					onClick={() => handleSubmitNewMessage}>
 					send
 				</button>
 				<button
@@ -95,11 +95,11 @@ const ChatWindow = ({ channels, onHandleSubmitNewMessage, onClearMessages, onCle
 					type="submit"
 				>scroll</button>
 				<button
-					onClick={onClearMessages}
+					onClick={clearMessages}
 					type="submit"
 				>clear</button>
 				<button
-					onClick={onClearChannels}
+					onClick={clearChannels}
 					type="submit"
 				>clear Channels</button>
 				<p id="debug_date">{Date().toString()}</p>

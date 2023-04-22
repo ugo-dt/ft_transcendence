@@ -19,8 +19,6 @@
 //
 // TODO:
 // - implement isDm
-// - Leave Channel
-// - Users should only see channels hes in and get notifications for these -> Add user interface a userChannels[]
 // - Browse channels window
 // - All users and their rights on the right
 // - Hash channel passwords
@@ -29,13 +27,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { io } from "socket.io-client";
 
+import Channels from '../layouts/Channels';
+import ChatWindow from '../layouts/ChatWindow';
 import CreateChannelForm from '../layouts/CreateChannelForm';
+import UserList from '../layouts/UserList';
 import { IChannel } from '../types/IChannel';
 import { IUser } from '../types/IUser';
 import { IMessage } from '../types/IMessage';
 import './style/Chat.css'
-import ChatWindow from '../layouts/ChatWindow';
-import Channels from '../layouts/Channels';
 
 function Chat() {
 	const [loggedIn, setLoggedIn] = useState<boolean>(false);
@@ -44,6 +43,7 @@ function Chat() {
 	const [isCreateChannelFormVisible, setIsCreateChannelFormVisible] = useState(false);
 	const [createChannelNameInputValue, setCreateChannelNameInputValue] = useState("");
 	const [createChannelPasswordInputValue, setCreateChannelPasswordInputValue] = useState("");
+	const [createChannelDmInputValue, setCreateChannelDmInputValue] = useState("");
 
 	const [createUserNameInputValue, setCreateUserInputValue] = useState("");
 	const user = useRef<IUser>({} as IUser);
@@ -85,10 +85,6 @@ function Chat() {
 		}
 	}
 
-	function handleChannelClick(channelId: number) {
-		setCurrentChannelId(channelId);
-	}
-
 	function onConnect(): void {
 		console.log(`Connected with ID: ${socket.id}`);
 		if (loggedIn) {
@@ -110,8 +106,6 @@ function Chat() {
 			setChannels(response);
 		});
 	}
-
-	
 
 	function createUser(): void {
 		socket.emit('create-user', createUserNameInputValue, (response: IUser) => {
@@ -138,9 +132,12 @@ function Chat() {
 			};
 			socket.emit('create-channel', newChannel, (channelResponse: IChannel) => {
 				setCurrentChannelId(channelResponse.id);
-				update();
 			});
+			update();
 			closeForm("form_create_channel");
+			setCreateChannelNameInputValue("");
+			setCreateChannelPasswordInputValue("");
+			setCreateChannelDmInputValue("");
 		}
 	}
 
@@ -167,6 +164,12 @@ function Chat() {
 	}
 
 	useEffect(() => {
+		console.log("currentChannelId: ", currentChannelId);
+		console.log("channels.length : ", channels.length);
+		console.log("channels: ", channels);
+	}, [channels]);
+
+	useEffect(() => {
 		console.log("Connecting to server...");
 		socket.connect();
 		socket.on('connect', onConnect);
@@ -184,7 +187,7 @@ function Chat() {
 		};
 	}, []);
 
-	if (!loggedIn)
+	if (!loggedIn) // remove
 		return (
 			<>
 				<h1>Not Logged in</h1>
@@ -219,24 +222,36 @@ function Chat() {
 		<>
 			<div id="div_main">
 				<CreateChannelForm
-					onSetCreateChannelNameInputValue={setCreateChannelNameInputValue}
-					onSetCreateChannelPasswordInputValue={setCreateChannelPasswordInputValue}
-					onSubmit={createChannel}
-					onClose={() => closeForm("form_create_channel")}
+					createChannelNameInputValue={createChannelNameInputValue}
+					createChannelPasswordInputValue={createChannelPasswordInputValue}
+					createChannelDmInputValue={createChannelDmInputValue}
+					setCreateChannelNameInputValue={setCreateChannelNameInputValue}
+					setCreateChannelPasswordInputValue={setCreateChannelPasswordInputValue}
+					setCreateChannelDmInputValue={setCreateChannelDmInputValue}
+					createChannel={createChannel}
+					close={closeForm}
 				/>
 				<Channels
 					currentChannelId={currentChannelId}
 					channels={channels}
-					onHandleChannelClick={handleChannelClick}
+					setCurrentChannelId={setCurrentChannelId}
 					socket={socket}
+					update={update}
 				/>
 				<ChatWindow
 					currentChannelId={currentChannelId}
 					channels={channels}
-					onHandleSubmitNewMessage={handleSubmitNewMessage}
-					onSetMessageInputValue={setMessageInputValue}
-					onClearChannels={clearChannels}
-					onClearMessages={clearMessages}
+					messageInputValue={messageInputValue}
+					handleSubmitNewMessage={handleSubmitNewMessage}
+					setMessageInputValue={setMessageInputValue}
+					clearChannels={clearChannels}
+					clearMessages={clearMessages}
+				/>
+				<UserList
+					currentChannelId={currentChannelId}
+					channels={channels}
+					setCurrentChannelId={setCurrentChannelId}
+					update={update}
 				/>
 			</div>
 		</>

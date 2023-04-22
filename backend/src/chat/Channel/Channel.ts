@@ -1,5 +1,5 @@
 import { Socket } from "socket.io";
-import User from "../User/User";
+import User, { IUser } from "../User/User";
 import Message, { IMessage } from "../Message/Message";
 
 export interface IChannel {
@@ -8,10 +8,10 @@ export interface IChannel {
 	history: IMessage[];
 	isDm: boolean;
 	password: string | null;
-	users: Set<User>;
-	admins: Set<User>;
-	muted: Set<User>;
-	banned: Set<User>;
+	users: IUser[];
+	admins: IUser[];
+	muted: IUser[];
+	banned: IUser[];
 }
 
 class Channel {
@@ -72,16 +72,37 @@ class Channel {
 		Array.from(this._history).map((message, index) => {
 			messageHistory.push(message.IMessage());
 		});
+
+		let usersArray: IUser[] = [];
+		Array.from(this._users).map((user, index) => {
+			usersArray.push(user.IUser());
+		});
+
+		let adminsArray: IUser[] = [];
+		Array.from(this._users).map((admins, index) => {
+			adminsArray.push(admins.IUser());
+		});
+
+		let mutedArray: IUser[] = [];
+		Array.from(this._users).map((muted, index) => {
+			mutedArray.push(muted.IUser());
+		});
+
+		let bannedArray: IUser[] = [];
+		Array.from(this._users).map((banned, index) => {
+			bannedArray.push(banned.IUser());
+		});
+		
 		const iChannel: IChannel = {
 			id: this._id,
 			name: this._name,
 			history: messageHistory,
 			isDm: this._isDm,
 			password: this._password,
-			users: this._users,
-			admins: this._admins,
-			muted: this._muted,
-			banned: this._banned
+			users: usersArray,
+			admins: adminsArray,
+			muted: mutedArray,
+			banned: bannedArray,
 		}
 		return iChannel;
 	}
@@ -109,7 +130,12 @@ class Channel {
 	}
 
 	public removeUser(user: User) {
-		this._users.delete(user);
+		if (user)
+		{
+			this._users.delete(user);
+			this._admins.delete(user);
+		}
+		User.at(user.id)?.userChannels.delete(this);
 	}
 
 	public addAdmin(user: User) {
@@ -118,6 +144,22 @@ class Channel {
 
 	public removeAdmin(user: User) {
 		this._admins.delete(user);
+	}
+
+	public banUser(user: User) {
+		this._banned.add(user);
+	}
+
+	public unBanUser(user: User) {
+		this._banned.delete(user);
+	}
+
+	public muteUser(user: User) {
+		this._muted.add(user);
+	}
+
+	public unMute(user: User) {
+		this._muted.delete(user);
 	}
 
 	public pushMessageToChannel(message: Message) {

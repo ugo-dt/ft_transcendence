@@ -2,32 +2,30 @@ import { useEffect, useState } from "react";
 import { IUser } from "../types/IUser";
 
 interface CreateChannelFormProps {
-	onSetCreateChannelNameInputValue: (arg0: string) => void;
-	onSetCreateChannelPasswordInputValue: (arg0: string) => void;
-	onSubmit: (arg0: string, arg1: string) => void;
-	onClose: () => void;
+	createChannelNameInputValue: string;
+	createChannelPasswordInputValue: string;
+	createChannelDmInputValue: string;
+	setCreateChannelNameInputValue: (arg0: string) => void;
+	setCreateChannelPasswordInputValue: (arg0: string) => void;
+	setCreateChannelDmInputValue: (arg0: string) => void;
+	createChannel: (arg0: string, arg1: string) => void;
+	close: (arg0: string) => void;
 }
 
 const CreateChannelForm = ({
-	onSetCreateChannelNameInputValue,
-	onSetCreateChannelPasswordInputValue,
-	onSubmit,
-	onClose }: CreateChannelFormProps) => {
-	const [createChannelNameInputValue, setCreateChannelNameInputValue] = useState("");
-	const [createChannelPasswordInputValue, setCreateChannelPasswordInputValue] = useState("");
-	const [createChannelDmInputValue, setCreateChannelDmInputValue] = useState("");
-
-	function handleSubmit() {
-		onSubmit(createChannelNameInputValue, createChannelPasswordInputValue);
-		setCreateChannelNameInputValue("");
-		setCreateChannelPasswordInputValue("");
-		setCreateChannelDmInputValue("");
-	}
+	createChannelNameInputValue,
+	createChannelPasswordInputValue,
+	createChannelDmInputValue,
+	setCreateChannelNameInputValue,
+	setCreateChannelPasswordInputValue,
+	setCreateChannelDmInputValue,
+	createChannel,
+	close }: CreateChannelFormProps) => {
 
 	const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
 		if (event.key === 'Enter') {
 			event.preventDefault();
-			handleSubmit();
+			createChannel(createChannelNameInputValue, createChannelPasswordInputValue);
 		}
 	};
 
@@ -35,21 +33,18 @@ const CreateChannelForm = ({
 		const { name } = e.target;
 		if (name === "name") {
 			setCreateChannelNameInputValue(e.target.value);
-			onSetCreateChannelNameInputValue(e.target.value);
 		}
 		if (name === "channelPassword") {
 			setCreateChannelPasswordInputValue(e.target.value);
-			onSetCreateChannelPasswordInputValue(e.target.value);
 		}
 		if (name === "DM") {
 			setCreateChannelDmInputValue(e.target.value);
-			onSetCreateChannelPasswordInputValue(e.target.value);
 		}
 	};
 
 	return (
 		<form id="form_create_channel">
-			<button type="button" className="button_close_create_channel" onClick={onClose}>
+			<button type="button" className="button_close_create_channel" onClick={() => close("form_create_channel")}>
 				✕
 			</button>
 			<label id="label_create_channel" htmlFor="text">
@@ -90,7 +85,7 @@ const CreateChannelForm = ({
 				onChange={(e) => handleInputChange(e)}
 			/>
 
-			<button type="button" id="button_create_channel" onClick={handleSubmit}>
+			<button type="button" id="button_create_channel" onClick={() => createChannel(createChannelNameInputValue, createChannelPasswordInputValue)}>
 				Create Channel
 			</button>
 		</form>

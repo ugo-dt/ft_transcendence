@@ -47,6 +47,11 @@ export class ChatService {
 		return channels;
 	}
 
+	public handleGetUserChannelUsers(userSocket: Socket, data: any): IUser[] {
+		const users: IUser[] = [];
+		return users;
+	}
+
 	public handleCreateMessage(userSocket: Socket, data: any, server: Server): IMessage {
 		const message = Message.new(userSocket, data);
 		Channel.at(message.destination)?.pushMessageToChannel(message);
@@ -65,6 +70,16 @@ export class ChatService {
 			server.emit('update');
 		}
 		return (user?.IUser());
+	}
+
+	public handleLeaveChannel(userSocket: Socket, data: any, server: Server) {
+		const channel: Channel | null = Channel.at(data.currentChannelId);
+		const user: User | null = User.at(userSocket);
+		if (channel && user)
+		{
+			channel.removeUser(user);
+			server.emit('update');
+		}
 	}
 
 	public users(): IUser[] {

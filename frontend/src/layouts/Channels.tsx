@@ -1,17 +1,18 @@
 import { useEffect, useState } from "react";
 import { IUser } from "../types/IUser";
 import { IChannel } from "../types/IChannel";
-import { CHAT_GEAR_ICON } from "../constants";
+import { CHAT_GEAR_ICON, CHAT_LEAVE_CHANNEL_ICON } from "../constants";
 import { Socket } from "socket.io-client";
 
 interface ChannelsProps {
 	currentChannelId: number;
 	channels: IChannel[];
-	onHandleChannelClick: (channelId: number) => void;
+	setCurrentChannelId: (channelId: number) => void;
 	socket: Socket;
+	update: () => void;
 }
 
-function Channels({ currentChannelId, channels, onHandleChannelClick, socket }: ChannelsProps) {
+function Channels({ currentChannelId, channels, setCurrentChannelId, socket, update }: ChannelsProps) {
 
 	const [isCreateChannelFormVisible, setIsCreateChannelFormVisible] = useState(false);
 	const [ChanneSettingslInputValue, setChanneSettingslInputValue] = useState("");
@@ -32,11 +33,6 @@ function Channels({ currentChannelId, channels, onHandleChannelClick, socket }: 
 		}
 	};
 
-	function handleChannelClick(channelId: number) {
-		console.log("channelId: ", channelId);
-		onHandleChannelClick(channelId);
-	}
-
 	function handleInputChange(e: React.ChangeEvent<HTMLInputElement>): void {
 		setChanneSettingslInputValue(e.target.value);
 	}
@@ -44,7 +40,7 @@ function Channels({ currentChannelId, channels, onHandleChannelClick, socket }: 
 	function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
 		if (e.key === 'Enter') {
 			e.preventDefault();
-		  }
+		}
 	}
 
 	function inviteUser(): void {
@@ -59,6 +55,23 @@ function Channels({ currentChannelId, channels, onHandleChannelClick, socket }: 
 		})
 	}
 
+	function leaveChannel(): void {
+		socket.emit('leave-channel', { currentChannelId });
+		closeForm("form_channel_settings");
+		setChanneSettingslInputValue("");
+		const currentIndex = channels.findIndex((channel) => channel.id === currentChannelId);
+		const previousChannel = channels[currentIndex - 1];
+		const subsequentChannel = channels[currentIndex + 1];
+		let newChannelId = -1;
+		if (previousChannel) {
+		  newChannelId = previousChannel.id;
+		} else if (subsequentChannel) {
+		  newChannelId = subsequentChannel.id;
+		}
+		setCurrentChannelId(newChannelId);
+		update();
+	}
+
 	return (
 		<div id="div_channels">
 			<div id="div_top_module">
@@ -66,7 +79,7 @@ function Channels({ currentChannelId, channels, onHandleChannelClick, socket }: 
 					style={{ pointerEvents: currentChannelId === -1 ? 'none' : 'all' }} // and hidden if not admin
 					id="button_channel_settings"
 					onClick={() => openForm("form_channel_settings")}
-				>	
+				>
 					<img
 						id="img_channel_settings"
 						src={CHAT_GEAR_ICON}
@@ -92,32 +105,37 @@ function Channels({ currentChannelId, channels, onHandleChannelClick, socket }: 
 				/>
 				<div>
 					<button
-					className="button_channel_settings"
-					type="button"
-					onClick={inviteUser}
+						className="button_channel_settings"
+						type="button"
+						onClick={inviteUser}
 					>invite</button>
 					<button
-					className="button_channel_settings"
-					type="button"
+						className="button_channel_settings"
+						type="button"
 					>ban</button>
 					<button
-					className="button_channel_settings"
-					type="button"
+						className="button_channel_settings"
+						type="button"
 					>kick</button>
 					<button
-					className="button_channel_settings"
-					type="button"
+						className="button_channel_settings"
+						type="button"
 					>mute</button>
 					<button
-					className="button_channel_settings"
-					type="button"
+						className="button_channel_settings"
+						type="button"
 					>admin</button>
 				</div>
+				<button
+					id="button_leave_channel"
+					type="button"
+					onClick={leaveChannel}
+				>Leave Channel</button>
 			</form>
 			{channels && channels.map((channel, index) => (
 				<div key={channel.id} id='div_buttons'>
 					<button
-						onClick={() => handleChannelClick(channel.id)}
+						onClick={() => setCurrentChannelId(channel.id)}
 						id={channel.id === currentChannelId ? "button_channel_current" : "button_channel"}
 						key={index}>
 						{channel.name}
@@ -129,7 +147,7 @@ function Channels({ currentChannelId, channels, onHandleChannelClick, socket }: 
 				onClick={() => openForm("form_create_channel")}
 			>+</button>
 		</div>
-		
+
 	);
 }
 

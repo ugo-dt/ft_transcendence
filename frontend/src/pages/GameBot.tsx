@@ -4,22 +4,14 @@ import { IPlayer } from "../types";
 
 function GameBot() {
   const leftPlayerData: IPlayer = {
-    id: 0,
-    username: "Human",
-    avatar: '',
     isLeft: true,
     isCom: false,
     score: 0,
-    backgroundColor: CANVAS_DEFAULT_BACKGROUND_COLOR,
   };
   const rightPlayerData: IPlayer = {
-    id: 1,
-    username: "Computer",
-    avatar: '',
     isLeft: false,
     isCom: true,
     score: 0,
-    backgroundColor: CANVAS_DEFAULT_BACKGROUND_COLOR,
   };
 
   return (

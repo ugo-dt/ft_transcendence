@@ -8,6 +8,8 @@ import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { Room } from './room/entities/room.entity';
+import { RoomModule } from './room/room.module';
 
 @Module({
   imports: [
@@ -17,12 +19,17 @@ import { join } from 'path';
       serveRoot: '/public',
     }),
     TypeOrmModule.forRoot({
-      type: "sqlite",
-      database: "db.sqlite",
-      entities: [User],
-      synchronize: true // remove for production
+      type: 'postgres',
+      host: 'localhost',
+      port: 5455,
+      username: 'nestjs',
+      password:  'nestjspassword',
+      database: 'nestjs',
+      entities: [User, Room],
+      synchronize: true
     }),
     UsersModule,
+    RoomModule,
     AuthModule,
     PongModule,
     ChatModule

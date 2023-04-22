@@ -1,37 +1,31 @@
 import Paddle from "./Paddle";
 
 export interface IPlayer {
-  id: number,
   isLeft: boolean,
   isCom: boolean,
   score: number,
 }
 
 export class Player {
-  private _id: number;
   private _isLeft: boolean;
   private _keyUpPressed: boolean;
   private _keyDownPressed: boolean;
   private _score: number;
 
   constructor(
-    id: number,
     isLeft: boolean,
   ) {
-    this._id = id;
     this._isLeft = isLeft;
     this._keyUpPressed = false;
     this._keyDownPressed = false;
     this._score = 0;
   }
 
-  public get id(): number { return this._id; }
   public get isLeft(): boolean { return this._isLeft; }
   public get keyUpPressed(): boolean { return this._keyUpPressed; }
   public get keyDownPressed(): boolean { return this._keyDownPressed; }
   public get score(): number { return this._score; }
 
-  public set id(id: number) { this._id = id; }
   public set isLeft(isLeft: boolean) { this._isLeft = isLeft; }
   public set keyUpPressed(keyUpPressed: boolean) { this._keyUpPressed = keyUpPressed; }
   public set keyDownPressed(keyDownPressed: boolean) { this._keyDownPressed = keyDownPressed; }
@@ -45,7 +39,6 @@ export class Player {
   public IPlayer(): IPlayer {
     return (
       {
-        id: this._id,
         isLeft: this._isLeft,
         isCom: false,
         score: this._score,

@@ -1,4 +1,4 @@
-import { ClassSerializerInterceptor, Controller, Delete, Get, Param, Post, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { ClassSerializerInterceptor, Controller, Delete, Get, Logger, Param, Post, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { User } from './entities/user.entity';
@@ -10,7 +10,10 @@ import { createWriteStream } from 'fs';
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor, CurrentUserInterceptor)
 export class UsersController {
-  constructor(private usersService: UsersService) { }
+  private readonly logger: Logger;
+  constructor(private usersService: UsersService) {
+    this.logger = new Logger("UsersController");
+  }
 
   @Get("me")
   getMyInfo(@CurrentUser() user: User): User {
@@ -33,13 +36,13 @@ export class UsersController {
   }
 
   @Get('get/rankings')
-  async getRankings(): Promise<User[]> {
-    return await this.usersService.rankings();
+  getRankings(): Promise<User[]> {
+    return this.usersService.rankings();
   }
 
   @Post("edit/username")
-  async editUsername(@CurrentUser() user: User, @MessageBody() data: { username: string }): Promise<User> {
-    return await this.usersService.update(user.id, { username: data.username });
+  editUsername(@CurrentUser() user: User, @MessageBody() data: { username: string }): Promise<User> {
+    return this.usersService.update(user.id, { username: data.username });
   }
 
   // todo: add file validation
@@ -56,15 +59,14 @@ export class UsersController {
     return await this.usersService.update(user.id, {avatar: `http://192.168.1.178:3000/${fullpath}`});
   }
 
-  // todo: add friends
   @Post("add-friend/")
   async addFriend(@CurrentUser() user: User, @MessageBody() data: { friendUsername: string }) {
-    // return await this.usersService.addFriend(user.id, data.friendUsername);
+    return await this.usersService.addFriend(user.id, data.friendUsername);
   }
 
   @Delete("remove-friend/:friendUsername")
-  async removeFriend(@CurrentUser() user: User, @MessageBody() data: { friendUsername: string }) {
-    // return await this.usersService.removeFriend(user.id, data.friendUsername);
+  async removeFriend(@CurrentUser() user: User, @Param("friendUsername") friendUsername: string) {
+    return await this.usersService.removeFriend(user.id, friendUsername);
   }
 
   @Get('edit/is-valid-username')

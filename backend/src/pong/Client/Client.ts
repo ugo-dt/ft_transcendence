@@ -113,20 +113,20 @@ class Client {
   private static __clients_ = new Set<Client>;
 
   private _user: User;
-  private _socket: Socket;
+  private _socket: Socket | null;
 
-  private constructor(user: User, socket: Socket) {
+  private constructor(user: User, socket: Socket | null) {
     this._user = user;
     this._socket = socket;
   }
 
   public get user(): User { return this._user; }
-  public get socket(): Socket { return this._socket; }
+  public get socket(): Socket | null { return this._socket; }
 
   public set user(user: User) { this._user = user; }
-  public set socket(socket: Socket) { this._socket = socket; }
+  public set socket(socket: Socket | null) { this._socket = socket; }
 
-  public static new(user: User, clientSocket: Socket): Client {
+  public static new(user: User, clientSocket: Socket | null): Client {
     const client = new Client(user, clientSocket);
     Client.__clients_.add(client);
     return client;
@@ -136,8 +136,6 @@ class Client {
   public static at(username: string): Client | null;
   public static at(clientSocket: Socket): Client | null;
   public static at(client: number | string | Socket): Client | null {
-    console.log(Client.__clients_);
-
     if (typeof client === 'number') {
       for (const clt of Client.__clients_.values()) {
         if (clt._user.id === client) {
@@ -154,7 +152,7 @@ class Client {
     }
     else {
       for (const clt of Client.__clients_.values()) {
-        if (clt._socket.id === client.id) {
+        if (clt._socket && clt._socket.id === client.id) {
           return clt;
         }
       }
@@ -167,9 +165,9 @@ class Client {
   }
 
   public static delete(socket: Socket) {
-    for (const client of Client.__clients_.values()) {
-      if (client._socket.id === socket.id) {
-        Client.__clients_.delete(client);
+    for (const clt of Client.__clients_.values()) {
+      if (clt._socket && clt._socket.id === socket.id) {
+        Client.__clients_.delete(clt);
         return;
       }
     }

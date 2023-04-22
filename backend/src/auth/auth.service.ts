@@ -42,12 +42,15 @@ export class AuthService {
     if (!user) {
       user = await this.usersService.create(
         accessToken,
-        refreshToken, id42,
+        refreshToken,
+        id42,
         "User",
         "http://192.168.1.178:3000/public/images/noavatar.png",
         'online',
         Elo.defaultRating,
-        'black');
+        'black',
+        [],
+      );
       this.usersService.update(user.id, { username: user.username + user.id });
     }
     return user;

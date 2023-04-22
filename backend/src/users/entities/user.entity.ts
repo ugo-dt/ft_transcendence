@@ -32,6 +32,6 @@ export class User {
   @Column()
   backgroundColor: string;
 
-  // @Column()
-  // friends: User[];
+  @Column("text", {array: true, nullable: true}) 
+  friends: string[];
 }

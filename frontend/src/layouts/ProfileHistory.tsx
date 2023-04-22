@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { IRoom } from "../types";
+import { IGameRoom } from "../types";
 import { useNavigate } from "react-router";
 import "./style/ProfileHistory.css"
 
-function ProfileHistory({ history, profileId }: { history: IRoom[], profileId: number }) {
+function ProfileHistory({ history, profileId }: { history: IGameRoom[], profileId: number }) {
   const navigate = useNavigate();
   const [historyPage, setHistoryPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);

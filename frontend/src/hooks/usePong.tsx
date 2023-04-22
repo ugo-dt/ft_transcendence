@@ -36,8 +36,7 @@ function usePong(
 
   function _drawBackground() {
     canvas.clear();
-    canvas.drawRect(0, 0, canvas.width / 2, canvas.height, leftPlayer.backgroundColor);
-    canvas.drawRect(canvas.width / 2, 0, canvas.width, canvas.height, rightPlayer.backgroundColor);
+    canvas.drawRect(0, 0, canvas.width, canvas.height, 'black');
 
     for (let i = 7.5; i < canvas.height; i += CANVAS_DEFAULT_NET_GAP) {
       canvas.drawRect(canvas.width / 2 - 5, i, 10, 15, CANVAS_DEFAULT_NET_COLOR);

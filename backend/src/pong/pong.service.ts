@@ -1,14 +1,35 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import Client, { STATUS_OFFLINE } from './Client/Client';
 import Queue from './Matchmaking/Queue';
-import Room, { IRoom } from './Room/Room';
-import RoomHistory from './Room/RoomHistory';
+import GameRoom, { IGameRoom } from '../room/GameRoom';
 import { UsersService } from 'src/users/users.service';
+import { User } from 'src/users/entities/user.entity';
+import { RoomService } from 'src/room/room.service';
+import { Room } from 'src/room/entities/room.entity';
 
 @Injectable()
 export class PongService {
-  constructor(private readonly usersService: UsersService) { }
+  private readonly logger: Logger;
+  constructor(private readonly usersService: UsersService, private readonly roomService: RoomService) {
+    this.logger = new Logger("PongService");
+    this.__init__();
+  }
+
+  private async __init__(){
+    const users: User[] = await this.usersService.findAll();
+    for (const user of users.values()) {
+      let client = Client.at(user.id);
+      if (!client) {
+        client = Client.new(user, null);
+      }
+      else {
+        client.user = user;
+        client.socket = null;
+      }
+    }
+    this.logger.log(`Initialized ${Client.list().length} clients`);    
+  };
 
   public async handleUserConnected(clientSocket: Socket): Promise<void> {
     const id: number = parseInt(clientSocket.handshake.query.id as string);
@@ -22,9 +43,11 @@ export class PongService {
     }
     else {
       client.user = user;
-      client.socket = clientSocket;
+      if (!client.socket || !client.socket.connected) {
+        client.socket = clientSocket;
+      }
     }
-    Logger.log(`Client connected: ${user.username} (id: ${user.id})`);
+    this.logger.log(`Client connected: ${user.username} (id: ${user.id})`);
   }
 
   public async handleUserDisconnect(clientSocket: Socket): Promise<void> {
@@ -34,19 +57,16 @@ export class PongService {
     }
     this.removeClientFromQueue(clientSocket);
     this.usersService.update(client.user.id, {status: STATUS_OFFLINE});
-    Logger.log(`Client disconnected: ${client.user.username} (id: ${client.user.id})`);
-    Client.delete(clientSocket);
+    this.logger.log(`Client disconnected: ${client.user.username} (id: ${client.user.id})`);
   }
 
   public addClientToQueue(clientSocket: Socket) {
     const client = Client.at(clientSocket);
-    console.log(client);
-    
     if (!client || Queue.has(client)) {
       return ;
     }
     Queue.add(client);
-    Logger.log(`Added client ${client.user.id} to queue.`);
+    this.logger.log(`Added client ${client.user.id} to queue.`);
   }
 
   public removeClientFromQueue(clientSocket: Socket) {
@@ -55,14 +75,14 @@ export class PongService {
       return ;
     }
     Queue.remove(client);
-    Logger.log(`Removed client ${client.user.id} from queue.`);
+    this.logger.log(`Removed client ${client.user.id} from queue.`);
   }
 
-  public startGame(server: Server, left: Client, right: Client) {
+  public async startGame(server: Server, left: Client, right: Client) {
     Queue.remove(left);
     Queue.remove(right);
-    const room = Room.new(left, right);
-    room.startGame(server, this.usersService);
+    const room = await GameRoom.new(this.roomService, left, right);
+    room.startGame(server, this.usersService, this.roomService);
   }
 
   public spectateRoom(clientSocket: Socket, roomId: number) {
@@ -70,7 +90,7 @@ export class PongService {
     if (!client) {
       return ;
     }
-    const room = Room.at(roomId);
+    const room = GameRoom.at(roomId);
     if (room) {
       room.addSpectator(client);
     }
@@ -81,7 +101,7 @@ export class PongService {
     if (!client) {
       return ;
     }
-    const room = Room.at(roomId);
+    const room = GameRoom.at(roomId);
     if (room) {
       room.removeSpectator(client);
     }
@@ -92,29 +112,40 @@ export class PongService {
     if (!client) {
       return ;
     }
-    const room = Room.with(client);
+    const room = GameRoom.with(client);
     if (!room) {
       return ;
     }
     room.handleKey(client, direction, isPressed);
   }
 
-  public rooms(): IRoom[] {
-    return Room.list();
-  }
-
-  public userHistory(id: number): IRoom[] {
-    const client = Client.at(id);
-    console.log(client);
-
-    if (client) {
-      return RoomHistory.userHistory(client);
+  public rooms(): IGameRoom[] {
+    const list: IGameRoom[] = [];
+    for (const room of GameRoom.list().values()) {
+      list.push(room.IGameRoom());
     }
-    return [];
+    return list;
   }
 
-  public history(): IRoom[] {
-    return RoomHistory.list();
+  public async userHistory(id: number): Promise<IGameRoom[]> {
+    const user = await this.usersService.findOneId(id);
+    if (!user) {
+      throw new NotFoundException('user not found');
+    }
+    const rooms: Room[] = await this.roomService.findAllWithUser(user);
+    const list: IGameRoom[] = [];
+    for (const room of rooms.values()) {
+      list.push(this.roomService.IGameRoom(room));
+    }
+    return list;
+  }
+
+  public gameResults(roomId: number) {
+    return this.roomService.findOneId(roomId);
+  }
+
+  public async history() {
+    return await this.roomService.findAll();
   }
 
   public startChallenge() {

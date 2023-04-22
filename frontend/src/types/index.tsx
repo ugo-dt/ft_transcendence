@@ -3,4 +3,4 @@ export type { IUser } from "./IUser";
 export type { IGameState } from "./IGameState";
 export type { IPaddle } from "./IPaddle";
 export type { IPlayer } from "./IPlayer";
-export type { IRoom } from "./IRoom";
+export type { IGameRoom } from "./IGameRoom";

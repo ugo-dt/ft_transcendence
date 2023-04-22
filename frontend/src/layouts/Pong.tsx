@@ -2,7 +2,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { useKeyState } from "use-key-state";
 import { Context } from "../context";
-import { IUser, IGameState, IPaddle, IRoom } from "../types";
+import { IUser, IGameState, IPaddle, IGameRoom } from "../types";
 import { CANVAS_DEFAULT_FOREGROUND_COLOR, CANVAS_DEFAULT_NET_COLOR, CANVAS_DEFAULT_NET_GAP, TARGET_FPS } from "../constants";
 import GameOver from "./GameOver";
 import Canvas from "../components/Canvas";
@@ -36,8 +36,8 @@ function Pong({ role, roomId }: PongProps) {
   const socket = useContext(Context).pongSocket;
   const context = useContext(Context);
   const [canvas] = useState(new Canvas(650, 480, null));
-  const roomRef = useRef<IRoom | null>(null);
-  const [room, setRoom] = useState<IRoom | null>(null);
+  const roomRef = useRef<IGameRoom | null>(null);
+  const [room, setRoom] = useState<IGameRoom | null>(null);
   const keyboardState = useKeyState().keyStateQuery;
   const gameInterval = useRef<NodeJS.Timer | undefined>(undefined);
   const [gameOver, setGameOver] = useState(false);
@@ -119,7 +119,7 @@ function Pong({ role, roomId }: PongProps) {
       _render();
     }
     else {
-      socket.current.emit('game-results', roomId, (data: {room: IRoom}) => {
+      socket.current.emit('game-results', roomId, (data: {room: IGameRoom}) => {
         if (data.room) {
           roomRef.current = data.room;
           setRoom(roomRef.current);
@@ -134,7 +134,7 @@ function Pong({ role, roomId }: PongProps) {
     }    
   }
 
-  function onUpdate(data: IRoom) {
+  function onUpdate(data: IGameRoom) {
     roomRef.current = data;
     setRoom(roomRef.current);    
   }

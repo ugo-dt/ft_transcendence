@@ -6,5 +6,5 @@ export interface IUser {
   status: string,
   rating: number,
   backgroundColor: string,
-  friends: IUser[],
+  friends: string[],
 }

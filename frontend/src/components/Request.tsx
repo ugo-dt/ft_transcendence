@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
-import { IUser, IRoom } from "../types";
+import { IUser, IGameRoom } from "../types";
 
 namespace __url_ {
   export const __api_base_url_ = "http://192.168.1.178:3000/api";
@@ -34,8 +34,7 @@ namespace __url_ {
 class Request {
   private static __axios_: AxiosInstance;
 
-  // This functions runs directly after its creation inside the class and
-  // has no relation to the class itself (expect being defined inside of it)
+  // This functions runs directly after its creation and acts like a constructor
   private static __init__ = (() => {
     Request.__axios_ = axios.create({
       baseURL: __url_.__api_base_url_,
@@ -111,7 +110,7 @@ class Request {
     return await Request.__make_get_request_(__url_.__users_base_ + '/' + username);
   }
 
-  public static async getUserMatchHistory(id: number): Promise<IRoom[]> {
+  public static async getUserMatchHistory(id: number): Promise<IGameRoom[]> {
     return this.__make_array_get_request_(__url_.__history_ + '/' + id);
   }
 
@@ -119,7 +118,7 @@ class Request {
     return this.__make_array_get_request_(__url_.__rankings_);
   }
 
-  public static async getRoomList(): Promise<IRoom[]> {
+  public static async getRoomList(): Promise<IGameRoom[]> {
     return this.__make_array_get_request_(__url_.__rooms_);
   }
 
@@ -128,7 +127,7 @@ class Request {
   }
 
   public static async removeFriend(friendUsername: string) {
-    return await Request.__make_delete_request_(__url_.__remove_friend_ + friendUsername);
+    return await Request.__make_delete_request_(__url_.__remove_friend_ + '/' + friendUsername);
   }
 
   public static async isValidUsername(newUsername: string): Promise<string | null> {

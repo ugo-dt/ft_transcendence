@@ -1,4 +1,3 @@
-import Client from "../Client/Client";
 import Ball, { IBall } from "./Ball";
 import Paddle, { IPaddle } from "./Paddle";
 import { IPlayer, Player } from "./Player";
@@ -35,11 +34,11 @@ export class GameState {
   private _time: Time;
   private _gameOver: boolean;
 
-  constructor(left: number, right: number) {
+  constructor() {
     this._canvasWidth = CANVAS_WIDTH;
     this._canvasHeight = CANVAS_HEIGHT;
-    this._leftPlayer = new Player(left, true);
-    this._rightPlayer = new Player(right, false);
+    this._leftPlayer = new Player(true);
+    this._rightPlayer = new Player(false);
     this._leftPaddle = new Paddle(20);
     this._rightPaddle = new Paddle(615);
     this._ball = new Ball(this._canvasWidth / 2, this._canvasHeight / 2, "white", false);

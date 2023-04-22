@@ -15,27 +15,25 @@
 // 	Set a nickame
 //	Enable 2FA
 
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import ProfileHistory from "../layouts/ProfileHistory";
 import ProfileHeader from "../layouts/ProfileHeader";
-import { IUser, IRoom } from "../types";
+import { IUser, IGameRoom } from "../types";
 import Request from "../components/Request";
 import "./style/Profile.css"
 import "../layouts/style/RoomList.css"
+import { UserContext } from "../context";
 
 function Profile() {
   const state = useLocation().state;
   const [info, setInfo] = useState("");
   const [profile, setProfile] = useState<IUser | null>(null);
-  const [history, setHistory] = useState<IRoom[]>([]);
+  const [history, setHistory] = useState<IGameRoom[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (state) {
-      setInfo(state.info);
-    }
     window.history.replaceState({}, document.title);
     async function getProfile() {
       if (window.location.pathname === '/profile' || window.location.pathname === '/profile/') {
@@ -58,6 +56,9 @@ function Profile() {
       setLoading(false);
     }
     getProfile();
+    if (state) {
+      setInfo(state.info);
+    }
   }, []);
 
   return (

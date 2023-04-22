@@ -12,10 +12,13 @@ import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import Request from "../components/Request";
 import EditUsernameForm from "./EditUsernameForm";
 import EditAvatarForm from "./EditAvatarForm";
+import { useNavigate } from "react-router";
 import "./style/ProfileHeader.css"
 
 function ProfileHeader({ profile }: { profile: IUser }) {
-  const client = useContext(UserContext).user;
+  const context = useContext(UserContext);
+  const user = useContext(UserContext).user;
+  const navigate = useNavigate();
   const [isFriend, setIsFriend] = useState(false);
   const [isAvatarFormOpen, setIsAvatarFormOpen] = useState(false);
   const [isUsernameFormOpen, setIsUsernameFormOpen] = useState(false);
@@ -33,19 +36,21 @@ function ProfileHeader({ profile }: { profile: IUser }) {
   }
 
   function onClickAddFriend() {
-    if (!client) {
+    if (!user) {
       return ; // todo: redirect to sign in
     }
     Request.addFriend(profile.username);
-    setIsFriend(true);
+    navigate("/profile/" + profile.username.toLowerCase(), {state: {info: 'Friend added successfully.'}});
+    window.location.reload();
   }
 
   function onClickRemoveFriend() {
-    if (!client) {
+    if (!user) {
       return ;
     }
     Request.removeFriend(profile.username);
-    setIsFriend(false);
+    navigate("/profile/" + profile.username.toLowerCase(), {state: {info: 'Friend removed successfully.'}});
+    window.location.reload();
   }
 
   function onClickChallenge() {
@@ -61,12 +66,12 @@ function ProfileHeader({ profile }: { profile: IUser }) {
   }
 
   useEffect(() => {
-    if (client && profile && profile.friends && profile.friends.length > 0) {
-      if (profile.friends.find(f => f.username === client.username)) {
+    if (user && profile && user.friends && user.friends.length > 0) {
+      if (user.friends.includes(profile.username)) {
         setIsFriend(true);
       }
     }
-  }, []);
+  }, [context]);
 
   return (
     <div className="profile-header-container">
@@ -80,7 +85,7 @@ function ProfileHeader({ profile }: { profile: IUser }) {
               alt={profile.username}
             />
             {
-              client && profile.username === client.username &&
+              user && profile.username === user.username &&
               <div role="button" onClick={onClickEditAvatar} className="upload-icon-wrapper">
                 <AddPhotoAlternateIcon className="upload-icon" fontSize="large" />
               </div>
@@ -96,7 +101,7 @@ function ProfileHeader({ profile }: { profile: IUser }) {
             <h3 id="profile-header-details-status">{profile.status.charAt(0).toLocaleUpperCase() + profile.status.slice(1)}</h3>
           </div>
           {
-            client && profile.username === client.username &&
+            user && profile.username === user.username &&
             <div className="profile-header-actions">
               <div role="button" className="profile-header-actions-btn edit-profile-btn"
                 onClick={onClickEditUsername}

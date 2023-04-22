@@ -57,29 +57,23 @@ const PongDebug = ({
             </div>
 
             <div className="debug-info-cell">
-              <h4>{gameState.leftPlayer.username + ((gameState.leftPaddle.isCom && " (COM)") || " (Human)")}</h4>
               <button onClick={() => setRightIsCom(!gameState.leftPaddle.isCom)}>
                 {((gameState.leftPaddle.isCom && "Set as Human") || "Set as COM")}
               </button>
               <h5>x: {gameState.leftPaddle.x.toFixed(2)}</h5>
               <h5>y: {gameState.rightPaddle.y.toFixed(2)}</h5>
               <h5>velocity y: {gameState.leftPaddle!.velocityY}</h5>
-              <h5>id: {gameState.leftPlayer.id}</h5>
               <h5>score: {gameState.leftPlayer.score}</h5>
-              <h5>color: {gameState.leftPlayer.backgroundColor}</h5>
             </div>
 
             <div className="debug-info-cell">
-              <h4>{gameState.rightPlayer.username + ((gameState.rightPaddle.isCom && " (COM)") || " (Human)")}</h4>
               <button onClick={() => setRightIsCom(!gameState.rightPaddle.isCom)}>
                 {((gameState.rightPaddle.isCom && "Set as Human") || "Set as COM")}
               </button>
               <h5>x: {gameState.rightPaddle!.x.toFixed(2)}</h5>
               <h5>y: {gameState.rightPaddle!.y.toFixed(2)}</h5>
               <h5>velocity y: {gameState.rightPaddle.velocityY}</h5>
-              <h5>id: {gameState.rightPlayer.id}</h5>
               <h5>score: {gameState.rightPlayer.score}</h5>
-              <h5>color: {gameState.rightPlayer.backgroundColor}</h5>
             </div>
           </div> {/* className="debugArea" */}
         </div> /* className="debug" */

@@ -1,74 +1,62 @@
 import { Logger } from "@nestjs/common";
 import { Server } from "socket.io";
-import Client, { STATUS_ONLINE, STATUS_PLAYING } from "../Client/Client";
-import { GameState, IGameState } from "../Game";
-import { Player } from "../Game";
-import Elo from "../Matchmaking/Elo";
-import RoomHistory from "./RoomHistory";
+import Client, { STATUS_ONLINE, STATUS_PLAYING } from "../pong/Client/Client";
+import { GameState, IGameState } from "../pong/Game";
+import { Player } from "../pong/Game";
+import Elo from "../pong/Matchmaking/Elo";
 import { UsersService } from "src/users/users.service";
+import { RoomService } from "./room.service";
 import { User } from "src/users/entities/user.entity";
 
-export interface IRoom {
+export interface IGameRoom {
   id: number,
-  left: User | null,
-  right: User | null,
+  left: User,
+  right: User,
   gameState: IGameState,
 }
 
-class Room {
+class GameRoom {
   /** This set contains all the current rooms. */
-  private static __rooms_: Set<Room> = new Set<Room>;
+  private static __rooms_: Set<GameRoom> = new Set<GameRoom>;
+  private readonly logger: Logger = new Logger("Room");
 
   private readonly _id: number;
-  private _left: Client | null;
-  private _right: Client | null;
-  private _spectators: Set<Client>;
+  private _left: Client;
+  private _right: Client;
+  private _spectators: Client[];
   private _gameState: GameState;
 
-  private __newId(): number {
-    let _new_id = 0;
-    while (Room.at(_new_id) || RoomHistory.at(_new_id)) {
-      _new_id++;
-    }
-    return _new_id;
-  }
-
   private constructor(
+    id: number,
     left: Client | null = null,
     right: Client | null = null,
   ) {
-    this._id = this.__newId();
+    this._id = id;
     if (left) {
       this.join(left);
     }
     if (right) {
       this.join(right);
     }
-    this._spectators = new Set();
+    this._gameState = new GameState();
+    this._spectators = [];
   }
 
   public get id(): number { return this._id; }
-  public get left(): Client | null { return this._left; }
-  public get right(): Client | null { return this._right; }
+  public get left(): Client { return this._left; }
+  public get right(): Client { return this._right; }
   public get gameState(): GameState { return this._gameState; }
 
   // public set id(id: number) { this._id = id; }
-  public set left(left: Client | null) { this._left = left; }
-  public set right(right: Client | null) { this._right = right; }
+  public set left(left: Client) { this._left = left; }
+  public set right(right: Client) { this._right = right; }
   public set gameState(gameState: GameState) { this._gameState = gameState; }
 
-  public IRoom(): IRoom {
-    const iRoom: IRoom = {
-      id: this._id,
-      left: this._left ? this._left.user : null,
-      right: this._right ? this._right.user : null,
-      gameState: this._gameState.IGameState(),
-    };
-    return iRoom;
-  }
-
   public handleKey(client: Client, direction: string, isPressed: boolean) {
-    if (this._left && this._right) {
+    if (!this._left || !this._right) {
+      return;
+    }
+    if (this._left.socket && this._right && client.socket) {
       const player: Player = client.socket.id === this._left.socket.id ? this._gameState.leftPlayer : this._gameState.rightPlayer;
 
       if (direction === "up") {
@@ -93,11 +81,11 @@ class Room {
     if (this._gameState.interval) {
       clearInterval(this._gameState.interval);
     }
-    Logger.log(`Game aborted (room: ${this._id}). Both players disconnected.`);
-    Room.delete(this);
+    this.logger.log(`Game aborted (room: ${this._id}). Both players disconnected.`);
+    GameRoom.delete(this);
   }
 
-  public endGame(server: Server, usersService: UsersService) {
+  public async endGame(server: Server, usersService: UsersService, roomService: RoomService) {
     if (!this._left || !this._right) {
       return;
     }
@@ -110,15 +98,19 @@ class Room {
     if (this._gameState.interval) {
       clearInterval(this._gameState.interval);
     }
-    console.log(this._left.user.rating, this._right.user.rating);
-    
     const [newLeftRating, newRightRating] = Elo.updateRatings(this._left.user.rating, this._right.user.rating, this._gameState.leftPlayer.score > this._gameState.rightPlayer.score);
     usersService.update(this._left.user.id, { rating: newLeftRating });
     usersService.update(this._right.user.id, { rating: newRightRating });
-    Logger.log(`Game ended (room: ${this._id}).`);
-    Logger.log(`Ratings updated (left: ${newLeftRating}, right: ${newRightRating})`);
-    RoomHistory.add(this);
-    Room.delete(this);
+    roomService.update(
+      this._id,
+      {
+        left: this._left.user,
+        right: this._right.user,
+        gameState: this._gameState.IGameState(),
+      });
+    this.logger.log(`Game ended (room: ${this._id}).`);
+    this.logger.log(`Ratings updated (left: ${newLeftRating}, right: ${newRightRating})`);
+    GameRoom.delete(this);
   }
 
   private _emitGame(server: Server, leftPlayer: Client, rightPlayer: Client) {
@@ -131,7 +123,7 @@ class Room {
     server.to(this._id.toString()).emit('update', room);
   }
 
-  public startGame(server: Server, usersService: UsersService): boolean {
+  public startGame(server: Server, usersService: UsersService, roomService: RoomService): boolean {
     if (!this._left || !this._right) {
       return false;
     }
@@ -139,8 +131,6 @@ class Room {
     const rightPlayer: Client = this._right;
     usersService.update(leftPlayer.user.id, { status: STATUS_PLAYING });
     usersService.update(rightPlayer.user.id, { status: STATUS_PLAYING });
-    this._gameState = new GameState(leftPlayer.user.id, rightPlayer.user.id);
-
     server.to(this._id.toString()).emit('startGame', { roomId: this._id });
     this._emitGame(server, leftPlayer, rightPlayer);
     setTimeout(() => {
@@ -149,65 +139,87 @@ class Room {
         this._gameState.current = Date.now();
         this._gameState.deltaTime = (this._gameState.current - this._gameState.previous) / 1000;
         if (this._gameState.gameOver) {
-          this.endGame(server, usersService);
+          this.endGame(server, usersService, roomService);
         }
         this._gameState.update();
         this._emitGame(server, leftPlayer, rightPlayer);
-        if (leftPlayer.socket.disconnected && rightPlayer.socket.disconnected) {
-          this.abortGame();
+        if (leftPlayer.socket && rightPlayer.socket) {
+          if (leftPlayer.socket.disconnected && rightPlayer.socket.disconnected) {
+            this.abortGame();
+          }
         }
         this._gameState.previous = Date.now();
       }, 1000 / this._gameState.fps);
     }, 1000);
 
-    Logger.log(`Game started (room: ${this._id}, left: ${leftPlayer.user.id}, right: ${rightPlayer.user.id}).`);
+    this.logger.log(`Game started (room: ${this._id}, left: ${leftPlayer.user.id}, right: ${rightPlayer.user.id}).`);
     return true;
   }
 
   public join(client: Client): boolean {
+    if (!client || !client.socket) {
+      return false;
+    }
     if (!this._left) {
       this._left = client;
-      this._left.socket.join(this._id.toString());
+      this._left.socket!.join(this._id.toString());
       return true;
     }
     if (!this._right) {
       this._right = client;
-      this._right.socket.join(this._id.toString());
+      this._right.socket!.join(this._id.toString());
       return true;
     }
     return false;
   }
 
   public addSpectator(client: Client) {
+    if (!client.socket) {
+      return;
+    }
     client.socket.join(this._id.toString());
-    this._spectators.add(client);
+    this._spectators.push(client);
   }
 
   public removeSpectator(client: Client) {
+    if (!client.socket) {
+      return;
+    }
     client.socket.leave(this._id.toString());
-    this._spectators.delete(client);
+    const index = this._spectators.indexOf(client);
+    if (index > -1) {
+      this._spectators.splice(index, 1);
+    }
   }
 
   public leave(client: Client | null) {
+    if (!client) {
+      return;
+    }
     if (this._left) {
-      this._left.socket.leave(this._id.toString());
-      return true;
+      if (client.user.id === this._left.user.id && this._left.socket) {
+        this._left.socket.leave(this._id.toString());
+        return true;
+      }
     }
     if (this._right) {
-      this._right.socket.leave(this._id.toString());
+      if (client.user.id === this._right.user.id && this._right.socket) {
+        this._right.socket.leave(this._id.toString());
+      }
       return true;
     }
     return false;
   }
 
-  public static new(left: Client | null = null, right: Client | null = null): Room {
-    const room: Room = new Room(left, right);
-    Room.__rooms_.add(room);
+  public static async new(roomService: RoomService, left: Client, right: Client) {
+    const promise = await roomService.create(left.user, right.user, {} as GameState);
+    const room = new GameRoom(promise.id, left, right);
+    GameRoom.__rooms_.add(room);
     return room;
   }
 
-  public static with(client: Client): Room | null {
-    for (const room of Room.__rooms_.values()) {
+  public static with(client: Client): GameRoom | null {
+    for (const room of GameRoom.__rooms_.values()) {
       if ((room._left && room._left.user.id === client.user.id)
         || (room._right && room._right.user.id === client.user.id)) {
         return room;
@@ -216,9 +228,9 @@ class Room {
     return null;
   }
 
-  public static at(id: number): Room | null {
+  public static at(id: number): GameRoom | null {
     if (typeof id === 'number') {
-      for (const room of Room.__rooms_.values()) {
+      for (const room of GameRoom.__rooms_.values()) {
         if (room._id === id) {
           return room;
         }
@@ -227,9 +239,9 @@ class Room {
     return null;
   }
 
-  public static delete(room: Room): void;
+  public static delete(room: GameRoom): void;
   public static delete(room: number): void;
-  public static delete(x: number | Room): void {
+  public static delete(x: number | GameRoom): void {
     let _delete_id: number;
 
     if (typeof x === 'number') {
@@ -238,27 +250,32 @@ class Room {
     else {
       _delete_id = x.id;
     }
-    for (const room of Room.__rooms_.values()) {
+    for (const room of GameRoom.__rooms_.values()) {
       if (room.id === _delete_id) {
         room.leave(room._left);
         room.leave(room._right);
         room._spectators.forEach((spec) => {
           room.removeSpectator(spec);
         });
-        Room.__rooms_.delete(room);
+        GameRoom.__rooms_.delete(room);
         return;
       }
     }
   }
 
-  public static list(): IRoom[] {
-    const roomList: IRoom[] = [];
+  public static list(): GameRoom[] {
+    return Array.from(GameRoom.__rooms_);
+  }
 
-    Room.__rooms_.forEach((room: Room) => {
-      roomList.push(room.IRoom());
-    });
-    return roomList;
+  public IGameRoom(): IGameRoom {
+    const iGameRoom: IGameRoom = {
+      id: this._id,
+      left: this._left.user,
+      right: this._right.user,
+      gameState: this._gameState.IGameState(),
+    };
+    return iGameRoom;
   }
 }
 
-export default Room;
+export default GameRoom;

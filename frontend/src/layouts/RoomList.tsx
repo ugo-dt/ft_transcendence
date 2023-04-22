@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { IRoom } from "../types";
+import { IGameRoom } from "../types";
 import Request from "../components/Request";
 import "./style/RoomList.css"
 
@@ -8,7 +8,7 @@ const PAGE_SIZE: number = 10;
 
 function RoomList() {
   const navigate = useNavigate();
-  const [roomList, setRoomList] = useState([] as IRoom[]);
+  const [roomList, setRoomList] = useState([] as IGameRoom[]);
   const [roomListPage, setRoomListPage] = useState(0);
   const [loading, setLoading] = useState(true);
 

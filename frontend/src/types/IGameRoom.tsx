@@ -1,10 +1,9 @@
 import { IUser } from "./IUser";
 import { IGameState } from "./IGameState";
 
-export interface IRoom {
+export interface IGameRoom {
   id: number,
   left: IUser,
   right: IUser,
   gameState: IGameState,
-  gameOver: boolean,
 }

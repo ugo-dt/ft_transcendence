@@ -2,8 +2,7 @@ import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect,
 import { Server, Socket } from "socket.io";
 import { PongService } from "./pong.service";
 import Queue from "./Matchmaking/Queue";
-import { IRoom } from "./Room/Room";
-import RoomHistory from "./Room/RoomHistory";
+import { Logger } from "@nestjs/common";
 
 @WebSocketGateway({
   namespace: 'pong',
@@ -11,8 +10,10 @@ import RoomHistory from "./Room/RoomHistory";
 })
 export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
+  private readonly logger: Logger;
 
   constructor(private readonly pongService: PongService) {
+    this.logger = new Logger("PongGateway");
     setInterval(() => {
       if (Queue.size() >= 1) {
         Queue.tryMatchPlayers(this.server, pongService);
@@ -38,11 +39,6 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.pongService.removeClientFromQueue(client);
   }
 
-  @SubscribeMessage('get-room-list')
-  public handleGetRoomList(@ConnectedSocket() client: Socket): IRoom[] {    
-    return this.pongService.rooms();
-  }
-
   @SubscribeMessage('spectate')
   public handleSpectate(@ConnectedSocket() client: Socket, @MessageBody() roomId: number) {
     this.pongService.spectateRoom(client, roomId);
@@ -55,7 +51,7 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('game-results')
   public handleGameResults(@MessageBody() roomId: number) {
-    return {room: RoomHistory.at(roomId)};
+    return this.pongService.gameResults(roomId);
   }
 
   @SubscribeMessage('upKeyPressed')

@@ -7,22 +7,59 @@
  */
 
 import { useContext, useEffect, useState } from "react";
-import { IUser } from "../types";
-import { UserContext } from "../context";
-import Request from "../components/Request";
 import { useNavigate } from "react-router";
+import { Context, UserContext } from "../context";
+import Request from "../components/Request";
+import { IUser } from "../types";
 import "./style/Friends.css"
 
+function FriendRow({ friendname }: { friendname: string }) {
+  const navigate = useNavigate();
+  const [friend, setFriend] = useState<IUser | null>(null)
+  
+  function handleInvite() {
+  }
+
+  useEffect(() => {
+    Request.getProfile(friendname).then(res => {
+      if (res) {
+        setFriend(res);
+      }
+    });
+  }, []);
+
+  return (
+    <>
+      {
+        friend &&
+        <tr className="room-list-row" key={friend.id}>
+          <td className="room-list-cell room-list-cell-username" title="See profile" role="button" onClick={() => navigate('/profile/' + friend.username)}>
+            {friend.username}
+          </td>
+          <td className="room-list-cell">
+            {friend.rating}
+          </td>
+          <td className="room-list-cell">
+            {friend.status.charAt(0).toLocaleUpperCase() + friend.status.slice(1)}
+          </td>
+          <td className="room-list-cell">
+            <button title="Watch game" onClick={() => handleInvite}>
+              Invite
+            </button>
+          </td>
+        </tr>
+      }
+    </>
+  )
+}
+
 function Friends() {
+  const context = useContext(UserContext);
   const client = useContext(UserContext).user;
   const setUser = useContext(UserContext).setUser;
-  const [friendsList, setFriendsList] = useState<IUser[]>([]);
+  const [friendsList, setFriendsList] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [inputValue, setInputValue] = useState("");
-  const navigate = useNavigate();
-
-  function handleInvite(friend: string) {
-  }
 
   function filterFriends() {
     const filter = inputValue.toUpperCase();
@@ -40,13 +77,15 @@ function Friends() {
   }
 
   useEffect(() => {
+    // if (!context) {
+    //   return ;
+    // }
     function getFriendsList() {
       setFriendsList([]);
       setLoading(true); // Set loading state to true before making HTTP requests
       if (client) {
         Request.getProfile(client.username).then(res => {
           if (res) {
-            setUser(res);
             setFriendsList(res.friends);
           }
         }).catch(err => {
@@ -56,10 +95,10 @@ function Friends() {
       setLoading(false);
     }
     getFriendsList();
-  }, []);
+  }, [context]);
 
   if (!client) {
-    return ;
+    return;
   }
 
   return (
@@ -91,23 +130,8 @@ function Friends() {
               </tbody>
               <tbody id="friends-table">
                 {
-                  friendsList.map((friend) => (
-                    <tr className="room-list-row" key={friend.id}>
-                      <td className="room-list-cell room-list-cell-username" title="See profile" role="button" onClick={() => navigate('/profile/' + friend.username)}>
-                        {friend.username}
-                      </td>
-                      <td className="room-list-cell">
-                        {friend.rating}
-                      </td>
-                      <td className="room-list-cell">
-                        {friend.status.charAt(0).toLocaleUpperCase() + friend.status.slice(1)}
-                      </td>
-                      <td className="room-list-cell">
-                        <button title="Watch game" onClick={() => handleInvite(friend.username)}>
-                          Invite
-                        </button>
-                      </td>
-                    </tr>
+                  friendsList.map((friendname, index) => (
+                    <FriendRow key={index} friendname={friendname} />
                   ))
                 }
               </tbody>

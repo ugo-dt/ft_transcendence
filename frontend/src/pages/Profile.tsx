@@ -27,6 +27,7 @@ import { UserContext } from "../context";
 
 function Profile() {
   const state = useLocation().state;
+  const context = useContext(UserContext);
   const [info, setInfo] = useState("");
   const [profile, setProfile] = useState<IUser | null>(null);
   const [history, setHistory] = useState<IGameRoom[]>([]);
@@ -46,6 +47,8 @@ function Profile() {
           return navigate("/home");
         };
         setProfile(profileData);
+        console.log(profileData);
+        
         Request.getUserMatchHistory(profileData.id).then((historyData) => {;        
           setHistory(historyData);
         });
@@ -59,19 +62,19 @@ function Profile() {
     if (state) {
       setInfo(state.info);
     }
-  }, []);
+  }, [context]);
 
   return (
     <div className="Profile">
       {
         loading ? (<h2>Loading...</h2>) : (
-          profile != null ? (
+          profile != null && (
             <>
               <ProfileHeader profile={profile} />
               <h3 id="profile-state-info">{info}&nbsp;</h3>
               <ProfileHistory history={history} profileId={profile.id} />
             </>
-          ) : (<h2>Profile not found</h2>)
+          )
         )
       }
     </div>

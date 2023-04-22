@@ -77,9 +77,6 @@ function Friends() {
   }
 
   useEffect(() => {
-    // if (!context) {
-    //   return ;
-    // }
     function getFriendsList() {
       setFriendsList([]);
       setLoading(true); // Set loading state to true before making HTTP requests

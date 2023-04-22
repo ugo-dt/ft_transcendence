@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { IUser } from "../types";
-import { UserContext } from "../context";
+import { Context, UserContext } from "../context";
 import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
 import SportsTennisIcon from '@mui/icons-material/SportsTennis';
@@ -18,6 +18,7 @@ import "./style/ProfileHeader.css"
 function ProfileHeader({ profile }: { profile: IUser }) {
   const context = useContext(UserContext);
   const user = useContext(UserContext).user;
+  const socket = useContext(Context).pongSocket;
   const navigate = useNavigate();
   const [isFriend, setIsFriend] = useState(false);
   const [isAvatarFormOpen, setIsAvatarFormOpen] = useState(false);
@@ -54,7 +55,12 @@ function ProfileHeader({ profile }: { profile: IUser }) {
   }
 
   function onClickChallenge() {
-    console.log("challenge");
+    if (!socket.current ||!socket.current.connected) {
+      return ;
+    }
+    socket.current.emit('challenge', profile.username, (res: string) => {
+      console.log(res);
+    });
   }
 
   function onClickMessage() {
@@ -98,7 +104,7 @@ function ProfileHeader({ profile }: { profile: IUser }) {
           </div>
           <div className="profile-header-details">
             <h3 id="profile-header-details-rating">Rating: {profile.rating}</h3>
-            <h3 id="profile-header-details-status">{profile.status.charAt(0).toLocaleUpperCase() + profile.status.slice(1)}</h3>
+            <h3 id="profile-header-details-status">Status: {profile.status.charAt(0).toLocaleUpperCase() + profile.status.slice(1)}</h3>
           </div>
           {
             user && profile.username === user.username &&
@@ -114,7 +120,7 @@ function ProfileHeader({ profile }: { profile: IUser }) {
                 <VpnKeyIcon className="profile-header-actions-icon" /> Enable 2FA
               </div>
             </div>
-            ||
+            &&
             <div className="profile-header-actions">
               {
                 !isFriend &&

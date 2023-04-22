@@ -13,8 +13,8 @@ import Request from './components/Request'
 function App() {
   const serverUrl = "http://192.168.1.178:3000";
   const socket = useRef<Socket<DefaultEventsMap, DefaultEventsMap> | null>(null);
-  const [connected, setConnected] = useState(true);
   const [user, setUser] = useState<IUser | null>(null);
+  const [connected, setConnected] = useState(true);
   const [loadingSocket, setLoadingSocket] = useState(true);
 
   const contextValue = {
@@ -26,7 +26,6 @@ function App() {
 
   async function connect(data: IUser) {
     if (socket.current && socket.current.connected) {
-      setLoadingSocket(false);
       return ;
     }
     socket.current = io(serverUrl + '/pong', {
@@ -37,24 +36,25 @@ function App() {
       socket.current.on('connect', onConnect);
       socket.current.on('disconnect', onDisconnect);
       socket.current.connect();
-      setLoadingSocket(false);
     }
   }
 
   async function onConnect() {
     setConnected(true);
-    // console.log(`Connected to ${serverUrl}.`);
+    setLoadingSocket(false);
+    console.log(`Connected to ${serverUrl}.`);
   }
 
   function onDisconnect() {
     setConnected(false);
-    // console.log(`Disconnected from ${serverUrl}.`);
+    setLoadingSocket(true);
+    console.log(`Disconnected from ${serverUrl}.`);
   }
 
   useEffect(() => {
     Request.me().then(res => {
       if (res) {
-        setUser(res);
+        setUser(res); // navbar lag comes from this
         connect(res);
       }
     }).catch(err => {
@@ -87,7 +87,9 @@ function App() {
           </div>
         }
         <Context.Provider value={contextValue}>
-          <Outlet />
+          {
+            <Outlet />
+          }
         </Context.Provider>
       </UserContext.Provider>
     </div>

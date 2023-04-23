@@ -13,7 +13,7 @@ export class RoomService {
     this.logger = new Logger("RoomService");
   }
 
-  async create(left: User, right: User, gameState: GameState) {
+  async create(left: number, right: number, gameState: GameState) {
     const room = this.repo.create(
       {
         left: left,
@@ -22,15 +22,15 @@ export class RoomService {
       }
     );
     const promise = await this.repo.save(room);
-    this.logger.log(`Saved game ${promise.id} (${promise.left.username} VS ${promise.right.username})`);
+    this.logger.log(`Saved game ${promise.id} (${promise.left} VS ${promise.right})`);
     return promise;
   }
 
-  IGameRoom(room: Room): IGameRoom {
+  IGameRoom(room: Room, leftUser: User, rightUser: User): IGameRoom {
     const iGameRoom: IGameRoom = {
       id: room.id,
-      left: room.left,
-      right: room.right,
+      left: leftUser,
+      right: rightUser,
       gameState: room.gameState,
     };
     return iGameRoom;
@@ -61,7 +61,7 @@ export class RoomService {
       if (!room.left || !room.right) {
         continue ;
       }
-      if (room.left.id === user.id || room.right.id === user.id) {
+      if (room.left === user.id || room.right === user.id) {
         history.unshift(room);
       }
     }

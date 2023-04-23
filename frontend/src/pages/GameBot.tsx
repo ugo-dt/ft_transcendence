@@ -1,4 +1,4 @@
-import { CANVAS_DEFAULT_BACKGROUND_COLOR, OFFLINE_MODE } from "../constants";
+import { OFFLINE_MODE } from "../constants";
 import PongBot from "../layouts/PongBot";
 import { IPlayer } from "../types";
 

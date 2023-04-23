@@ -51,7 +51,7 @@ export class AuthService {
         'black',
         [],
       );
-      this.usersService.update(user.id, { username: user.username + user.id });
+      this.usersService.setUsername(user.id, user.username + user.id);
     }
     return user;
   }

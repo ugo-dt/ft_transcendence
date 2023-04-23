@@ -5,8 +5,27 @@
   user-select: none;
 }
 
-#friends-search-bar {
+.friends-sections {
+  text-align: center;
+  display: flex;
+}
+
+.friends-list {
+  margin-right: 50px;
+}
+
+#search-bar {
   padding: 5px;
   margin-top: 10px;
   margin-bottom: 10px;
+}
+
+#invite-btn {
+  padding: 5px 10px 5px 10px;
+  font-weight: bold;
+}
+
+#friends-state-info {
+  color: red;
+  font-weight: lighter;
 }

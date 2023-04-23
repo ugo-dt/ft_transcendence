@@ -21,7 +21,7 @@ export class PongController {
   }
 
   @Get('rooms')
-  getRooms(): IGameRoom[] {
+  getRooms(): Promise<IGameRoom[]> {
     return this.pongService.rooms();
   }
 }

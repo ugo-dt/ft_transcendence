@@ -13,6 +13,7 @@ import Request from "../components/Request";
 import { useNavigate } from "react-router";
 
 function Rankings() {
+  document.title = "ft_transcendence - Leaderboard";
   const navigate = useNavigate();
   const [playerList, setPlayerList] = useState<IUser[]>([]);
   const [loading, setLoading] = useState(true);

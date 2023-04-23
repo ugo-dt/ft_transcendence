@@ -20,6 +20,11 @@ export class UsersController {
     return user;
   }
 
+  @Get('id/:id')
+  findUserId(@Param("id") id: number): Promise<User | null> {
+    return this.usersService.findOneId(id);
+  }
+
   @Get(":username")
   findUser(@Param("username") username: string): Promise<User | null> {
     return this.usersService.findOneUsername(username);
@@ -42,7 +47,7 @@ export class UsersController {
 
   @Post("edit/username")
   editUsername(@CurrentUser() user: User, @MessageBody() data: { username: string }): Promise<User> {
-    return this.usersService.update(user.id, { username: data.username });
+    return this.usersService.setUsername(user.id, data.username);
   }
 
   // todo: add file validation
@@ -56,7 +61,7 @@ export class UsersController {
     const writeStream = createWriteStream(fullpath);
     writeStream.write(file.buffer);
     writeStream.end();
-    return await this.usersService.update(user.id, {avatar: `http://192.168.1.178:3000/${fullpath}`});
+    return this.usersService.setAvatar(user.id, `http://192.168.1.178:3000/${fullpath}`);
   }
 
   @Post("add-friend/")

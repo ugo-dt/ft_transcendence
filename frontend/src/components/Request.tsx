@@ -15,6 +15,7 @@ namespace __url_ {
 
   // Users
   export const __users_me_ = __users_base_ + '/me';
+  export const __users_id_ = __users_base_ + '/id';
   export const __edit_username_ = __users_base_ + '/edit/username';
   export const __edit_avatar_ = __users_base_ + '/edit/avatar';
   export const __valid_username_ = __users_base_ + '/edit/is-valid-username';
@@ -108,6 +109,10 @@ class Request {
 
   public static async getProfile(username: string): Promise<IUser | null> {
     return await Request.__make_get_request_(__url_.__users_base_ + '/' + username);
+  }
+
+  public static async getProfileFromId(id: number): Promise<IUser | null> {
+    return await Request.__make_get_request_(__url_.__users_id_ + '/' + id);
   }
 
   public static async getUserMatchHistory(id: number): Promise<IGameRoom[]> {

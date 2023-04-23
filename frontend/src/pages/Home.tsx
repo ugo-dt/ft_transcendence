@@ -2,20 +2,18 @@ import "./style/Home.css"
 import PongDemo from "../layouts/PongDemo";
 import GameModes from "../layouts/GameModes";
 import axios from "axios";
-import { useContext, useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { UserContext } from "../context";
 import Request from "../components/Request";
 
 function Home() {
+  document.title = "ft_transcendence - Home";
   const navigate = useNavigate();
   const [parameters] = useSearchParams();
-  const setUser = useContext(UserContext).setUser;
 
   useEffect(() => {
     if (parameters.get("code")) {
       Request.signIn(parameters.get("code")).then().then(res => {
-        setUser(res);
         navigate("/home");
         window.location.reload();
       }).catch(err => {

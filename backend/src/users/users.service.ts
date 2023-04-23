@@ -3,6 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 
+const STATUS_ONLINE = 'online';
+const STATUS_IN_GAME = 'in game';
+const STATUS_OFFLINE = 'offline';
+
 @Injectable()
 export class UsersService {
   private readonly logger: Logger;
@@ -10,7 +14,7 @@ export class UsersService {
     this.logger = new Logger("UsersService");
   }
 
-  create(
+  public create(
     accessToken: string,
     refreshToken: string,
     id42: number,
@@ -21,35 +25,43 @@ export class UsersService {
     backgroundColor: string,
     friends: string[],
   ): Promise<User> {
-    const user = this.repo.create({ accessToken, refreshToken, id42, username, avatar, status, rating, backgroundColor, friends});
+    const user = this.repo.create({ accessToken, refreshToken, id42, username, avatar, status, rating, backgroundColor, friends });
     return this.repo.save(user);
   }
 
-  findOneUsername(username: string): Promise<User | null> {
+  private async _user(id: number): Promise<User> {
+    const user = await this.repo.findOneBy({ id });
+    if (!user) {
+      throw new NotFoundException("user not found");
+    }
+    return (user);
+  }
+
+  public findOneUsername(username: string): Promise<User | null> {
     /** The ILike option allows matching of strings based on comparison with a pattern.
      * The key word ILIKE can be used instead of LIKE to make the match case-insensitive
      * according to the active locale. This is not in the SQL standard but is a PostgreSQL extension. */
     return this.repo.findOneBy({ username: ILike(username) });
   }
 
-  findOneId(id: number): Promise<User | null> {
+  public findOneId(id: number): Promise<User | null> {
     return this.repo.findOneBy({ id });
   }
 
-  findOneId42(id42: number): Promise<User | null> {
+  public findOneId42(id42: number): Promise<User | null> {
     return this.repo.findOneBy({ id42 });
   }
 
-  findAll(): Promise<User[]> {
+  public findAll(): Promise<User[]> {
     return this.repo.find();
   }
 
-  async rankings() {
+  public async rankings() {
     const users = (await this.findAll()).sort((a, b) => (b.rating - a.rating));
     return users.slice(0, 50);
   }
 
-  async addFriend(id: number, friendName: string): Promise<User> {
+  public async addFriend(id: number, friendName: string): Promise<User> {
     const user = await this.findOneId(id);
     const friend = await this.findOneUsername(friendName);
     if (!user || !friend) {
@@ -61,7 +73,7 @@ export class UsersService {
     return this.repo.save(user);
   }
 
-  async removeFriend(id: number, friendName: string): Promise<User> {
+  public async removeFriend(id: number, friendName: string): Promise<User> {
     const user = await this.findOneId(id);
     const friend = await this.findOneUsername(friendName);
     if (!user || !friend) {
@@ -75,7 +87,7 @@ export class UsersService {
     return this.repo.save(user);
   }
 
-  async update(id: number, attrs: Partial<User>): Promise<User> {    
+  public async update(id: number, attrs: Partial<User>): Promise<User> {
     const user = await this.findOneId(id);
     if (!user) {
       throw new NotFoundException("user not found");
@@ -84,11 +96,36 @@ export class UsersService {
     return this.repo.save(user);
   }
 
-  async remove(id: number): Promise<User> {
+  public async remove(id: number): Promise<User> {
     const user = await this.findOneId(id);
     if (!user) {
       throw new NotFoundException("user not found");
     }
     return this.repo.remove(user);
   }
+
+  private async _isStatus(id: number, status: typeof STATUS_ONLINE | typeof STATUS_IN_GAME | typeof STATUS_OFFLINE): Promise<boolean> {
+    const user = await this.findOneId(id);
+    if (!user) {
+      throw new NotFoundException("user not found");
+    }
+    return (user.status === status);
+  }
+
+  public isOnline(id: number): Promise<boolean> { return this._isStatus(id, STATUS_ONLINE); }
+  public isInGame(id: number): Promise<boolean> { return this._isStatus(id, STATUS_IN_GAME); }
+  public isOffline(id: number): Promise<boolean> { return this._isStatus(id, STATUS_OFFLINE); }
+
+  public async getUsername(id: number) { return (await this._user(id)).username; }
+  public async getAvatar(id: number) { return (await this._user(id)).avatar;}
+  public async getRating(id: number) { return (await this._user(id)).rating;}
+  public async getBackgroundColor(id: number) { return (await this._user(id)).backgroundColor;}
+  
+  public setUsername(id: number, username: string) { return this.update(id, { username: username }); }
+  public setAvatar(id: number, avatar: string) { return this.update(id, { avatar: avatar }); }
+  public setOnline(id: number) { return this.update(id, { status: STATUS_ONLINE }); }
+  public setInGame(id: number) { return this.update(id, { status: STATUS_IN_GAME }); }
+  public setOffline(id: number) { return this.update(id, { status: STATUS_OFFLINE }); }
+  public setRating(id: number, rating: number) { return this.update(id, { rating: rating }); }
+  public setBackgroundColor(id: number, backgroundColor: string) { return this.update(id, { backgroundColor: backgroundColor }); }
 }

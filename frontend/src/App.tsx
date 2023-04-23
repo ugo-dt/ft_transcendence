@@ -10,18 +10,20 @@ import axios from "axios";
 import { DefaultEventsMap } from '@socket.io/component-emitter'
 import Request from './components/Request'
 
+// todo: document.title = "ft_transcendence - Chat";
+
 function App() {
   const serverUrl = "http://192.168.1.178:3000";
   const socket = useRef<Socket<DefaultEventsMap, DefaultEventsMap> | null>(null);
+  const [socketConnected, setSocketConnected] = useState(false);
+  const [lostConnection, setLostConnection] = useState(false);
   const [user, setUser] = useState<IUser | null>(null);
-  const [connected, setConnected] = useState(true);
-  const [loadingSocket, setLoadingSocket] = useState(true);
 
   const contextValue = {
-    serverUrl,
+    serverUrl: serverUrl,
     pongSocket: socket,
-    loadingSocket: loadingSocket,
-    setLoadingSocket: setLoadingSocket,
+    socketConnected: socketConnected,
+    setSocketConnected: setSocketConnected,
   };
 
   async function connect(data: IUser) {
@@ -40,22 +42,23 @@ function App() {
   }
 
   async function onConnect() {
-    setConnected(true);
-    setLoadingSocket(false);
     console.log(`Connected to ${serverUrl}.`);
+    setTimeout(() => {
+      setSocketConnected(true);
+    }, 100);
   }
 
   function onDisconnect() {
-    setConnected(false);
-    setLoadingSocket(true);
     console.log(`Disconnected from ${serverUrl}.`);
+    setSocketConnected(false);
+    setLostConnection(true);
   }
 
   useEffect(() => {
     Request.me().then(res => {
       if (res) {
-        setUser(res); // navbar lag comes from this
         connect(res);
+        setUser(res);
       }
     }).catch(err => {
       if (axios.isAxiosError(err) && err.code === "ERR_CANCELED") {
@@ -79,7 +82,7 @@ function App() {
       <UserContext.Provider value={{ user, setUser }}>
         <Navbar />
         {
-          user && !connected && 
+          lostConnection && user && !socketConnected && 
           <div className="alert-disconnected">
             <h3>
               You are disconnected. Please refresh the page.
@@ -87,9 +90,7 @@ function App() {
           </div>
         }
         <Context.Provider value={contextValue}>
-          {
-            <Outlet />
-          }
+          <Outlet />
         </Context.Provider>
       </UserContext.Provider>
     </div>

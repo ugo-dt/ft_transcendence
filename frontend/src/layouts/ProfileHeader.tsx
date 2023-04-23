@@ -14,6 +14,7 @@ import EditUsernameForm from "./EditUsernameForm";
 import EditAvatarForm from "./EditAvatarForm";
 import { useNavigate } from "react-router";
 import "./style/ProfileHeader.css"
+import GameInvite from "./GameInvite";
 
 function ProfileHeader({ profile }: { profile: IUser }) {
   const context = useContext(UserContext);
@@ -23,6 +24,7 @@ function ProfileHeader({ profile }: { profile: IUser }) {
   const [isFriend, setIsFriend] = useState(false);
   const [isAvatarFormOpen, setIsAvatarFormOpen] = useState(false);
   const [isUsernameFormOpen, setIsUsernameFormOpen] = useState(false);
+  const [isChallengeOpen, setIsChallengeOpen] = useState(false);
 
   function onClickEditUsername() {
     setIsUsernameFormOpen(!isUsernameFormOpen);
@@ -55,12 +57,7 @@ function ProfileHeader({ profile }: { profile: IUser }) {
   }
 
   function onClickChallenge() {
-    if (!socket.current ||!socket.current.connected) {
-      return ;
-    }
-    socket.current.emit('challenge', profile.username, (res: string) => {
-      console.log(res);
-    });
+    setIsChallengeOpen(!isChallengeOpen);
   }
 
   function onClickMessage() {
@@ -155,12 +152,9 @@ function ProfileHeader({ profile }: { profile: IUser }) {
           }
         </section>
       </div>
-      {
-        isAvatarFormOpen && <EditAvatarForm onClose={onClickEditAvatar} />
-      }
-      {
-        isUsernameFormOpen && <EditUsernameForm onClose={onClickEditUsername} />
-      }
+      {isAvatarFormOpen && <EditAvatarForm onClose={onClickEditAvatar} />}
+      {isUsernameFormOpen && <EditUsernameForm onClose={onClickEditUsername} />}
+      {isChallengeOpen && <GameInvite opponentId={profile.id} onClose={onClickChallenge} />}
     </div>
   )
 }

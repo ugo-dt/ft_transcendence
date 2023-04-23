@@ -1,12 +1,14 @@
-import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
+import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer, WsException } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
 import { PongService } from "./pong.service";
+import { Logger} from "@nestjs/common";
 import Queue from "./Matchmaking/Queue";
-import { Logger } from "@nestjs/common";
 
 @WebSocketGateway({
   namespace: 'pong',
-  cors: '*',
+  cors: {
+    origin: 'http://192.168.1.178:5173',
+  }
 })
 export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
@@ -16,12 +18,13 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.logger = new Logger("PongGateway");
     setInterval(() => {
       if (Queue.size() >= 1) {
-        Queue.tryMatchPlayers(this.server, pongService);
+        Queue.tryMatchPlayers(this.server, this.pongService);
       }
     }, 1000);
+    this.logger.log("Initialized queue.");
   }
 
-  public async handleConnection(client: Socket) {
+  public async handleConnection(client: Socket) {   
     this.pongService.handleUserConnected(client);
   }
   
@@ -75,7 +78,25 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('challenge')
-  public handleChallenge(@ConnectedSocket() client: Socket, opponent: string) {
-    this.pongService.startChallenge();
+  public handleChallenge(@ConnectedSocket() client: Socket, @MessageBody() opponent: number) {
+    if (opponent == null || opponent == undefined) {
+      return 'error: undefined opponent'
+    }
+    return this.pongService.startChallenge(client, opponent);
+  }
+
+  @SubscribeMessage('challenge-list')
+  public challengeList(@ConnectedSocket() client: Socket) {
+    return this.pongService.challengeList(client);
+  }
+
+  @SubscribeMessage('accept-challenge')
+  public acceptChallenge(@ConnectedSocket() client: Socket, @MessageBody() opponent: number) {
+    return this.pongService.acceptChallenge(this.server, client, opponent);
+  }
+  
+  @SubscribeMessage('cancel-challenge')
+  public cancelChallenge(@ConnectedSocket() client: Socket) {
+    return this.pongService.cancelChallenge(client);
   }
 }

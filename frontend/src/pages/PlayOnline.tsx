@@ -4,6 +4,7 @@ import { useNavigate } from "react-router";
 import { Context } from "../context";
 
 function PlayOnline() {
+  document.title = "ft_transcendence - Game";
   const socket = useContext(Context).pongSocket.current;
   const navigate = useNavigate();
   const inQueueRef = useRef(false);

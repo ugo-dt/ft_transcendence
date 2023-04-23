@@ -7,11 +7,11 @@ export class Room {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column("jsonb")
-  left: User;
+  @Column()
+  left: number;
 
-  @Column("jsonb")
-  right: User;
+  @Column()
+  right: number;
   
   @Column("jsonb")
   gameState: IGameState;

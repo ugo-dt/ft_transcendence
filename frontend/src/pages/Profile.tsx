@@ -21,13 +21,13 @@ import ProfileHistory from "../layouts/ProfileHistory";
 import ProfileHeader from "../layouts/ProfileHeader";
 import { IUser, IGameRoom } from "../types";
 import Request from "../components/Request";
+import { Context } from "../context";
 import "./style/Profile.css"
 import "../layouts/style/RoomList.css"
-import { UserContext } from "../context";
 
 function Profile() {
   const state = useLocation().state;
-  const context = useContext(UserContext);
+  const context = useContext(Context);
   const [info, setInfo] = useState("");
   const [profile, setProfile] = useState<IUser | null>(null);
   const [history, setHistory] = useState<IGameRoom[]>([]);
@@ -35,20 +35,22 @@ function Profile() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (window.location.pathname === '/profile' || window.location.pathname === '/profile/') {
+      return navigate("/home");
+    }
+    const profileName = window.location.pathname.split("/").pop()!;
+    document.title = "ft_transcendence - " + profileName;
+    if (!context.socketConnected) {
+      return ;
+    }
     window.history.replaceState({}, document.title);
     async function getProfile() {
-      if (window.location.pathname === '/profile' || window.location.pathname === '/profile/') {
-        return navigate("/home");
-      }
       setLoading(true);
-      const profileName = window.location.pathname.split("/").pop()!;
       Request.getProfile(profileName).then((profileData) => {
         if (!profileData) {
           return navigate("/home");
         };
         setProfile(profileData);
-        console.log(profileData);
-        
         Request.getUserMatchHistory(profileData.id).then((historyData) => {;        
           setHistory(historyData);
         });

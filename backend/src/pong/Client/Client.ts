@@ -1,11 +1,9 @@
 // import { Socket } from "socket.io";
 
 import { Socket } from "socket.io";
-import { User } from "src/users/entities/user.entity";
+import { UsersService } from "src/users/users.service";
 
-export const STATUS_ONLINE = 'online';
-export const STATUS_PLAYING = 'playing';
-export const STATUS_OFFLINE = 'offline';
+
 // export type _Status = typeof STATUS_ONLINE | typeof STATUS_PLAYING | typeof STATUS_OFFLINE;
 
 // export interface IClient {
@@ -112,47 +110,115 @@ export const STATUS_OFFLINE = 'offline';
 class Client {
   private static __clients_ = new Set<Client>;
 
-  private _user: User;
-  private _socket: Socket | null;
+  private _id: number;
+  private _sockets: Socket[];
+  private _challenges: Map<string, number>; // user socket id, opponent id
+  private _invitations: number[];
 
-  private constructor(user: User, socket: Socket | null) {
-    this._user = user;
-    this._socket = socket;
+  private constructor(id: number, socket: Socket | null) {
+    this._id = id;
+    this._sockets = [];
+    if (socket) {
+      this._sockets.push(socket);
+    }
+    this._challenges = new Map();
+    this._invitations = [];
   }
 
-  public get user(): User { return this._user; }
-  public get socket(): Socket | null { return this._socket; }
+  public get id(): number { return this._id; }
+  public get sockets(): Socket[] { return this._sockets; }
+  public get invitations(): number[] { return this._invitations; }
+  
+  public set id(id: number) { this._id = id; }
+  public set sockets(sockets: Socket[]) { this._sockets = sockets; }
+  public set invitations(invitations: number[]) { this._invitations = invitations; }
 
-  public set user(user: User) { this._user = user; }
-  public set socket(socket: Socket | null) { this._socket = socket; }
+  public addSocket(socket: Socket) {
+    if (!this._sockets.includes(socket)) {
+      this.sockets.push(socket);
+    }
+  }
 
-  public static new(user: User, clientSocket: Socket | null): Client {
-    const client = new Client(user, clientSocket);
+  public removeSocket(socket: Socket) {
+    const index = this._sockets.indexOf(socket);
+    if (index > -1) {
+      this._sockets.splice(index, 1);
+    }
+  }
+
+  public ownsSocket(socket: Socket): boolean {
+    for (const s of this._sockets.values()) {
+      if (s.id === socket.id) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public joinRoom(roomId: number) {
+    for (const s of this._sockets.values()) {
+      s.join(roomId.toString());
+    }
+  }
+
+  public leaveRoom(roomId: number) {
+    for (const s of this._sockets.values()) {
+      s.leave(roomId.toString());
+    }
+  }
+
+  public createChallenge(socketId: string, opponentId: number) {
+    this._challenges.set(socketId, opponentId);
+  }
+
+  public cancelChallenge(socketId: string) {
+    this._challenges.delete(socketId);
+  }
+
+  public getChallengeOpponent(socketId: string): number | undefined {
+    return this._challenges.get(socketId);
+  }
+
+  public hasChallenge(socketId: string) {
+    return (this.getChallengeOpponent(socketId) != undefined);
+  }
+
+  public addInvitation(id: number) {
+    if (!this._invitations.includes(id)) {
+      this._invitations.push(id);
+    }
+  }
+
+  public hasInvitation(id: number) {
+    return this._invitations.includes(id);
+  }
+
+  public removeInvitation(id: number) {
+    const index = this._invitations.indexOf(id);
+    if (index > -1) {
+      this._invitations.splice(index, 1);
+    }
+  }
+
+  public static new(id: number, clientSocket: Socket | null): Client {
+    const client = new Client(id, clientSocket);
     Client.__clients_.add(client);
     return client;
   }
 
   public static at(id: number): Client | null;
-  public static at(username: string): Client | null;
   public static at(clientSocket: Socket): Client | null;
-  public static at(client: number | string | Socket): Client | null {
+  public static at(client: number | Socket): Client | null {
     if (typeof client === 'number') {
       for (const clt of Client.__clients_.values()) {
-        if (clt._user.id === client) {
-          return clt;
-        }
-      }
-    }
-    else if (typeof client === 'string') {
-      for (const clt of Client.__clients_.values()) {
-        if (clt._user.username.toLowerCase() === client.toLowerCase()) {
+        if (clt._id === client) {
           return clt;
         }
       }
     }
     else {
       for (const clt of Client.__clients_.values()) {
-        if (clt._socket && clt._socket.id === client.id) {
+        if (clt._sockets.includes(client)) {
           return clt;
         }
       }
@@ -160,15 +226,27 @@ class Client {
     return null;
   }
 
-  public static list() {
+  public static list(): Client[] {
     return Array.from(Client.__clients_);
   }
 
-  public static delete(socket: Socket) {
-    for (const clt of Client.__clients_.values()) {
-      if (clt._socket && clt._socket.id === socket.id) {
-        Client.__clients_.delete(clt);
-        return;
+  public static delete(id: number): void;
+  public static delete(socket: Socket): void;
+  public static delete(client: number | Socket): void {
+    if (typeof client === 'number') {
+      for (const clt of Client.__clients_.values()) {
+        if (clt._id === client) {
+          Client.__clients_.delete(clt);
+          return;
+        }
+      }
+    }
+    else {
+      for (const clt of Client.__clients_.values()) {
+        if (clt._sockets.includes(client)) {
+          Client.__clients_.delete(clt);
+          return;
+        }
       }
     }
   }

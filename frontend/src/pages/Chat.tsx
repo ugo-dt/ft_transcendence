@@ -18,7 +18,7 @@
 // Access other users profile page
 //
 // TODO:
-// - implement isDm
+// - Add someone to dms
 // - Browse channels window
 // - All users and their rights on the right
 // - Hash channel passwords
@@ -35,6 +35,7 @@ import { IChannel } from '../types/IChannel';
 import { IUser } from '../types/IUser';
 import { IMessage } from '../types/IMessage';
 import './style/Chat.css'
+import { CHAT_DEFAULT_AVATAR } from '../constants';
 
 function Chat() {
 	const [loggedIn, setLoggedIn] = useState<boolean>(false);
@@ -43,7 +44,6 @@ function Chat() {
 	const [isCreateChannelFormVisible, setIsCreateChannelFormVisible] = useState(false);
 	const [createChannelNameInputValue, setCreateChannelNameInputValue] = useState("");
 	const [createChannelPasswordInputValue, setCreateChannelPasswordInputValue] = useState("");
-	const [createChannelDmInputValue, setCreateChannelDmInputValue] = useState("");
 
 	const [createUserNameInputValue, setCreateUserInputValue] = useState("");
 	const user = useRef<IUser>({} as IUser);
@@ -115,16 +115,20 @@ function Chat() {
 		setLoggedIn(true);
 	}
 
-	function createChannel(createChannelNameInputValue: string, createChannelPasswordInputValue: string): void {
+	function createChannel(createChannelNameInputValue: string,
+		createChannelPasswordInputValue: string,
+		isDm: boolean): void {
 		if (createChannelNameInputValue.match(/^ *$/))
 			alert("Channel Name can't be empty.");
+		else if (createChannelNameInputValue.length > 15 || createChannelNameInputValue.length < 3)
+			alert("Channel Name must be between 3 and 15 characters.");
 		else if (user) {
 			const newChannel = {
 				channelId: -1,
 				name: createChannelNameInputValue.trim(),
 				history: [],
 				password: createChannelPasswordInputValue,
-				isDm: false,
+				isDm: isDm,
 				users: [user.current],
 				admins: [user.current],
 				banned: [],
@@ -137,7 +141,6 @@ function Chat() {
 			closeForm("form_create_channel");
 			setCreateChannelNameInputValue("");
 			setCreateChannelPasswordInputValue("");
-			setCreateChannelDmInputValue("");
 		}
 	}
 
@@ -224,20 +227,24 @@ function Chat() {
 				<CreateChannelForm
 					createChannelNameInputValue={createChannelNameInputValue}
 					createChannelPasswordInputValue={createChannelPasswordInputValue}
-					createChannelDmInputValue={createChannelDmInputValue}
 					setCreateChannelNameInputValue={setCreateChannelNameInputValue}
 					setCreateChannelPasswordInputValue={setCreateChannelPasswordInputValue}
-					setCreateChannelDmInputValue={setCreateChannelDmInputValue}
 					createChannel={createChannel}
 					close={closeForm}
 				/>
-				<Channels
-					currentChannelId={currentChannelId}
-					channels={channels}
-					setCurrentChannelId={setCurrentChannelId}
-					socket={socket}
-					update={update}
-				/>
+				<div>
+					<Channels
+						currentChannelId={currentChannelId}
+						channels={channels}
+						setCurrentChannelId={setCurrentChannelId}
+						socket={socket}
+						update={update}
+					/>
+					<button id='button_user_profile'>
+						<img id="img_user_profile" src={CHAT_DEFAULT_AVATAR} alt="" width={40} height={40} />
+						<b><p>{user.current.name}</p></b>
+					</button>
+				</div>
 				<ChatWindow
 					currentChannelId={currentChannelId}
 					channels={channels}

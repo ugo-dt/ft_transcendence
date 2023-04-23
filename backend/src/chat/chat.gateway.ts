@@ -54,16 +54,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		return this.chatService.handleGetUserChannels(userSocket);
 	}
 
-	@SubscribeMessage('get-user-channel-users')
-	public handleGetUserChannelUsers(@ConnectedSocket() userSocket: Socket, data: any): IUser[] {
-		this.logger.log(`get-user-channel-users`);
-		return this.chatService.handleGetUserChannelUsers(userSocket, data);
-	}
-
 	@SubscribeMessage('invite-user')
 	public handleInviteUser(@ConnectedSocket() userSocket: Socket, @MessageBody() data: any) {
 		this.logger.log(`invite-user`);
 		return this.chatService.handleInviteUser(userSocket, data, this.server);
+	}
+
+	@SubscribeMessage('kick-user')
+	public handleKickUser(@ConnectedSocket() UserSocket: Socket, @MessageBody() data: any) {
+		this.logger.log('kick-user');
+		return this.chatService.handleKickUser(UserSocket, data, this.server);
 	}
 
 	@SubscribeMessage('leave-channel')

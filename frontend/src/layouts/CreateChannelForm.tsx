@@ -4,28 +4,24 @@ import { IUser } from "../types/IUser";
 interface CreateChannelFormProps {
 	createChannelNameInputValue: string;
 	createChannelPasswordInputValue: string;
-	createChannelDmInputValue: string;
 	setCreateChannelNameInputValue: (arg0: string) => void;
 	setCreateChannelPasswordInputValue: (arg0: string) => void;
-	setCreateChannelDmInputValue: (arg0: string) => void;
-	createChannel: (arg0: string, arg1: string) => void;
+	createChannel: (arg0: string, arg1: string, arg2: boolean) => void;
 	close: (arg0: string) => void;
 }
 
 const CreateChannelForm = ({
 	createChannelNameInputValue,
 	createChannelPasswordInputValue,
-	createChannelDmInputValue,
 	setCreateChannelNameInputValue,
 	setCreateChannelPasswordInputValue,
-	setCreateChannelDmInputValue,
 	createChannel,
 	close }: CreateChannelFormProps) => {
 
 	const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
 		if (event.key === 'Enter') {
 			event.preventDefault();
-			createChannel(createChannelNameInputValue, createChannelPasswordInputValue);
+			createChannel(createChannelNameInputValue, createChannelPasswordInputValue, false);
 		}
 	};
 
@@ -36,9 +32,6 @@ const CreateChannelForm = ({
 		}
 		if (name === "channelPassword") {
 			setCreateChannelPasswordInputValue(e.target.value);
-		}
-		if (name === "DM") {
-			setCreateChannelDmInputValue(e.target.value);
 		}
 	};
 
@@ -72,20 +65,7 @@ const CreateChannelForm = ({
 				onKeyDown={handleKeyDown}
 				onChange={(e) => handleInputChange(e)}
 			/>
-
-			<label id="label_create_channel">
-				<b>DM</b>
-			</label>
-			<input
-				className="input_create_channel"
-				type="text"
-				placeholder="Add someone to DMs"
-				name="DM"
-				value={createChannelDmInputValue}
-				onChange={(e) => handleInputChange(e)}
-			/>
-
-			<button type="button" id="button_create_channel" onClick={() => createChannel(createChannelNameInputValue, createChannelPasswordInputValue)}>
+			<button type="button" id="button_create_channel" onClick={() => createChannel(createChannelNameInputValue, createChannelPasswordInputValue, false)}>
 				Create Channel
 			</button>
 		</form>

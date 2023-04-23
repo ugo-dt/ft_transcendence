@@ -9,7 +9,7 @@ interface UserListProps {
 	update: () => void;
 }
 
-// Clicking on a user should show block challenge add friend etc
+// Clicking on a user should show add to dms block challenge add friend etc
 
 function UserList({ currentChannelId, channels, setCurrentChannelId, update }: UserListProps) {
 	const currentChannel = channels.find(channel => channel.id === currentChannelId);
@@ -21,8 +21,8 @@ function UserList({ currentChannelId, channels, setCurrentChannelId, update }: U
 			<div id="div_user_list">
 				{users.map(user => (
 					<button className="button_user_list" key={user.id} onClick={() => console.log(user)}>
-						<img id="img_avatar" src={CHAT_DEFAULT_AVATAR} alt="" width={40} height={40}/>
-						{user.name}
+						<img id="img_user_list" src={CHAT_DEFAULT_AVATAR} alt="" width={40} height={40}/>
+						<p id="p_user_list"><b>{user.name}</b></p>
 					</button>
 				))}
 			</div>

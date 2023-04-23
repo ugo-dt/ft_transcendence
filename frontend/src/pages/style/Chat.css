@@ -34,7 +34,7 @@
 	left: 35%;
 	color: white;
 	width: 500px;
-	height: 450px;
+	height: 340px;
 	display: flex;
 	flex-direction: column;
 	position: absolute;
@@ -108,10 +108,11 @@
 	display: flex;
 	flex-direction: column;
 	margin-top: 3%;
-	margin-left: 1%;
+	margin-left: 3%;
+	margin-right: 3%;
 	overflow-y: scroll;
 	width: 300px;
-	height: 500px;
+	height: 450px;
 	padding-top: 20px;
 	border-style: solid;
 	border-color: black;
@@ -119,6 +120,28 @@
 	background-color: rgb(28, 28, 28);
 	border-radius: 10px;
 	box-shadow: 0 10px 10px rgba(0, 0, 0, .12);
+}
+
+#button_user_profile {
+	cursor: pointer;
+	color: white;
+	font-size: x-large;
+	width: 100%;
+	margin-left: 3%;
+	margin-top: 10%;
+	border-style: none;
+	background-color: #4a4a4a;
+	background-color: rgb(43, 43, 43);
+	border-radius: 10px;
+}
+
+#button_user_profile:hover {
+	background-color: #727272;
+}
+
+#img_user_profile {
+	border-radius: 20px;
+	margin-top: 1%;
 }
 
 @media screen and (max-width : 750px) {
@@ -293,9 +316,10 @@
 }
 
 #div_main_user_list {
-	width: 300px;
+	width: 250px;
 	background-color: rgb(43, 43, 43);
 	margin-left: 2%;
+	height: 600px;
 }
 
 #h2_user_list {
@@ -306,18 +330,22 @@
 #div_user_list {
 	display: flex;
 	flex-direction: column;
+	overflow-y: scroll;
+	height: 90%;
 }
 
 .button_user_list {
+	font-size: large;
 	margin-left: auto;
 	margin-right: auto;
+	margin-top: 7px;
+	margin-bottom: 7px;
 	color: white;
 	background-color: #6b6b6b;
 	cursor: pointer;
-	width: 80%;
+	width: 50%;
 	border-style: none;
 	box-shadow: 0 10px 10px rgba(0, 0, 0, .12);
-	margin-bottom: 10px;
 	border-radius: 5px;
 }
 
@@ -327,6 +355,11 @@
 
 #img_user_list {
 	border-radius: 20px;
+	margin-top: 3px;
+}
+
+#p_user_list {
+	margin-bottom: 3px;
 }
 
 /*------------------------------------------------*/

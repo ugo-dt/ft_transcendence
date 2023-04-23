@@ -55,6 +55,18 @@ function Channels({ currentChannelId, channels, setCurrentChannelId, socket, upd
 		})
 	}
 
+	function kickUser(): void {
+		socket.emit('kick-user', { ChanneSettingslInputValue, currentChannelId }, (response: { data: IUser | null }) => {
+			closeForm("form_channel_settings");
+			setChanneSettingslInputValue("");
+			if (response.data === null)
+				alert('User not found.')
+			else {
+				console.log(response);
+			}
+		})
+	}
+
 	function leaveChannel(): void {
 		socket.emit('leave-channel', { currentChannelId });
 		closeForm("form_channel_settings");
@@ -116,6 +128,7 @@ function Channels({ currentChannelId, channels, setCurrentChannelId, socket, upd
 					<button
 						className="button_channel_settings"
 						type="button"
+						onClick={kickUser}
 					>kick</button>
 					<button
 						className="button_channel_settings"

@@ -68,41 +68,41 @@ class Channel {
 	public set banned(banned: Set<User>) { this._banned = banned; }
 
 	public IChannel(): IChannel {
-		let messageHistory: IMessage[] = [];
+		let __messageHistory: IMessage[] = [];
 		Array.from(this._history).map((message, index) => {
-			messageHistory.push(message.IMessage());
+			__messageHistory.push(message.IMessage());
 		});
 
-		let usersArray: IUser[] = [];
+		let __usersArray: IUser[] = [];
 		Array.from(this._users).map((user, index) => {
-			usersArray.push(user.IUser());
+			__usersArray.push(user.IUser());
 		});
 
-		let adminsArray: IUser[] = [];
-		Array.from(this._users).map((admins, index) => {
-			adminsArray.push(admins.IUser());
+		let __adminsArray: IUser[] = [];
+		Array.from(this._admins).map((admins, index) => {
+			__adminsArray.push(admins.IUser());
 		});
 
-		let mutedArray: IUser[] = [];
-		Array.from(this._users).map((muted, index) => {
-			mutedArray.push(muted.IUser());
+		let __mutedArray: IUser[] = [];
+		Array.from(this._muted).map((muted, index) => {
+			__mutedArray.push(muted.IUser());
 		});
 
-		let bannedArray: IUser[] = [];
-		Array.from(this._users).map((banned, index) => {
-			bannedArray.push(banned.IUser());
+		let __bannedArray: IUser[] = [];
+		Array.from(this._banned).map((banned, index) => {
+			__bannedArray.push(banned.IUser());
 		});
-		
+
 		const iChannel: IChannel = {
 			id: this._id,
 			name: this._name,
-			history: messageHistory,
+			history: __messageHistory,
 			isDm: this._isDm,
 			password: this._password,
-			users: usersArray,
-			admins: adminsArray,
-			muted: mutedArray,
-			banned: bannedArray,
+			users: __usersArray,
+			admins: __adminsArray,
+			muted: __mutedArray,
+			banned: __bannedArray,
 		}
 		return iChannel;
 	}
@@ -130,8 +130,7 @@ class Channel {
 	}
 
 	public removeUser(user: User) {
-		if (user)
-		{
+		if (user) {
 			this._users.delete(user);
 			this._admins.delete(user);
 		}

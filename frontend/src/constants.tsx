@@ -34,3 +34,4 @@ export const PADDLE_DEFAULT_VELOCITY: number = 10;
 export const CHAT_DEFAULT_AVATAR: string = "../../assets/images/noavatar.png";
 export const CHAT_GEAR_ICON: string = "../../../assets/images/gear_icon9.png";
 export const CHAT_LEAVE_CHANNEL_ICON: string = "../../../assets/images/trash.png";
+export const CHAT_BROWSE_CHANNEL_ICON: string = "../../../assets/images/browse_channel_icon.png"

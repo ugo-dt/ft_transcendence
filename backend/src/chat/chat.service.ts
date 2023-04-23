@@ -24,15 +24,15 @@ export class ChatService {
 		return user.IUser();
 	}
 
-	public handleCreateChannel(userSocket: Socket, newChannel: any) {
+	public handleCreateChannel(userSocket: Socket, newChannel: any, server: Server) {
 		const channel = Channel.new(newChannel);
 		if (channel) {
 			channel.addUser(User.at(userSocket) as User);
 			channel.addAdmin(User.at(userSocket) as User);
 		}
-		console.log("User.at(userSocket)?.IUser(): ", User.at(userSocket)?.IUser());
 		User.at(userSocket)?.userChannels.add(channel);
 		console.log("Channel.list(): ", Channel.list());
+		server.emit('update');
 		return channel.IChannel();
 	}
 
@@ -89,6 +89,10 @@ export class ChatService {
 			channel.removeUser(user);
 			server.emit('update');
 		}
+	}
+
+	public handleGetAllChannels(): IChannel[] {
+		return this.channels();
 	}
 
 	public users(): IUser[] {

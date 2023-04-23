@@ -36,6 +36,7 @@ import { IUser } from '../types/IUser';
 import { IMessage } from '../types/IMessage';
 import './style/Chat.css'
 import { CHAT_DEFAULT_AVATAR } from '../constants';
+import BrowseChannels from '../layouts/BrowseChannels';
 
 function Chat() {
 	const [loggedIn, setLoggedIn] = useState<boolean>(false);
@@ -48,6 +49,7 @@ function Chat() {
 	const [createUserNameInputValue, setCreateUserInputValue] = useState("");
 	const user = useRef<IUser>({} as IUser);
 	const [channels, setChannels] = useState<IChannel[]>([]);
+	const [allChannels, setAllChannels] = useState<IChannel[]>([]);
 
 	const [currentChannelId, setCurrentChannelId] = useState<number>(-1);
 
@@ -81,7 +83,8 @@ function Chat() {
 		if (event.key === "Escape") {
 			event.preventDefault();
 			closeForm("form_create_channel");
-			closeForm("form_channel_settings")
+			closeForm("form_channel_settings");
+			closeForm("div_main_browse_channels");
 		}
 	}
 
@@ -104,6 +107,10 @@ function Chat() {
 	function update(): void {
 		socket.emit('get-user-channels', user.current, (response: IChannel[]) => {
 			setChannels(response);
+		});
+		socket.emit('get-all-channels', {}, (response: IChannel[]) => {
+			setAllChannels(response);
+			console.log("response: ", response);
 		});
 	}
 
@@ -231,6 +238,12 @@ function Chat() {
 					setCreateChannelPasswordInputValue={setCreateChannelPasswordInputValue}
 					createChannel={createChannel}
 					close={closeForm}
+				/>
+				<BrowseChannels
+					currentChannelId={currentChannelId}
+					allChannels={allChannels}
+					setCurrentChannelId={setCurrentChannelId}
+					closeForm={closeForm}
 				/>
 				<div>
 					<Channels

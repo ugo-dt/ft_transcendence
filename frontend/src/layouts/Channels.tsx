@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { IUser } from "../types/IUser";
 import { IChannel } from "../types/IChannel";
-import { CHAT_GEAR_ICON, CHAT_LEAVE_CHANNEL_ICON } from "../constants";
+import { CHAT_BROWSE_CHANNEL_ICON, CHAT_GEAR_ICON } from "../constants";
 import { Socket } from "socket.io-client";
 
 interface ChannelsProps {
@@ -18,7 +18,6 @@ function Channels({ currentChannelId, channels, setCurrentChannelId, socket, upd
 	const [ChanneSettingslInputValue, setChanneSettingslInputValue] = useState("");
 
 	const openForm = (formToOpen: string) => {
-		setIsCreateChannelFormVisible(!isCreateChannelFormVisible);
 		const form = document.getElementById(formToOpen);
 		if (form) {
 			form.style.visibility = "visible";
@@ -26,7 +25,6 @@ function Channels({ currentChannelId, channels, setCurrentChannelId, socket, upd
 	};
 
 	const closeForm = (formToClose: string) => {
-		setIsCreateChannelFormVisible(!isCreateChannelFormVisible);
 		const form = document.getElementById(formToClose);
 		if (form) {
 			form.style.visibility = "hidden";
@@ -76,9 +74,9 @@ function Channels({ currentChannelId, channels, setCurrentChannelId, socket, upd
 		const subsequentChannel = channels[currentIndex + 1];
 		let newChannelId = -1;
 		if (previousChannel) {
-		  newChannelId = previousChannel.id;
+			newChannelId = previousChannel.id;
 		} else if (subsequentChannel) {
-		  newChannelId = subsequentChannel.id;
+			newChannelId = subsequentChannel.id;
 		}
 		setCurrentChannelId(newChannelId);
 		update();
@@ -98,6 +96,15 @@ function Channels({ currentChannelId, channels, setCurrentChannelId, socket, upd
 						draggable="false" />
 				</button>
 				<h2 id="h2_channel_title">Channels</h2>
+				<button
+					id="button_channel_browse"
+					onClick={() => openForm("div_main_browse_channels")}
+				>
+					<img
+						id="img_channel_settings"
+						src={CHAT_BROWSE_CHANNEL_ICON}
+						draggable="false" />
+				</button>
 			</div>
 			<form id="form_channel_settings">
 				<button

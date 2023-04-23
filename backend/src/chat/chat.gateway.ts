@@ -5,9 +5,9 @@ import { Logger } from "@nestjs/common";
 import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
 import { ChatService } from "./chat.service";
-import Channel, { IChannel } from "./Channel/Channel";
-import User, { IUser } from "./User/User";
-import Message, { IMessage } from "./Message/Message";
+import { IChannel } from "./Channel/Channel";
+import { IUser } from "./User/User";
+import { IMessage } from "./Message/Message";
 
 @WebSocketGateway({
 	namespace: 'chat',
@@ -37,9 +37,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	@SubscribeMessage('create-channel')
-	public handleCreateChannel(@ConnectedSocket() userSocket: Socket, @MessageBody() data: any): IChannel {
+	public handleCreateChannel(@ConnectedSocket() userSocket: Socket, @MessageBody() data: any, ): IChannel {
 		this.logger.log(`create-channel`);
-		return this.chatService.handleCreateChannel(userSocket, data);
+		return this.chatService.handleCreateChannel(userSocket, data, this.server);
 	}
 
 	@SubscribeMessage('create-message')
@@ -71,80 +71,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		this.logger.log(`leave-channel`);
 		this.chatService.handleLeaveChannel(userSocket, data, this.server);
 	}
+
+	@SubscribeMessage('get-all-channels')
+	public handleGetAllChannels(@ConnectedSocket() userSocket: Socket, @MessageBody() data: any): IChannel[] {
+		this.logger.log('get-all-channels');
+		return this.chatService.handleGetAllChannels();
+	}
 }
-
-//@WebSocketGateway({
-//	namespace: 'chat',
-//	cors: '*',
-//})
-//export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
-//	@WebSocketServer() server: Server;
-
-//	constructor(private readonly channelsService: ChannelsService, private readonly usersService: UsersService) { }
-//	readonly logger = new Logger();
-
-//	async handleConnection(client: Socket, ...args: any[]) {
-//		this.logger.log(`New client connected: ${client.id}`);
-//	}
-
-//	async handleDisconnect(client: any) {
-//		this.logger.log(`Client disconnected: ${client.id}`);
-//	}
-
-//	@SubscribeMessage('create-message')
-//	async handlePushMessageToChannel(@ConnectedSocket() client: Socket, @MessageBody() createMessageDto: CreateMessageDto) {
-//		this.channelsService.pushMessageToChannel(createMessageDto, createMessageDto.toChannel, client.id);
-//	}
-
-//	@SubscribeMessage('create-channel')
-//	async handleCreateChannel(@MessageBody() data: any) {
-//		this.logger.log('create-channel');
-//		const channel = await this.channelsService.createChannel(data.newChannel);
-//		this.usersService.users[data.user.current.id].userChannels.push(channel);
-//		return channel;
-//	}
-
-//	@SubscribeMessage('create-user')
-//	async handleCreateUser(@MessageBody() createUserDto: CreateUserDto) {
-//		this.logger.log('create-user');
-//		const user = await this.usersService.create(createUserDto);
-//		console.log("this.usersService.getAllUsers(): ", this.usersService.getAllUsers());
-//		return user;
-//	}
-
-//	@SubscribeMessage('get-all-channels')
-//	handleGetAllChannels() {
-//		this.logger.log('get-all-channels');
-//		return this.channelsService.getAllChannels();
-//	}
-
-//	@SubscribeMessage('get-one-channel')
-//	handleGetOneChannel(index: number) {
-//		this.logger.log('get-one-channel');
-//		return this.channelsService.getChannelById(index);
-//	}
-
-//	@SubscribeMessage('invite-user')
-//	handleInviteUser(@MessageBody() data: any) {
-//		this.logger.log('invite-user');
-//		const ret = this.channelsService.pushUserToChannel(data.userName, data.toChannel, this.usersService); 
-//		if (!ret) {
-//			return {data: null};
-//		} 
-//		return {data: ret};
-//	}
-
-//	@SubscribeMessage('clear')
-//	debugClearAllMessages(@MessageBody() index: number) {
-//		this.logger.log(`cleared all messages in channel: ${index}`);
-//		this.server.emit('cleared');
-//		this.channelsService.debugClearChannelMessages(index);
-//	}
-
-//	@SubscribeMessage('clear-channels')
-//	debugClearAllChannels() {
-//		this.logger.log(`cleared all channels`);
-//		this.server.emit('cleared');
-//		this.channelsService.debugClearAllChannels();
-//	}
-//}

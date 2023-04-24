@@ -30,8 +30,11 @@ export class User {
   rating: number;
 
   @Column()
-  backgroundColor: string;
+  paddleColor: string;
 
   @Column("text", {array: true, nullable: true}) 
   friends: string[];
+
+  @Column("text", {array: true, nullable: true}) 
+  blocked: string[];
 }

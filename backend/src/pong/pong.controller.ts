@@ -11,7 +11,7 @@ export class PongController {
   }
 
   @Get('history/:id')
-  getUserHistory(@Param("id") id: number): Promise<IGameRoom[]> {    
+  getUserHistory(@Param("id") id: number): Promise<IGameRoom[]> {
     return this.pongService.userHistory(id);
   }
 

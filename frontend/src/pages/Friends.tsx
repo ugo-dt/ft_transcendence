@@ -7,7 +7,7 @@
 
 import { useContext, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
-import { Context, UserContext } from "../context";
+import { Context, QueueContext, UserContext } from "../context";
 import Request from "../components/Request";
 import { IUser } from "../types";
 import GameInvite from "../layouts/GameInvite";
@@ -15,9 +15,9 @@ import "./style/Friends.css"
 
 function InviteRow({ friendId: friendId }: { friendId: number }) {
   const socket = useContext(Context).pongSocket;
+  const inQueue = useContext(QueueContext).inQueue;
   const navigate = useNavigate();
   const [friend, setFriend] = useState<IUser | null>(null);
-  const [isOpen, setIsOpen] = useState<boolean>(false);
   const inGame = useRef(false);
 
   function onStartGame(data: any) {
@@ -33,8 +33,8 @@ function InviteRow({ friendId: friendId }: { friendId: number }) {
     if (!socket.current) {
       return ;
     }
-    socket.current.emit('accept-challenge', friendId, (res: any) => {
-      if (res === 'cancelled') {
+    socket.current.emit('accept-challenge', friendId, (res: boolean) => {
+      if (res === false) {
         navigate("/friends", {state: {info: 'Challenge was cancelled.'}});
         window.location.reload();
       }
@@ -74,7 +74,7 @@ function InviteRow({ friendId: friendId }: { friendId: number }) {
             {friend.status.charAt(0).toLocaleUpperCase() + friend.status.slice(1)}
           </td>
           <td className="room-list-cell">
-            <button title="Challenge to a game" id="invite-btn" onClick={handleClick}>
+            <button disabled={inQueue} title="Challenge to a game" id="invite-btn" onClick={handleClick}>
               Accept
             </button>
           </td>
@@ -88,6 +88,7 @@ function FriendRow({ friendname }: { friendname: string }) {
   const navigate = useNavigate();
   const [friend, setFriend] = useState<IUser | null>(null);
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const inQueue = useContext(QueueContext).inQueue;
 
   function handleClick() {
     setIsOpen(!isOpen);
@@ -116,12 +117,10 @@ function FriendRow({ friendname }: { friendname: string }) {
             {friend.status.charAt(0).toLocaleUpperCase() + friend.status.slice(1)}
           </td>
           <td className="room-list-cell">
-            <button title="Challenge to a game" id="invite-btn" onClick={handleClick}>
+            <button disabled={inQueue || !(friend.status === 'online')} title="Challenge to a game" id="invite-btn" onClick={handleClick}>
               Invite
             </button>
-            {
-              isOpen && <GameInvite opponentId={friend.id} onClose={handleClick} />
-            }
+            {isOpen && <GameInvite title="Challenge" opponentId={friend.id} isRematch={false} onClose={handleClick} />}
           </td>
         </tr>
       }
@@ -210,7 +209,7 @@ function Friends() {
   }, [context]);
 
   if (!user) {
-    return;
+    navigate("/home");
   }
 
   return (
@@ -228,6 +227,7 @@ function Friends() {
                     <input
                       type="text"
                       id="search-bar"
+                      autoComplete="off"
                       onChange={(e) => setFriendInputValue(e.target.value)}
                       onKeyUp={filterFriends}
                       placeholder="Search by username"
@@ -271,6 +271,7 @@ function Friends() {
                     <input
                       type="text"
                       id="search-bar"
+                      autoComplete="off"
                       onChange={(e) => setChallengeInputValue(e.target.value)}
                       onKeyUp={filterChallenges}
                       placeholder="Search by username"
@@ -280,26 +281,14 @@ function Friends() {
                     <table className="room-list-table">
                       <tbody>
                         <tr title="Room info" className="room-list-row">
-                          <td className="room-list-cell">
-                            Username
-                          </td>
-                          <td className="room-list-cell">
-                            Rating
-                          </td>
-                          <td className="room-list-cell">
-                            Status
-                          </td>
-                          <td className="room-list-cell">
-                            Challenge
-                          </td>
+                          <td className="room-list-cell">Username</td>
+                          <td className="room-list-cell">Rating</td>
+                          <td className="room-list-cell">Status</td>
+                          <td className="room-list-cell">Challenge</td>
                         </tr>
                       </tbody>
                       <tbody id="challenges-table">
-                        {
-                          challengeList.map((friendId, index) => (
-                            <InviteRow key={index} friendId={friendId} />
-                          ))
-                        }
+                        {challengeList.map((friendId, index) => <InviteRow key={index} friendId={friendId} />)}
                       </tbody>
                     </table>
                   </div>

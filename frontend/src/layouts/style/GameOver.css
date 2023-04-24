@@ -75,3 +75,19 @@
 .game-over-users-username {
   margin-top: 5px;
 }
+
+.game-over-buttons-container {
+  display: flex;
+  max-width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.game-over-buttons {
+  display: flex;
+}
+
+#game-over-btn {
+  padding: 5px;
+  margin: 2px;
+}

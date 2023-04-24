@@ -22,6 +22,7 @@ namespace __url_ {
   export const __add_friend_ = __users_base_ + '/add-friend'
   export const __remove_friend_ = __users_base_ + '/remove-friend'
   export const __rankings_ = __users_base_ + '/get/rankings';
+  export const __edit_paddle_ = __users_base_ + '/edit/paddle-color';
 
   // Game
   export const __rooms_ = __game_base_ + '/rooms';
@@ -96,7 +97,7 @@ class Request {
   }
 
   public static async signOut(): Promise<any | null> {
-    return await Request.__make_get_request_(__url_.__sign_out_);
+    return await Request.__make_post_request_(__url_.__sign_out_);
   }
 
   public static async refreshToken(): Promise<any | null> {
@@ -153,6 +154,10 @@ class Request {
         },
       }
     );
+  }
+
+  public static async editPaddleColor(color: string): Promise<IUser | null> {
+    return await Request.__make_post_request_(__url_.__edit_paddle_, { color: color });
   }
 }
 

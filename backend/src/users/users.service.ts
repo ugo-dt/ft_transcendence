@@ -22,10 +22,10 @@ export class UsersService {
     avatar: string,
     status: string,
     rating: number,
-    backgroundColor: string,
+    paddleColor: string,
     friends: string[],
   ): Promise<User> {
-    const user = this.repo.create({ accessToken, refreshToken, id42, username, avatar, status, rating, backgroundColor, friends });
+    const user = this.repo.create({ accessToken, refreshToken, id42, username, avatar, status, rating, paddleColor, friends });
     return this.repo.save(user);
   }
 
@@ -119,7 +119,7 @@ export class UsersService {
   public async getUsername(id: number) { return (await this._user(id)).username; }
   public async getAvatar(id: number) { return (await this._user(id)).avatar;}
   public async getRating(id: number) { return (await this._user(id)).rating;}
-  public async getBackgroundColor(id: number) { return (await this._user(id)).backgroundColor;}
+  public async getPaddleColor(id: number) { return (await this._user(id)).paddleColor;}
   
   public setUsername(id: number, username: string) { return this.update(id, { username: username }); }
   public setAvatar(id: number, avatar: string) { return this.update(id, { avatar: avatar }); }
@@ -127,5 +127,5 @@ export class UsersService {
   public setInGame(id: number) { return this.update(id, { status: STATUS_IN_GAME }); }
   public setOffline(id: number) { return this.update(id, { status: STATUS_OFFLINE }); }
   public setRating(id: number, rating: number) { return this.update(id, { rating: rating }); }
-  public setBackgroundColor(id: number, backgroundColor: string) { return this.update(id, { backgroundColor: backgroundColor }); }
+  public setPaddleColor(id: number, paddleColor: string) { return this.update(id, { paddleColor: paddleColor }); }
 }

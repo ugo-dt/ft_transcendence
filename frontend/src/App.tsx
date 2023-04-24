@@ -1,7 +1,7 @@
 import './App.css'
 import { useEffect, useRef, useState } from 'react'
 import { Outlet } from 'react-router-dom'
-import { Context, UserContext } from './context'
+import { Context, QueueContext, UserContext } from './context'
 import { Socket, io } from 'socket.io-client'
 import { CssBaseline } from '@mui/material'
 import { IUser } from './types'
@@ -18,6 +18,12 @@ function App() {
   const [socketConnected, setSocketConnected] = useState(false);
   const [lostConnection, setLostConnection] = useState(false);
   const [user, setUser] = useState<IUser | null>(null);
+  const [inQueue, setInQueue] = useState(false);
+  const [queueTimer, setQueueTimer] = useState({ minutes: 0, seconds: 0 });
+  const queueInterval = useRef<number | undefined>(undefined);
+
+  const { minutes, seconds } = queueTimer;
+  const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
   const contextValue = {
     serverUrl: serverUrl,
@@ -26,9 +32,17 @@ function App() {
     setSocketConnected: setSocketConnected,
   };
 
+  const queueContextValue = {
+    inQueue: inQueue,
+    setInQueue: setInQueue,
+    queueTimer: queueTimer,
+    setQueueTimer: setQueueTimer,
+    queueInterval: queueInterval,
+  }
+
   async function connect(data: IUser) {
     if (socket.current && socket.current.connected) {
-      return ;
+      return;
     }
     socket.current = io(serverUrl + '/pong', {
       autoConnect: false,
@@ -82,7 +96,7 @@ function App() {
       <UserContext.Provider value={{ user, setUser }}>
         <Navbar />
         {
-          lostConnection && user && !socketConnected && 
+          lostConnection && user && !socketConnected &&
           <div className="alert-disconnected">
             <h3>
               You are disconnected. Please refresh the page.
@@ -90,7 +104,32 @@ function App() {
           </div>
         }
         <Context.Provider value={contextValue}>
+          <QueueContext.Provider value={queueContextValue}>
           <Outlet />
+          {
+            inQueue && (
+              <div className="timer-overlay">
+                <h3 id="timer">Queue</h3>
+                <h4>{formattedTime}</h4>
+                <button
+                  style={{
+                    padding: '5px',
+                    fontWeight: 'bolder',
+                  }}
+                  onClick={() => {
+                  if (!socket.current || !socket.current.connected) {
+                    return ;
+                  }
+                  setInQueue(false);
+                  window.clearInterval(queueInterval.current);
+                  queueInterval.current = undefined;
+                  setQueueTimer({minutes: 0, seconds: 0});
+                }}> Cancel
+                </button>
+              </div>
+            )
+          }
+          </QueueContext.Provider>
         </Context.Provider>
       </UserContext.Provider>
     </div>

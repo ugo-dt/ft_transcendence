@@ -19,7 +19,7 @@ export class PongService {
     return this.usersService;
   }
 
-  public async __init__() {    
+  public async __init__() {
     const users: User[] = await this.usersService.findAll();
     for (const user of users.values()) {
       let client = Client.at(user.id);
@@ -27,7 +27,6 @@ export class PongService {
         client = Client.new(user.id, null);
       }
       else {
-        client.id = user.id;
         client.sockets = [];
       }
     }
@@ -47,10 +46,7 @@ export class PongService {
       Client.new(user.id, clientSocket);
     }
     else {
-      client.id = user.id;
-      if (!(await this.usersService.isInGame(user.id))) {
-        client.addSocket(clientSocket);
-      }
+      client.addSocket(clientSocket);
     }
     this.logger.log(`Client connected: ${user.username} (id: ${user.id})`);
   }
@@ -64,7 +60,7 @@ export class PongService {
     client.removeSocket(clientSocket);
     this.usersService.setOffline(client.id);
     this.removeClientFromQueue(clientSocket);
-    this.logger.log(`S disconnected: ${client.id}`);
+    this.logger.log(`Client disconnected: ${client.id}`);
   }
 
   public addClientToQueue(clientSocket: Socket) {
@@ -88,7 +84,13 @@ export class PongService {
   public async startGame(server: Server, left: Client, right: Client, type: GameType) {
     Queue.remove(left);
     Queue.remove(right);
-    const room = await GameRoom.new(this.roomService, left, right, type);
+    const room = await GameRoom.new(
+      this.roomService,
+      left,
+      right,
+      type, await this.usersService.getPaddleColor(left.id),
+      await this.usersService.getPaddleColor(right.id)
+    );
     room.startGame(server, this.usersService, this.roomService);
   }
 
@@ -100,6 +102,7 @@ export class PongService {
     const room = GameRoom.at(roomId);
     if (room) {
       room.addSpectator(client);
+      this.logger.log(`New spectator in room ${room.id}: ${client.id}`);
     }
   }
 
@@ -111,6 +114,7 @@ export class PongService {
     const room = GameRoom.at(roomId);
     if (room) {
       room.removeSpectator(client);
+      this.logger.log(`New spectator in room ${room.id}: ${client.id}`);
     }
   }
 
@@ -178,7 +182,7 @@ export class PongService {
     if (!this.usersService.isOnline(opponent.id)) {
       return 'opponent is unavailable';
     }
-    client.createChallenge(clientSocket.id, opponent.id);
+    client.createChallenge(clientSocket.id, opponent.id, false);
     opponent.addInvitation(client.id)
     this.logger.log(`New challenge: ${client.id} invited ${opponent.id}`);
     return 'sent';
@@ -187,17 +191,17 @@ export class PongService {
   public cancelChallenge(clientSocket: Socket) {
     const client = Client.at(clientSocket);
     if (!client) {
-      return ;
+      return;
     }
     const opponentId = client.getChallengeOpponent(clientSocket.id);
     if (opponentId == undefined) {
-      return ;
+      return;
     }
     const opponent = Client.at(opponentId);
     if (!opponent) {
-      return ;
+      return;
     }
-    client.cancelChallenge(clientSocket.id)
+    client.cancelChallenge(clientSocket.id);
     opponent.removeInvitation(client.id);
     this.logger.log(`Challenge cancelled: ${client.id} VS ${opponent.id}`);
   }
@@ -210,19 +214,49 @@ export class PongService {
     return client.invitations;
   }
 
-  public acceptChallenge(server: Server, clientSocket: Socket, opponentId: number) {
+  public acceptChallenge(server: Server, clientSocket: Socket, opponentId: number): boolean {
     const left = Client.at(opponentId);
     if (!left) {
-      return ;
+      return false;
     }
     const right = Client.at(clientSocket);
     if (!right) {
-      return ;
-    }        
-    if (right.hasInvitation(left.id)) {
-      this.startGame(server, left, right, GAMETYPE_CASUAL);
-      return 'started';
+      return false;
     }
-    return 'cancelled';
+    if (right.hasInvitation(left.id)) {
+      left.cancelChallenge(clientSocket.id);
+      right.removeInvitation(left.id);
+      this.logger.log(`Challenge accepted: ${left.id} VS ${right.id}`);
+      this.startGame(server, left, right, GAMETYPE_CASUAL);
+      return true;
+    }
+    return false;
+  }
+
+  public handleRematch(server: Server, clientSocket: Socket, opponentId: number) {
+    const client = Client.at(clientSocket);
+    if (!client) {
+      return;
+    }
+    client.wantsRematch = true;
+    const opponent = Client.at(opponentId);
+    if (!opponent) {
+      return;
+    }
+    if (opponent.wantsRematch) {
+      client.wantsRematch = false;
+      opponent.wantsRematch = false;
+      this.startGame(server, opponent, client, GAMETYPE_RANKED);
+      return;
+    }
+    console.log(client.wantsRematch);
+  }
+
+  public cancelRematch(clientSocket: Socket) {
+    const client = Client.at(clientSocket);
+    if (!client) {
+      return;
+    }
+    client.wantsRematch = false;
   }
 }

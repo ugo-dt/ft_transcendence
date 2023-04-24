@@ -1,10 +1,10 @@
-import "./style/Home.css"
 import PongDemo from "../layouts/PongDemo";
 import GameModes from "../layouts/GameModes";
 import axios from "axios";
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Request from "../components/Request";
+import "./style/Home.css"
 
 function Home() {
   document.title = "ft_transcendence - Home";
@@ -40,9 +40,6 @@ function Home() {
             <GameModes />
           </section>
         </div>
-      </div>
-      <div className="home-game-invites">
-        add game invites here
       </div>
     </div>
   );

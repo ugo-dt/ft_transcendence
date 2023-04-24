@@ -48,10 +48,10 @@ export class AuthService {
         "http://192.168.1.178:3000/public/images/noavatar.png",
         'online',
         Elo.defaultRating,
-        'black',
+        'white',
         [],
       );
-      this.usersService.setUsername(user.id, user.username + user.id);
+      this.usersService.setUsername(user.id, user.username + user.id42);
     }
     return user;
   }

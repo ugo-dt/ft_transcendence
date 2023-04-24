@@ -5,6 +5,6 @@ export interface IUser {
   avatar: string,
   status: string,
   rating: number,
-  backgroundColor: string,
+  paddleColor: string,
   friends: string[],
 }

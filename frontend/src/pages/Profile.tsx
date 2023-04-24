@@ -33,9 +33,10 @@ function Profile() {
   const [history, setHistory] = useState<IGameRoom[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const url = window.location.pathname;
 
   useEffect(() => {
-    if (window.location.pathname === '/profile' || window.location.pathname === '/profile/') {
+    if (url === '/profile' || url === '/profile/') {
       return navigate("/home");
     }
     const profileName = window.location.pathname.split("/").pop()!;
@@ -64,7 +65,7 @@ function Profile() {
     if (state) {
       setInfo(state.info);
     }
-  }, [context]);
+  }, [context, url]);
 
   return (
     <div className="Profile">

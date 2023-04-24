@@ -57,11 +57,16 @@ export class UsersController {
   async editAvatar(@CurrentUser() user: User, @UploadedFile() file: Express.Multer.File): Promise<User> {
     const dirname = 'public/user';
     const filename = user.id + '.' + Date.now() + '.' + file.mimetype.split("/").pop();
-    const fullpath = dirname + filename;
+    const fullpath = dirname + '/' + filename;
     const writeStream = createWriteStream(fullpath);
     writeStream.write(file.buffer);
     writeStream.end();
     return this.usersService.setAvatar(user.id, `http://192.168.1.178:3000/${fullpath}`);
+  }
+
+  @Post("edit/paddle-color")
+  async editPaddleColor(@CurrentUser() user: User, @MessageBody() data: { color: string }) {
+    return await this.usersService.setPaddleColor(user.id, data.color);
   }
 
   @Post("add-friend/")

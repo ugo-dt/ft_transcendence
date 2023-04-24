@@ -4,11 +4,15 @@ import { useNavigate } from "react-router";
 
 interface GameInviteProps {
   opponentId: number,
+  isRematch: boolean,
+  title?: string,
   onClose: () => void,
 }
 
 function GameInvite({
   opponentId, // id,
+  isRematch,
+  title,
   onClose,
 }: GameInviteProps) {
   const socket = useContext(Context).pongSocket;
@@ -25,7 +29,7 @@ function GameInvite({
   }
 
   function handleOnClose() {
-    if (socket.current) {
+    if (socket.current && !inGame.current) {
       socket.current.emit('cancel-challenge');
     }
     onClose();
@@ -36,8 +40,14 @@ function GameInvite({
       onClose();
       return ;
     }
-    socket.current.emit('challenge', opponentId);
     socket.current.on('startGame', (data: any) => { onStartGame(data) });
+    if (isRematch) {
+      socket.current.emit('rematch', opponentId);
+    }
+    else {
+      socket.current.emit('challenge', opponentId);
+    }
+
     return () => {
       if (socket.current) {
         socket.current.off('startGame', (data: any) => { onStartGame(data) });
@@ -51,7 +61,7 @@ function GameInvite({
       <div className="modal">
         <div className="modal-content">
         <div className="modal-close" role="button" onClick={onClose}>&times;</div>
-          <div className="modal-title">Challenge</div>
+          <div className="modal-title">{title}</div>
           <section>
             Waiting for opponent...
           </section>

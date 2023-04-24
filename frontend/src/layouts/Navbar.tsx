@@ -1,31 +1,26 @@
 import { useContext } from "react";
-import "./style/Navbar.css"
 import { NavLink, useNavigate } from "react-router-dom";
 import { UserContext } from "../context";
-import axios from "axios";
 import { IUser } from "../types";
+import Request from "../components/Request";
+import "./style/Navbar.css"
 
 export default function Navbar() {
   const { user, setUser } = useContext(UserContext);
   const navigate = useNavigate();
 
   async function signOut() {
-    try {
-      const res = await axios.post(
-        "http://192.168.1.178:3000/api/auth/signout",
-        {},
-        {
-          withCredentials: true
-        }
-      );
+    Request.signOut().then(res => {
       setUser(null);
-      navigate('/');
-    } catch (error) {
+      navigate('/home');
+    }).catch(error => {
       console.error(error);
-    }
+    });
   }
 
-  if (user) { return <NavBarConnected user={user} signOut={signOut} />; }
+  if (user) {
+    return <NavBarConnected user={user} signOut={signOut} />;
+  }
   return <NavBarNotConnected />
 }
 

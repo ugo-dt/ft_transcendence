@@ -5,7 +5,6 @@ import "./style/ProfileHistory.css"
 
 function ProfileHistory({ history, profileId }: { history: IGameRoom[], profileId: number }) {
   const navigate = useNavigate();
-  const [historyPage, setHistoryPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
 
   return (
@@ -17,33 +16,33 @@ function ProfileHistory({ history, profileId }: { history: IGameRoom[], profileI
             <table className="room-list-table">
               <tbody>
                 <tr title="Room info" className="room-list-row">
-                  <td className="room-list-cell">
-                    Left player
-                  </td>
-                  <td className="room-list-cell">
-                    Right player
-                  </td>
-                  <td className="room-list-cell">
-                    Result
-                  </td>
+                  <td className="room-list-cell">Left player</td>
+                  <td className="room-list-cell">Right player</td>
+                  <td className="room-list-cell">Score</td>
+                  <td className="room-list-cell">Result</td>
                 </tr>
                 {
-                  history.slice(historyPage * pageSize, historyPage * pageSize + pageSize).map((room) => (
+                  history.slice(0, pageSize).map((room) => (
                     <tr className="room-list-row" key={room.id}>
-                      <td className="room-list-cell room-list-cell-username" title="See profile" role="button"
-                        onClick={() => navigate('/profile/' + room.left.username.toLowerCase())}>
-                        {room.left.username}
+                      <td className="room-list-cell room-list-cell-username"
+                        title="See profile"
+                        role="button"
+                        onClick={() => navigate('/profile/' + room.left.username.toLowerCase())}
+                      > {room.left.username}
                       </td>
-                      <td className="room-list-cell room-list-cell-username" title="See profile" role="button"
-                        onClick={() => navigate('/profile/' + room.right.username.toLowerCase())}>
-                        {room.right.username}
+                      <td className="room-list-cell room-list-cell-username"
+                        title="See profile"
+                        role="button"
+                        onClick={() => navigate('/profile/' + room.right.username.toLowerCase())}
+                      > {room.right.username}
                       </td>
+                      <td className="room-list-cell">{room.gameState.leftPlayer.score}-{room.gameState.rightPlayer.score}</td>
                       <td className="room-list-cell">
                         {(
                           ((room.left.id === profileId) && ((room.gameState.leftPlayer.score > room.gameState.rightPlayer.score)
                             && <div id="match-history-win">Win</div> || <div id="match-history-lose">Loss</div>))
                           || ((room.right.id === profileId) && (room.gameState.leftPlayer.score < room.gameState.rightPlayer.score)
-                          && <div id="match-history-win">Win</div> || <div id="match-history-lose">Loss</div>)
+                            && <div id="match-history-win">Win</div> || <div id="match-history-lose">Loss</div>)
                         )}
                       </td>
                     </tr>
@@ -54,8 +53,7 @@ function ProfileHistory({ history, profileId }: { history: IGameRoom[], profileI
             <div className="pages">
               <button className="pages-buttons-btn" disabled={pageSize >= history.length ? true : false} onClick={() => {
                 setPageSize(pageSize + 5);
-              }}
-              > Show more
+              }}> Show more
               </button>
             </div> {/* className="pages" */}
           </div> /* className="room-list" */

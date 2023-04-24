@@ -83,13 +83,7 @@ const router = createBrowserRouter([
       },
       {
         path: 'watch',
-        element: <Watch />,
-        children: [
-          {
-            path: ":id",
-            element: <Watch />
-          }
-        ]
+        element: <Watch />
       }
     ]
   }

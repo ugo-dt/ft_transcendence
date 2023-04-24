@@ -50,7 +50,7 @@ function EditAvatarForm({
         title="Set a new avatar"
         onSubmit={submitAvatar}
         onClose={onClose}
-        />
+      />
     </div>
   );
 }

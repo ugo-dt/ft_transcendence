@@ -143,7 +143,8 @@ function Chat() {
 			id42: -1,
 			status: 'online',
 			rating: 1200,
-			backgroundColor: 'black',
+			paddleColor: 'white',
+			friends: [],
 		}
 		socket.emit('createUser', user, (response: IUser) => {
 			setUser(response);

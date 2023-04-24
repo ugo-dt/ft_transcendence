@@ -1,6 +1,9 @@
 import { useNavigate } from "react-router";
 import { IUser } from "../types";
+import { useContext, useEffect, useState } from "react";
+import { Context, UserContext } from "../context";
 import "./style/GameOver.css"
+import GameInvite from "./GameInvite";
 
 interface GameOverProps {
   left: IUser,
@@ -8,10 +11,39 @@ interface GameOverProps {
   winnerIsLeft: boolean,
   leftScore: number,
   rightScore: number,
+  spectator: boolean
 }
 
-function GameOver({ left, right, winnerIsLeft, leftScore, rightScore }: GameOverProps) {
+function GameOver({ left, right, winnerIsLeft, leftScore, rightScore, spectator }: GameOverProps) {
   const navigate = useNavigate();
+  const socket = useContext(Context).pongSocket;
+  const user = useContext(UserContext).user;
+  const [isOpen, setIsOpen] = useState(false);
+
+  function onClose() {
+    setIsOpen(false);
+  }
+
+  function onClickRematch() {
+    if (!socket.current) {
+      return;
+    }
+    setIsOpen(true);
+  }
+
+  function onClickQueueAgain() {
+    navigate("/play/online");
+  }
+
+  function onClickHome() {
+    navigate("/home");
+  }
+
+  useEffect(() => {
+    if (!socket.current) {
+      return;
+    }
+  }, []);
 
   return (
     <div className="game-over-container">
@@ -51,6 +83,20 @@ function GameOver({ left, right, winnerIsLeft, leftScore, rightScore }: GameOver
           </div>
         </div>
       </section>
+      <section className="game-over-buttons-container">
+        {
+          !spectator ?
+          <div className="game-over-buttons">
+            <button id="game-over-btn" onClick={onClickRematch}>Rematch</button>
+            <button id="game-over-btn" onClick={onClickQueueAgain}>Queue again</button>
+          </div>
+          : <button id="game-over-btn" onClick={onClickHome}>Home</button>
+        }
+      </section>
+      {
+        user && isOpen &&
+        <GameInvite title="Rematch" opponentId={user.id === left.id ? right.id : left.id} isRematch={true} onClose={onClose} />
+      }
     </div>
   );
 }

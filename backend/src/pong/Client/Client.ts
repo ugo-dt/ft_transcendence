@@ -1,119 +1,20 @@
-// import { Socket } from "socket.io";
-
 import { Socket } from "socket.io";
-import { UsersService } from "src/users/users.service";
+import { GAMETYPE_CASUAL, GAMETYPE_RANKED, GameType } from "src/room/GameRoom";
 
-
-// export type _Status = typeof STATUS_ONLINE | typeof STATUS_PLAYING | typeof STATUS_OFFLINE;
-
-// export interface IClient {
-//   id: number,
-// }
-
-// class Client {
-//   private static __clients_ = new Set<Client>;
-
-//   private __socket_: Socket;
-//   private _id: number;
-
-//   private __newId(): number {
-//     let _new_id = 0;
-//     while (Client.at(_new_id)) {
-//       _new_id++;
-//     }
-//     return _new_id;
-//   }
-
-//   private constructor(socket: Socket) {
-//     this.__socket_ = socket;
-//     this._id = parseInt(socket.handshake.query.id as string);
-//   }
-
-//   public get __socket(): Socket { return this.__socket_; }
-//   public get id(): number { return this._id; }
-
-//   public set __socket(__socket_: Socket) { this.__socket_ = __socket_; }
-//   public set id(id: number) { this._id = id; }
-
-//   public IClient(): IClient {
-//     const iClient: IClient = {
-//       id: this._id,
-//     }
-//     return iClient;
-//   }
-
-//   public static new(clientSocket: Socket): Client {
-//     const client = new Client(clientSocket);
-//     Client.__clients_.add(client);
-//     return client;
-//   }
-
-//   public static at(username: string): Client | null;
-//   public static at(id: number): Client | null;
-//   public static at(clientSocket: Socket): Client | null;
-//   public static at(client: number | Socket | string): Client | null {
-//     // Client ID
-//     if (typeof client === 'number') {
-//       for (const clt of Client.__clients_.values()) {
-//         if (clt._id === client) {
-//           return clt;
-//         }
-//       }
-//     }
-
-//     else if (typeof client === 'string') {
-//       if (!client) {
-//         return null;
-//       }
-//       for (const clt of Client.__clients_.values()) {
-//         if (clt._username.toLowerCase() === client.toLowerCase()) {
-//           return clt;
-//         }
-//       }
-//     }
-
-//     // Socket
-//     else {
-//       if (!client) {
-//         return null;
-//       }
-//       for (const clt of Client.__clients_.values()) {
-//         if (clt.__socket_.id === client.id) {
-//           return clt;
-//         }
-//       }
-//     }
-//     return null;
-//   }
-
-//   public static delete(socket: Socket) {
-//     for (const client of Client.__clients_.values()) {
-//       if (client.__socket_.id === socket.id) {
-//         Client.__clients_.delete(client);
-//         return ;
-//       }
-//     }
-//   }
-
-//   public static list() {
-//     const clientList: IClient[] = [];
-
-//     Client.__clients_.forEach((client: Client) => {
-//       clientList.push(client.IClient());
-//     });
-//     return clientList;
-//   }
-// }
-
-// export default Client;
+interface Challenge {
+  socketId: string,
+  opponentUserId: number,
+  type: GameType,
+}
 
 class Client {
   private static __clients_ = new Set<Client>;
 
-  private _id: number;
+  private readonly _id: number;
   private _sockets: Socket[];
-  private _challenges: Map<string, number>; // user socket id, opponent id
+  private _challenges: Challenge[]; // challenger socket id, opponent user id
   private _invitations: number[];
+  private _wantsRematch: boolean;
 
   private constructor(id: number, socket: Socket | null) {
     this._id = id;
@@ -121,17 +22,19 @@ class Client {
     if (socket) {
       this._sockets.push(socket);
     }
-    this._challenges = new Map();
+    this._challenges = [];
     this._invitations = [];
+    this._wantsRematch = false;
   }
 
   public get id(): number { return this._id; }
   public get sockets(): Socket[] { return this._sockets; }
   public get invitations(): number[] { return this._invitations; }
-  
-  public set id(id: number) { this._id = id; }
+  public get wantsRematch(): boolean { return this._wantsRematch; }
+
   public set sockets(sockets: Socket[]) { this._sockets = sockets; }
   public set invitations(invitations: number[]) { this._invitations = invitations; }
+  public set wantsRematch(wantsRematch: boolean) { this._wantsRematch = wantsRematch; }
 
   public addSocket(socket: Socket) {
     if (!this._sockets.includes(socket)) {
@@ -167,16 +70,25 @@ class Client {
     }
   }
 
-  public createChallenge(socketId: string, opponentId: number) {
-    this._challenges.set(socketId, opponentId);
+  public createChallenge(socketId: string, opponentId: number, isRanked: boolean) {
+    this._challenges.push(
+      {
+        socketId: socketId,
+        opponentUserId: opponentId,
+        type: isRanked ? GAMETYPE_RANKED : GAMETYPE_CASUAL,
+      }
+    );
   }
 
   public cancelChallenge(socketId: string) {
-    this._challenges.delete(socketId);
+    const index = this._challenges.findIndex(c => c.socketId === socketId);
+    if (index > -1) {
+      this._challenges.splice(index, 1);
+    }
   }
 
   public getChallengeOpponent(socketId: string): number | undefined {
-    return this._challenges.get(socketId);
+    return this._challenges.find(c => c.socketId === socketId)?.opponentUserId;
   }
 
   public hasChallenge(socketId: string) {

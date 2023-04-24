@@ -1,12 +1,12 @@
 import { Logger } from "@nestjs/common";
 import { Server } from "socket.io";
-import Client from "../pong/Client/Client";
+import { UsersService } from "src/users/users.service";
+import { User } from "src/users/entities/user.entity";
+import { RoomService } from "./room.service";
 import { GameState, IGameState } from "../pong/Game";
 import { Player } from "../pong/Game";
+import Client from "../pong/Client/Client";
 import Elo from "../pong/Matchmaking/Elo";
-import { UsersService } from "src/users/users.service";
-import { RoomService } from "./room.service";
-import { User } from "src/users/entities/user.entity";
 
 export const GAMETYPE_RANKED = 'ranked';
 export const GAMETYPE_CASUAL = 'casual';
@@ -20,9 +20,9 @@ export interface IGameRoom {
 }
 
 class GameRoom {
-  /** This set contains all the current rooms. */
+  /** This set contains all the currently active rooms. */
   private static __rooms_: Set<GameRoom> = new Set<GameRoom>;
-  private readonly logger: Logger = new Logger("Room");
+  private readonly logger: Logger = new Logger("GameRoom");
 
   private readonly _id: number;
   private _left: Client;
@@ -36,6 +36,8 @@ class GameRoom {
     left: Client | null = null,
     right: Client | null = null,
     type: GameType,
+    leftColor: string,
+    rightColor: string,
   ) {
     this._id = id;
     if (left) {
@@ -44,7 +46,7 @@ class GameRoom {
     if (right) {
       this.join(right);
     }
-    this._gameState = new GameState();
+    this._gameState = new GameState(leftColor, rightColor);
     this._spectators = [];
     this._type = type;
   }
@@ -54,7 +56,6 @@ class GameRoom {
   public get right(): Client { return this._right; }
   public get gameState(): GameState { return this._gameState; }
 
-  // public set id(id: number) { this._id = id; }
   public set left(left: Client) { this._left = left; }
   public set right(right: Client) { this._right = right; }
   public set gameState(gameState: GameState) { this._gameState = gameState; }
@@ -242,9 +243,9 @@ class GameRoom {
     return false;
   }
 
-  public static async new(roomService: RoomService, left: Client, right: Client, type: GameType) {
+  public static async new(roomService: RoomService, left: Client, right: Client, type: GameType, leftColor: string, rightColor: string) {
     const promise = await roomService.create(left.id, right.id, {} as GameState);
-    const room = new GameRoom(promise.id, left, right, type);
+    const room = new GameRoom(promise.id, left, right, type, leftColor, rightColor);
     GameRoom.__rooms_.add(room);
     return room;
   }

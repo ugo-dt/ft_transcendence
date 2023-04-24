@@ -1,34 +1,30 @@
 import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
 import { PongService } from "./pong.service";
+import { Logger} from "@nestjs/common";
 import Queue from "./Matchmaking/Queue";
-import { IRoom } from "./Room/Room";
-import RoomHistory from "./Room/RoomHistory";
-import { Logger } from "@nestjs/common";
 
 @WebSocketGateway({
   namespace: 'pong',
-  cors: '*',
+  cors: {
+    origin: 'http://192.168.1.178:5173',
+  }
 })
 export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
+  private readonly logger: Logger;
 
   constructor(private readonly pongService: PongService) {
+    this.logger = new Logger("PongGateway");
     setInterval(() => {
-      // const queue: Client[] = Queue.list();
-      // if (queue.length >= 2) {
-      //   this.pongService.startGame(this.server, queue[0], queue[1]);
-      // }
       if (Queue.size() >= 2) {
         Queue.tryMatchPlayers(this.server, pongService);
       }
     }, 1000);
+    this.logger.log("Initialized queue.");
   }
 
-  public async handleConnection(client: Socket, ...args: any[]) {
-    // get correct values from db later
-    client.data.name = 'Username';
-    client.data.backgroundColor = 'black';
+  public async handleConnection(client: Socket) {   
     this.pongService.handleUserConnected(client);
   }
   
@@ -46,24 +42,25 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.pongService.removeClientFromQueue(client);
   }
 
-  @SubscribeMessage('get-room-list')
-  public handleGetRoomList(@ConnectedSocket() client: Socket): IRoom[] {    
-    return this.pongService.rooms();
-  }
-
   @SubscribeMessage('spectate')
   public handleSpectate(@ConnectedSocket() client: Socket, @MessageBody() roomId: number) {
+    if (roomId == null || roomId == undefined) {
+      return ;
+    }
     this.pongService.spectateRoom(client, roomId);
   }
 
   @SubscribeMessage('stop-spectate')
   public handleStopSpectate(@ConnectedSocket() client: Socket, @MessageBody() roomId: number) {
+    if (roomId == null || roomId == undefined) {
+      return ;
+    }
     this.pongService.stopSpectateRoom(client, roomId);
   }
 
   @SubscribeMessage('game-results')
   public handleGameResults(@MessageBody() roomId: number) {
-    return {room: RoomHistory.at(roomId)};
+    return this.pongService.gameResults(roomId);
   }
 
   @SubscribeMessage('upKeyPressed')
@@ -84,5 +81,44 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('downKeyUnpressed')
   public handleKeyDownUnpressed(@ConnectedSocket() client: Socket) {
     this.pongService.handleKey(client, "down", false);
+  }
+
+  @SubscribeMessage('challenge')
+  public handleChallenge(@ConnectedSocket() client: Socket, @MessageBody() opponentId: number) {
+    if (opponentId == null || opponentId == undefined) {
+      return 'error: undefined opponent';
+    }
+    return this.pongService.startChallenge(client, opponentId);
+  }
+
+  @SubscribeMessage('challenge-list')
+  public challengeList(@ConnectedSocket() client: Socket) {
+    return this.pongService.challengeList(client);
+  }
+
+  @SubscribeMessage('accept-challenge')
+  public acceptChallenge(@ConnectedSocket() client: Socket, @MessageBody() opponentId: number) {
+    if (opponentId == null || opponentId == undefined) {
+      return ;
+    }
+    return this.pongService.acceptChallenge(this.server, client, opponentId);
+  }
+  
+  @SubscribeMessage('cancel-challenge')
+  public cancelChallenge(@ConnectedSocket() client: Socket) {
+    return this.pongService.cancelChallenge(client);
+  }
+
+  @SubscribeMessage('rematch')
+  public handleRematch(@ConnectedSocket() client: Socket, @MessageBody() opponentId: number) {
+    if (opponentId == null || opponentId == undefined) {
+      return ;
+    }
+    return this.pongService.handleRematch(this.server, client, opponentId);
+  }
+
+  @SubscribeMessage('cancel-rematch')
+  public cancelRematch(@ConnectedSocket() client: Socket) {
+    return this.pongService.cancelRematch(client);
   }
 }

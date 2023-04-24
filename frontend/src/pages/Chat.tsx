@@ -48,7 +48,7 @@ function Chat() {
 	const [ChannelID, setChannelId] = useState<number>(0);
 	const [channels, setChannels] = useState<IChannel[]>([]);
 
-	const socket = useRef(io("http://localhost:3000/chat", {
+	const socket = useRef(io("http://192.168.1.178:3000/chat", {
 		autoConnect: false,
 	})).current;
 
@@ -57,7 +57,7 @@ function Chat() {
 			const message: IMessage = {
 				content: messageInputValue.trim(),
 				senderId: user?.id,
-				senderName: user.name,
+				senderName: user.username,
 				timestamp: Date().toString(),
 				toChannel: ChannelID
 			};
@@ -137,9 +137,14 @@ function Chat() {
 
 	function createUser(): void {
 		const user: IUser = {
-			name: createUserNameInputValue,
+			username: createUserNameInputValue,
 			id: -1,
-			avatar: null
+			avatar: '',
+			id42: -1,
+			status: 'online',
+			rating: 1200,
+			paddleColor: 'white',
+			friends: [],
 		}
 		socket.emit('createUser', user, (response: IUser) => {
 			setUser(response);

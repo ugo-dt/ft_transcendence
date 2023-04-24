@@ -1,5 +1,10 @@
 export interface IUser {
-	id: number;
-	name: string;
-	avatar: string;
+  id: number,
+  id42: number,
+  username: string,
+  avatar: string,
+  status: string,
+  rating: number,
+  paddleColor: string,
+  friends: string[],
 }

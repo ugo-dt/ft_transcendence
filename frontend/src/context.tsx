@@ -1,12 +1,41 @@
 import { createContext } from 'react';
-import { Socket }from 'socket.io-client'
+import { Socket } from 'socket.io-client'
+import { IUser } from './types';
+import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 
 interface ContextValue {
   serverUrl: string,
-  pongSocketRef: React.MutableRefObject<Socket>,
+  pongSocket: React.MutableRefObject<Socket<DefaultEventsMap, DefaultEventsMap> | null>
+  socketConnected: boolean,
+  setSocketConnected: React.Dispatch<React.SetStateAction<boolean>>,
 }
 
 export const Context = createContext<ContextValue>({
   serverUrl: "",
-  pongSocketRef: {} as React.MutableRefObject<Socket>,
+  pongSocket: {} as React.MutableRefObject<Socket<DefaultEventsMap, DefaultEventsMap> | null>,
+  socketConnected: false,
+  setSocketConnected: () => { },
+});
+
+interface AuthContextValue {
+  user: IUser | null;
+  setUser: React.Dispatch<React.SetStateAction<IUser | null>>;
+}
+
+export const UserContext = createContext<AuthContextValue>({ user: null, setUser: () => { } });
+
+interface QueueContextValue {
+  inQueue: boolean,
+  setInQueue: React.Dispatch<React.SetStateAction<boolean>>
+  queueTimer: { minutes: number, seconds: number },
+  setQueueTimer: React.Dispatch<React.SetStateAction<{ minutes: number; seconds: number; }>>,
+  queueInterval: React.MutableRefObject<number | undefined>,
+}
+
+export const QueueContext = createContext<QueueContextValue>({
+  inQueue: false,
+  setInQueue: () => {},
+  queueTimer: { minutes: 0, seconds: 0 },
+  setQueueTimer: () => {},
+  queueInterval: {} as React.MutableRefObject<number | undefined>,
 });

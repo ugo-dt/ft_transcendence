@@ -1,21 +1,22 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { IRoom } from "../types";
-import { Context } from "../context";
+import { IGameRoom } from "../types";
+import Request from "../components/Request";
 import "./style/RoomList.css"
 
 const PAGE_SIZE: number = 10;
 
 function RoomList() {
   const navigate = useNavigate();
-  const socket = useContext(Context).pongSocketRef.current;
-  const [roomList, setRoomList] = useState([] as IRoom[]);
+  const [roomList, setRoomList] = useState([] as IGameRoom[]);
   const [roomListPage, setRoomListPage] = useState(0);
   const [loading, setLoading] = useState(true);
 
   function _getRoomList() {
-    socket.emit('get-room-list', (data: IRoom[]) => {
-      setRoomList(data.sort((a, b) => a.id - b.id));
+    Request.getRoomList().then(res => {
+      setRoomList(res.sort((a, b) => a.id - b.id));
+    }).catch(err => {
+      console.error(err);
     });
   }
 
@@ -62,11 +63,11 @@ function RoomList() {
                       <td className="room-list-cell">
                         {room.id}
                       </td>
-                      <td className="room-list-cell room-list-cell-username" title="See profile" role="button" onClick={() => window.open('/profile/' + room.left.id, '_blank')}>
-                        {room.left.name}
+                      <td className="room-list-cell room-list-cell-username" title="See profile" role="button" onClick={() => navigate('/profile/' + room.left.username.toLowerCase())}>
+                        {room.left.username}
                       </td>
-                      <td className="room-list-cell room-list-cell-username" title="See profile" role="button" onClick={() => window.open('/profile/' + room.right.id, '_blank')}>
-                        {room.right.name}
+                      <td className="room-list-cell room-list-cell-username" title="See profile" role="button" onClick={() => navigate('/profile/' + room.right.username.toLowerCase())}>
+                        {room.right.username}
                       </td>
                       <td className="room-list-cell">
                         <button title="Watch game" onClick={() => handleWatch(room.id)}>
@@ -80,14 +81,14 @@ function RoomList() {
             </table>
             <div className="pages">
               <section>
-                <button className="pages-buttons-btn" onClick={() => roomListPage > 0 && setRoomListPage(roomListPage - 1)}>
+                <button className="pages-buttons-btn" disabled={roomListPage <= 0 ? true : false} onClick={() => roomListPage > 0 && setRoomListPage(roomListPage - 1)}>
                   Previous
                 </button>
-                <button className="pages-buttons-btn" onClick={() => roomListPage < roomList.length / PAGE_SIZE - 1 && setRoomListPage(roomListPage + 1)}>
+                <button className="pages-buttons-btn" disabled={roomListPage + 1 < Math.ceil(roomList.length / PAGE_SIZE) ? false : true} onClick={() => roomListPage < roomList.length / PAGE_SIZE - 1 && setRoomListPage(roomListPage + 1)}>
                   Next
                 </button>
               </section>
-              {'Page ' + (roomListPage + 1) + ' of ' + Math.floor(roomList.length / PAGE_SIZE + 1)}
+              {'Page ' + (roomListPage + 1) + ' of ' + Math.ceil(roomList.length / PAGE_SIZE)}
             </div> {/* className="pages" */}
           </div> /* className="room-list" */
         ) ||

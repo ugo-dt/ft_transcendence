@@ -1,0 +1,27 @@
+:root {
+  --profile-header-info-background-color: white;
+  --profile-header-avatar-border-color: white;
+  --profile-header-actions-btn-background-color: ##EEE;
+  --profile-header-actions-btn-background-color-hover: #DDD;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --profile-header-info-background-color: #222;
+    --profile-header-avatar-border-color: white;
+    --profile-header-actions-btn-background-color: #333;
+    --profile-header-actions-btn-background-color-hover: #444;
+  }
+}
+
+.Profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  user-select: none;
+}
+
+#profile-state-info {
+  font-weight: lighter;
+  color: rgb(12, 228, 12);
+}

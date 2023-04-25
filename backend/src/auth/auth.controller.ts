@@ -11,7 +11,8 @@ export class AuthController {
   async signIn(@Body() body: LoginAuthDto, @Session() session: any) {
     const tokens = await this.authService.getResourceOwnerAccessToken(body.code);
     const info = await this.authService.getResourceOwnerInfo(tokens);
-    const user = await this.authService.signIn(tokens.access_token, tokens.refresh_token, info.resource_owner_id);
+    const data = await this.authService.getResourceOwnerData(tokens);    
+    const user = await this.authService.signIn(tokens.access_token, tokens.refresh_token, info.resource_owner_id, data.login);
     session.userId = user.id;
     return user;
   }

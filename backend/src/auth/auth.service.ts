@@ -33,25 +33,38 @@ export class AuthService {
     return data;
   }
 
+  async getResourceOwnerData(tokens: any) {
+    const { data } = (await firstValueFrom(this.httpService.get("https://api.intra.42.fr/v2/me", {
+      params: {
+        access_token: tokens.access_token,
+      }
+    })));
+    console.log(data);
+    return data;
+  }
+
   async signIn(
     accessToken: string,
     refreshToken: string,
     id42: number,
+    login: string,
   ) {
     let user = await this.usersService.findOneId42(id42);
     if (!user) {
+      if (!login || !login.length) {
+        login = 'User' + id42;
+      }
       user = await this.usersService.create(
         accessToken,
         refreshToken,
         id42,
-        "User",
+        login,
         "http://192.168.1.178:3000/public/images/noavatar.png",
         'online',
         Elo.defaultRating,
         'white',
         [],
       );
-      this.usersService.setUsername(user.id, user.username + user.id42);
     }
     return user;
   }

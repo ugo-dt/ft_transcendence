@@ -12,9 +12,9 @@ async function bootstrap() {
   const port = configService.get('PORT');
   const clientPort = configService.get('CLIENT_PORT');
 
-  const redisClient = createClient();
-  redisClient.connect().catch(console.error);
-  const redisStore = new RedisStore({client: redisClient});
+  // const redisClient = createClient();
+  // redisClient.connect().catch(console.error);
+  // const redisStore = new RedisStore({client: redisClient});
 
   app.setGlobalPrefix('api');
   app.enableCors({
@@ -25,7 +25,7 @@ async function bootstrap() {
   });
   app.useGlobalPipes(new ValidationPipe({whitelist: true}));
   app.use(session({
-    store: redisStore,
+    // store: redisStore,
     secret: "a-secret-string",
     resave: false,
     saveUninitialized: false,

@@ -19,8 +19,8 @@ function UserList({ currentChannelId, channels, setCurrentChannelId, update }: U
 		<div id="div_main_user_list">
 			<h2 id="h2_user_list">Users</h2>
 			<div id="div_user_list">
-				{users.map(user => (
-					<button className="button_user_list" key={user.id} onClick={() => console.log(user)}>
+				{users.map((user, index) => (
+					<button className="button_user_list" key={index} onClick={() => console.log(user)}>
 						<img id="img_user_list" src={CHAT_DEFAULT_AVATAR} alt="" width={40} height={40}/>
 						<p id="p_user_list"><b>{user.name}</b></p>
 					</button>

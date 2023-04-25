@@ -77,4 +77,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		this.logger.log('get-all-channels');
 		return this.chatService.handleGetAllChannels();
 	}
+
+	@SubscribeMessage('join-channel')
+	public handleJoinChannel(@ConnectedSocket() userSocket:Socket, @MessageBody() data: any) {
+		this.logger.log('join-channel');
+		console.log("data: ", data);
+		return this.chatService.handleJoinChannel(userSocket, data, this.server);
+	}
 }

@@ -4,6 +4,7 @@ import { Socket } from 'socket.io';
 import Channel, { IChannel } from './Channel/Channel';
 import Message, { IMessage } from './Message/Message';
 import { Server } from 'socket.io';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class ChatService {
@@ -89,6 +90,23 @@ export class ChatService {
 			channel.removeUser(user);
 			server.emit('update');
 		}
+	}
+
+	public handleJoinChannel(userSocket:Socket, data: any, server: Server) {
+		const channel: Channel | null = Channel.at(data.currentChannelId);
+		const user: User | null = User.at(userSocket);
+		if (!user)
+			return ;
+		if (channel){
+			if (channel.password !== undefined && channel.password !== crypto.createHash('sha256').update(data.channelPasswordInputValue).digest('hex'))
+			{
+				return {data: null};
+			}
+			channel.addUser(user);
+			console.log("Channel.list(): ", Channel.list());
+			server.emit('update');
+		}
+		return channel?.IChannel();
 	}
 
 	public handleGetAllChannels(): IChannel[] {

@@ -10,19 +10,13 @@ interface ChannelsProps {
 	setCurrentChannelId: (channelId: number) => void;
 	socket: Socket;
 	update: () => void;
+	openForm: (arg0: string) => void;
 }
 
-function Channels({ currentChannelId, channels, setCurrentChannelId, socket, update }: ChannelsProps) {
+function Channels({ currentChannelId, channels, setCurrentChannelId, socket, update, openForm }: ChannelsProps) {
 
 	const [isCreateChannelFormVisible, setIsCreateChannelFormVisible] = useState(false);
 	const [ChanneSettingslInputValue, setChanneSettingslInputValue] = useState("");
-
-	const openForm = (formToOpen: string) => {
-		const form = document.getElementById(formToOpen);
-		if (form) {
-			form.style.visibility = "visible";
-		}
-	};
 
 	const closeForm = (formToClose: string) => {
 		const form = document.getElementById(formToClose);
@@ -63,6 +57,29 @@ function Channels({ currentChannelId, channels, setCurrentChannelId, socket, upd
 				console.log(response);
 			}
 		})
+	}
+
+	function muteUser(): void {
+		console.log('muteUser');
+	}
+
+	function banUser(): void {
+		console.log('banUser');
+		
+	}
+
+	function unBanUser(): void {
+
+	}
+
+	function adminUser(): void {
+		console.log('adminUser');
+		
+	}
+
+	function changePassword(): void {
+		console.log('changePassword');
+		
 	}
 
 	function leaveChannel(): void {
@@ -131,6 +148,7 @@ function Channels({ currentChannelId, channels, setCurrentChannelId, socket, upd
 					<button
 						className="button_channel_settings"
 						type="button"
+						onClick={banUser}
 					>ban</button>
 					<button
 						className="button_channel_settings"
@@ -140,17 +158,26 @@ function Channels({ currentChannelId, channels, setCurrentChannelId, socket, upd
 					<button
 						className="button_channel_settings"
 						type="button"
+						onClick={muteUser}
 					>mute</button>
 					<button
 						className="button_channel_settings"
 						type="button"
+						onClick={adminUser}
 					>admin</button>
+					<button
+						className="button_channel_settings"
+						type="button"
+						onClick={changePassword}
+					>Set a new password
+					</button>
+					<button
+						className="button_channel_settings"
+						type="button"
+						onClick={leaveChannel}
+					>Leave the channel
+					</button>
 				</div>
-				<button
-					id="button_leave_channel"
-					type="button"
-					onClick={leaveChannel}
-				>Leave Channel</button>
 			</form>
 			{channels && channels.map((channel, index) => (
 				<div key={channel.id} id='div_buttons'>

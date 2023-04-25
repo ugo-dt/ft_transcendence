@@ -1,6 +1,7 @@
 import { Socket } from "socket.io";
 import User, { IUser } from "../User/User";
 import Message, { IMessage } from "../Message/Message";
+import * as crypto from 'crypto';
 
 export interface IChannel {
 	id: number;
@@ -40,7 +41,8 @@ class Channel {
 		this._name = data.name || 'Default channel name';
 		this._history = new Set();
 		this._isDm = data.isDm;
-		this._password = data.password;
+		if (data.password !== "")
+			this._password = crypto.createHash('sha256').update(data.password).digest('hex');
 		this._users = new Set();
 		this._admins = new Set();
 		this._muted = new Set();

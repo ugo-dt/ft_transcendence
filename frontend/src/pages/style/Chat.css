@@ -30,8 +30,8 @@
 
 #form_create_channel {
 	visibility: hidden;
-	top: 15%;
-	left: 35%;
+	top: 20%;
+	left: 33%;
 	color: white;
 	width: 500px;
 	height: 340px;
@@ -381,15 +381,60 @@
 	left: 0;
 	position: absolute;
 	margin: auto;
-	height: 60%;
-	width: 50%;
+	height: 50%;
+	width: 40%;
 	background-color: #474747;
 	border-radius: 10px;
 	box-shadow: 0 10px 10px rgba(0, 0, 0, .12);
 }
 
 #div_browse_channels {
-	overflow-y: scroll ;
+	display: flex;
+	flex-direction: column;
+	overflow-y: scroll;
+	width: 100%;
+	align-items: center;
+}
+
+#button_browse_channels {
+	cursor: pointer;
+	color: white;
+	font-size: x-large;
+	width: 200px;
+	height: 30px;
+	background-color: #292929;
+	border-style: none;
+	border-radius: 5px;
+	margin-bottom: 10px;
+	overflow: scroll;
+}
+
+#button_browse_channels:hover {
+	background-color: #5b5b5b;
+}
+
+#img_lock {
+	width: 20px;
+	height: 20px;
+}
+
+#form_channel_password {
+	box-shadow: 0 10px 10px rgba(0, 0, 0, .12);
+	border-radius: 10px;
+	background-color: #2b2b2b;
+	width: 300px;
+	height: 120px;
+	position: absolute;
+	display: flex;
+	flex-direction: column;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	position: absolute;
+	margin: auto;
+	visibility: hidden;
+	z-index: 1;
 }
 
 /*------------------------------------------------*/

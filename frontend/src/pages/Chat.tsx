@@ -42,11 +42,11 @@ function Chat() {
 	const [loggedIn, setLoggedIn] = useState<boolean>(false);
 	const [messageInputValue, setMessageInputValue] = useState("");
 
-	const [isCreateChannelFormVisible, setIsCreateChannelFormVisible] = useState(false);
 	const [createChannelNameInputValue, setCreateChannelNameInputValue] = useState("");
 	const [createChannelPasswordInputValue, setCreateChannelPasswordInputValue] = useState("");
 
 	const [createUserNameInputValue, setCreateUserInputValue] = useState("");
+	const [channelPasswordInputValue, setChannelPasswordInputValue] = useState("");
 	const user = useRef<IUser>({} as IUser);
 	const [channels, setChannels] = useState<IChannel[]>([]);
 	const [allChannels, setAllChannels] = useState<IChannel[]>([]);
@@ -85,6 +85,7 @@ function Chat() {
 			closeForm("form_create_channel");
 			closeForm("form_channel_settings");
 			closeForm("div_main_browse_channels");
+			closeForm("form_channel_password");
 		}
 	}
 
@@ -151,8 +152,14 @@ function Chat() {
 		}
 	}
 
+	const openForm = (formToOpen: string) => {
+		const form = document.getElementById(formToOpen);
+		if (form) {
+			form.style.visibility = "visible";
+		}
+	};
+
 	const closeForm = (formToClose: string) => {
-		setIsCreateChannelFormVisible(!isCreateChannelFormVisible);
 		const form = document.getElementById(formToClose);
 		if (form) {
 			form.style.visibility = "hidden";
@@ -242,8 +249,13 @@ function Chat() {
 				<BrowseChannels
 					currentChannelId={currentChannelId}
 					allChannels={allChannels}
-					setCurrentChannelId={setCurrentChannelId}
+					openForm={openForm}
 					closeForm={closeForm}
+					socket={socket}
+					setCurrentChannelId={setCurrentChannelId}
+					user={user.current}
+					channelPasswordInputValue={channelPasswordInputValue}
+					setChannelPasswordInputValue={setChannelPasswordInputValue}
 				/>
 				<div>
 					<Channels
@@ -252,6 +264,7 @@ function Chat() {
 						setCurrentChannelId={setCurrentChannelId}
 						socket={socket}
 						update={update}
+						openForm={openForm}
 					/>
 					<button id='button_user_profile'>
 						<img id="img_user_profile" src={CHAT_DEFAULT_AVATAR} alt="" width={40} height={40} />

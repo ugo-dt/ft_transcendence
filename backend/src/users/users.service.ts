@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
@@ -9,10 +9,7 @@ const STATUS_OFFLINE = 'offline';
 
 @Injectable()
 export class UsersService {
-  private readonly logger: Logger;
-  constructor(@InjectRepository(User) private repo: Repository<User>) {
-    this.logger = new Logger("UsersService");
-  }
+  constructor(@InjectRepository(User) private repo: Repository<User>) { }
 
   public create(
     accessToken: string,

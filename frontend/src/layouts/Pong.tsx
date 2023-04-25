@@ -1,13 +1,12 @@
+import "./style/Pong.css"
 import { useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { useKeyState } from "use-key-state";
 import { Context } from "../context";
 import { IUser, IGameState, IPaddle, IGameRoom } from "../types";
-import { CANVAS_DEFAULT_FOREGROUND_COLOR, CANVAS_DEFAULT_NET_COLOR, CANVAS_DEFAULT_NET_GAP, TARGET_FPS } from "../constants";
+import { CANVAS_DEFAULT_NET_COLOR, CANVAS_DEFAULT_NET_GAP, TARGET_FPS } from "../constants";
 import GameOver from "./GameOver";
 import Canvas from "../components/Canvas";
-import { io } from "socket.io-client";
-import "./style/Pong.css"
 
 function PlayerInfo({ player, isLeft }: { player: IUser, isLeft: boolean }) {
   const navigate = useNavigate();
@@ -43,19 +42,6 @@ function Pong({ role, roomId }: PongProps) {
   const gameInterval = useRef<NodeJS.Timer | undefined>(undefined);
   const [gameOver, setGameOver] = useState(false);
   const url = window.location.pathname;
-
-  async function connect(data: IUser) {
-    if (socket.current && socket.current.connected) {
-      return ;
-    }
-    socket.current = io("http://192.168.1.178:3000/pong", {
-      autoConnect: false,
-      query: data,
-    });
-    if (socket) {
-      socket.current.connect();
-    }
-  }
 
   function _updateKeyState() {
     if (!socket.current || role === 'spectator') {

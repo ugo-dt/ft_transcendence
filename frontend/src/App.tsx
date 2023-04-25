@@ -1,6 +1,5 @@
-import './App.css'
 import { useContext, useEffect, useRef, useState } from 'react'
-import { Link, Navigate, Outlet, redirect, useNavigate, useSearchParams } from 'react-router-dom'
+import { Outlet, useNavigate, useSearchParams } from 'react-router-dom'
 import { Context, QueueContext, UserContext } from './context'
 import { Socket, io } from 'socket.io-client'
 import { CssBaseline } from '@mui/material'
@@ -9,6 +8,7 @@ import Navbar from './layouts/Navbar'
 import axios from "axios";
 import { DefaultEventsMap } from '@socket.io/component-emitter'
 import Request from './components/Request'
+import './App.css'
 
 // todo: document.title = "ft_transcendence - Chat";
 
@@ -48,10 +48,9 @@ function QueueTimer() {
 }
 
 function App() {
-  const serverUrl = "http://192.168.1.178:3000";
+  const serverUrl = "http://localhost:3000";
   const socket = useRef<Socket<DefaultEventsMap, DefaultEventsMap> | null>(null);
   const [socketConnected, setSocketConnected] = useState(false);
-  const [lostConnection, setLostConnection] = useState(false);
   const [user, setUser] = useState<IUser | null>(null);
   const [inQueue, setInQueue] = useState(false);
   const [queueTimer, setQueueTimer] = useState({ minutes: 0, seconds: 0 });
@@ -99,7 +98,6 @@ function App() {
   function onDisconnect() {
     console.log(`Disconnected from ${serverUrl}.`);
     setSocketConnected(false);
-    setLostConnection(true);
   }
 
   useEffect(() => {
@@ -147,8 +145,7 @@ function App() {
         <Context.Provider value={contextValue}>
           <QueueContext.Provider value={queueContextValue}>
             {
-              user ? <Outlet /> :
-              <h1>ft_transcendence</h1>
+              user ? <Outlet /> : <h1>ft_transcendence</h1>
             }
             <QueueTimer />
           </QueueContext.Provider>

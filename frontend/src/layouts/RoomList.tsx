@@ -1,8 +1,8 @@
+import "./style/RoomList.css"
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { IGameRoom } from "../types";
 import Request from "../components/Request";
-import "./style/RoomList.css"
 
 const PAGE_SIZE: number = 10;
 

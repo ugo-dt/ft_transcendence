@@ -1,14 +1,11 @@
-import { Controller, Get, Logger, Param } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { PongService } from './pong.service';
 import { Room } from 'src/room/entities/room.entity';
 import { IGameRoom } from 'src/room/GameRoom';
 
 @Controller('pong')
 export class PongController {
-  private readonly logger: Logger;
-  constructor(private readonly pongService: PongService) {
-    this.logger = new Logger("PongController");
-  }
+  constructor(private readonly pongService: PongService) { }
 
   @Get('history/:id')
   getUserHistory(@Param("id") id: number): Promise<IGameRoom[]> {

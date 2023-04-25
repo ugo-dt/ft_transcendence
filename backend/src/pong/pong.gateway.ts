@@ -7,7 +7,7 @@ import Queue from "./Matchmaking/Queue";
 @WebSocketGateway({
   namespace: 'pong',
   cors: {
-    origin: 'http://192.168.1.178:5173',
+    origin: 'http://localhost:5173',
   }
 })
 export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {

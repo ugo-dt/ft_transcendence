@@ -61,7 +61,7 @@ export class UsersController {
     const writeStream = createWriteStream(fullpath);
     writeStream.write(file.buffer);
     writeStream.end();
-    return this.usersService.setAvatar(user.id, `http://192.168.1.178:3000/${fullpath}`);
+    return this.usersService.setAvatar(user.id, `http://localhost:3000/${fullpath}`);
   }
 
   @Post("edit/paddle-color")

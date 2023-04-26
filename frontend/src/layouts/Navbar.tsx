@@ -47,7 +47,7 @@ function NavBarNotConnected() {
   return (
     <nav>
       <NavLink className="NavLink" to="/home">Home</NavLink>
-      <NavLink className="NavLink" to="https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-0e31b61fc51b301f5e0594458baf1b0981c4106aff593588c1abb9708b7421c5&redirect_uri=http%3A%2F%2Flocalhost%3A5173&response_type=code">Sign in with 42</NavLink>
+      <NavLink className="NavLink" to={import.meta.env.VITE_API_REDIRECT_URI}>Sign in with 42</NavLink>
     </nav>
   );
 }

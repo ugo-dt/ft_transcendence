@@ -48,7 +48,7 @@ function QueueTimer() {
 }
 
 function App() {
-  const serverUrl = "http://localhost:3000";
+  const serverUrl: string = import.meta.env.VITE_BACKEND_HOST;
   const socket = useRef<Socket<DefaultEventsMap, DefaultEventsMap> | null>(null);
   const [user, setUser] = useState<IUser | null>(null);
   const [inQueue, setInQueue] = useState(false);

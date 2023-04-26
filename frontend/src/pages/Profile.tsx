@@ -13,17 +13,20 @@ function Profile() {
   const context = useContext(Context);
   const [info, setInfo] = useState("");
   const [profile, setProfile] = useState<IUser | null>(null);
-  const [history, setHistory] = useState<IGameRoom[]>([]);
+  const [historyList, setHistoryList] = useState<IGameRoom[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const url = window.location.pathname;
-
+  const profileName = url.split("/").pop()!;
+  document.title = "ft_transcendence - " + profileName;
+  
   useEffect(() => {
     if (url === '/profile' || url === '/profile/') {
       return navigate("/home");
     }
-    const profileName = window.location.pathname.split("/").pop()!;
-    document.title = "ft_transcendence - " + profileName;
+    if (state) {
+      setInfo(state.info);
+    }
     window.history.replaceState({}, document.title);
     async function getProfile() {
       setLoading(true);
@@ -33,7 +36,7 @@ function Profile() {
         };
         setProfile(profileData);
         Request.getUserMatchHistory(profileData.id).then((historyData) => {;        
-          setHistory(historyData);
+          setHistoryList(historyData);
         });
       }).catch(err => {
         console.error(err);
@@ -42,9 +45,6 @@ function Profile() {
       setLoading(false);
     }
     getProfile();
-    if (state) {
-      setInfo(state.info);
-    }
   }, [context, url]);
 
   return (
@@ -55,7 +55,7 @@ function Profile() {
             <>
               <ProfileHeader profile={profile} />
               <h3 id="profile-state-info">{info}&nbsp;</h3>
-              <ProfileHistory history={history} profileId={profile.id} />
+              <ProfileHistory history={historyList} profileId={profile.id} />
             </>
           )
         )

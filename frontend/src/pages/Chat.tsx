@@ -48,7 +48,7 @@ function Chat() {
 	const [ChannelID, setChannelId] = useState<number>(0);
 	const [channels, setChannels] = useState<IChannel[]>([]);
 
-	const socket = useRef(io("http://localhost:3000/chat", {
+	const socket = useRef(io(`${import.meta.env.VITE_BACKEND_HOST}/chat`, {
 		autoConnect: false,
 	})).current;
 

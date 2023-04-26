@@ -3,18 +3,19 @@ import { BadRequestException, ForbiddenException, Injectable, UnauthorizedExcept
 import { catchError, firstValueFrom } from 'rxjs';
 import { UsersService } from '../users/users.service';
 import Elo from 'src/pong/Matchmaking/Elo';
+import { EnvService } from 'src/config/env.service';
 
 @Injectable()
 export class AuthService {
-  constructor(private usersService: UsersService, private httpService: HttpService) { }
+  constructor(private usersService: UsersService, private httpService: HttpService, private envService: EnvService) { }
 
   async getResourceOwnerAccessToken(authCode: string) {
     const options = {
       grant_type: "authorization_code",
-      client_id: "u-s4t2ud-0e31b61fc51b301f5e0594458baf1b0981c4106aff593588c1abb9708b7421c5",
-      client_secret: "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",
+      client_id: this.envService.get('API_CLIENT_ID'),
+      client_secret: this.envService.get('API_SECRET'),
       code: authCode,
-      redirect_uri: "http://localhost:5173"
+      redirect_uri: this.envService.get('API_REDIRECT_URI'),
     };
     const { data } = await firstValueFrom(this.httpService.post("https://api.intra.42.fr/oauth/token", options).pipe(catchError(() => {
       throw new ForbiddenException("invalid authorization code");
@@ -58,7 +59,7 @@ export class AuthService {
         refreshToken,
         id42,
         login,
-        "http://localhost:3000/public/images/noavatar.png",
+        `${this.envService.get('HOST_BACKEND')}/public/images/noavatar.png`,
         'online',
         Elo.defaultRating,
         'white',
@@ -73,8 +74,8 @@ export class AuthService {
     if (!user) throw new BadRequestException("invalid user id");
     const options = {
       grant_type: "refresh_token",
-      client_id: "u-s4t2ud-0e31b61fc51b301f5e0594458baf1b0981c4106aff593588c1abb9708b7421c5",
-      client_secret: "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",
+      client_id: this.envService.get('API_CLIENT_ID'),
+      client_secret: this.envService.get('API_SECRET'),
       refresh_token: user.refreshToken
     };
     const { data } = await firstValueFrom(this.httpService.post("https://api.intra.42.fr/oauth/token", options).pipe(catchError(() => {

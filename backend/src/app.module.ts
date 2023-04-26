@@ -21,11 +21,11 @@ import { AppController } from './app.controller';
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'localhost',
+      host: 'postgres',
       port: 5432,
-      username: 'nestjs',
-      password:  'nestjspassword',
-      database: 'nestjs',
+      username: 'postgres',
+      password:  'postgres',
+      database: 'postgres',
       entities: [User, Room],
       synchronize: true
     }),

@@ -4,9 +4,9 @@ import ProfileHistory from "../layouts/ProfileHistory";
 import ProfileHeader from "../layouts/ProfileHeader";
 import { IUser, IGameRoom } from "../types";
 import Request from "../components/Request";
-import { Context } from "../context";
 import "./style/Profile.css"
 import "../layouts/style/RoomList.css"
+import { Context } from "../context";
 
 function Profile() {
   const state = useLocation().state;
@@ -27,7 +27,6 @@ function Profile() {
     if (state) {
       setInfo(state.info);
     }
-    window.history.replaceState({}, document.title);
     async function getProfile() {
       setLoading(true);
       Request.getProfile(profileName).then((profileData) => {

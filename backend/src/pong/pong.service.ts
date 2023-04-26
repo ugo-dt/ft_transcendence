@@ -39,7 +39,7 @@ export class PongService {
       return;
     }
     if (!(await this.usersService.isInGame(user.id))) {
-      this.usersService.setOnline(user.id);
+      await this.usersService.setOnline(user.id);
     }
     const client = Client.at(user.id);
     if (!client) {
@@ -49,6 +49,7 @@ export class PongService {
       client.addSocket(clientSocket);
     }
     this.logger.log(`Client connected: ${user.username} (id: ${user.id})`);
+    clientSocket.emit('client-connected', user);
   }
 
   public async handleUserDisconnect(clientSocket: Socket): Promise<void> {
@@ -249,7 +250,6 @@ export class PongService {
       this.startGame(server, opponent, client, GAMETYPE_RANKED);
       return;
     }
-    console.log(client.wantsRematch);
   }
 
   public cancelRematch(clientSocket: Socket) {

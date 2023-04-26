@@ -57,8 +57,6 @@ namespace Queue {
     const clients = Array.from<Client>(__queue_.keys()).filter(c => c.id != player.id);
     const eligiblePlayers = await asyncFilter(clients, async (p: Client) =>
       Math.abs(playerRating - await usersService.getRating(p.id)) <= maxEloDiff);
-    console.log(eligiblePlayers);
-
     if (eligiblePlayers.length > 0) {
       const eligibleRatings = await Promise.all(eligiblePlayers.map(async (p) => ({
         id: p.id,

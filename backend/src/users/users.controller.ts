@@ -1,4 +1,4 @@
-import { ClassSerializerInterceptor, Controller, Delete, Get, Logger, Param, Post, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { ClassSerializerInterceptor, Controller, Delete, Get, Param, Post, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { User } from './entities/user.entity';
@@ -10,10 +10,7 @@ import { createWriteStream } from 'fs';
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor, CurrentUserInterceptor)
 export class UsersController {
-  private readonly logger: Logger;
-  constructor(private usersService: UsersService) {
-    this.logger = new Logger("UsersController");
-  }
+  constructor(private usersService: UsersService) { }
 
   @Get("me")
   getMyInfo(@CurrentUser() user: User): User {

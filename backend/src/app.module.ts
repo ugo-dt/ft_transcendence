@@ -10,10 +10,11 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { Room } from './room/entities/room.entity';
 import { RoomModule } from './room/room.module';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: '../.env' }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
       serveRoot: '/public',
@@ -21,7 +22,7 @@ import { RoomModule } from './room/room.module';
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'localhost',
-      port: 5455,
+      port: 5432,
       username: 'nestjs',
       password:  'nestjspassword',
       database: 'nestjs',
@@ -34,7 +35,7 @@ import { RoomModule } from './room/room.module';
     PongModule,
     ChatModule
   ],
-  controllers: [],
+  controllers: [AppController],
   providers: [],
 })
 export class AppModule { }

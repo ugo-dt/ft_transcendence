@@ -190,9 +190,6 @@ function Friends() {
   }
 
   useEffect(() => {
-    if (!context.socketConnected) {
-      return;
-    }
     window.history.replaceState({}, document.title);
     getFriendsList();
     getChallengeList();

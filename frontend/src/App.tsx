@@ -50,19 +50,18 @@ function QueueTimer() {
 function App() {
   const serverUrl = "http://localhost:3000";
   const socket = useRef<Socket<DefaultEventsMap, DefaultEventsMap> | null>(null);
-  const [socketConnected, setSocketConnected] = useState(false);
   const [user, setUser] = useState<IUser | null>(null);
   const [inQueue, setInQueue] = useState(false);
   const [queueTimer, setQueueTimer] = useState({ minutes: 0, seconds: 0 });
   const queueInterval = useRef<number | undefined>(undefined);
   const navigate = useNavigate();
   const [parameters] = useSearchParams();
+  const isServerAvailableRef = useRef<boolean>(true);
+  const [isServerAvailable, setIsServerAvailable] = useState<boolean>(true);
 
   const contextValue = {
     serverUrl: serverUrl,
     pongSocket: socket,
-    socketConnected: socketConnected,
-    setSocketConnected: setSocketConnected,
   };
 
   const queueContextValue = {
@@ -82,52 +81,56 @@ function App() {
       query: data,
     });
     if (socket) {
-      socket.current.on('connect', onConnect);
-      socket.current.on('disconnect', onDisconnect);
       socket.current.connect();
+      socket.current.on('disconnect', onDisconnect);
+      socket.current.on('client-connected', (res: IUser) => {
+        setUser(res);
+      })
     }
-  }
-
-  async function onConnect() {
-    console.log(`Connected to ${serverUrl}.`);
-    setTimeout(() => {
-      setSocketConnected(true);
-    }, 100);
   }
 
   function onDisconnect() {
-    console.log(`Disconnected from ${serverUrl}.`);
-    setSocketConnected(false);
-  }
-
-  useEffect(() => {
-    if (parameters.get("code")) {
-      Request.signIn(parameters.get("code")).then(res => {
-        navigate("/home");
-        window.location.reload();
-      }).catch(err => {
-        if (axios.isAxiosError(err) && err.code === "ERR_CANCELED") {
-          console.error("Request has been canceled!");
-        } else {
-          console.error(err);
-        }
-      });
+    if (socket.current) {
+      socket.current.disconnect();
     }
-    Request.me().then(res => {
-      if (res) {
-        connect(res);
-        setUser(res);
+    isServerAvailableRef.current = false;
+    setIsServerAvailable(isServerAvailableRef.current);   
+  }
+  
+  useEffect(() => {
+    async function init() {
+      isServerAvailableRef.current = await Request.isServerAvailable();
+      setIsServerAvailable(isServerAvailableRef.current);      
+      if (isServerAvailableRef.current) {
+        if (parameters.get("code")) {
+          Request.signIn(parameters.get("code")).then(res => {
+            navigate("/home");
+            window.location.reload();
+          }).catch(err => {
+            if (axios.isAxiosError(err) && err.code === "ERR_CANCELED") {
+              console.error("Request has been canceled!");
+            } else {
+              console.error(err);
+            }
+          });
+        }
+        Request.me().then(res => {
+          if (res) {
+            connect(res);
+          }
+          else {
+            navigate("/home");
+          }
+        }).catch(err => {
+          if (axios.isAxiosError(err) && err.code === "ERR_CANCELED") {
+            console.error("Request has been canceled!");
+          } else {
+            console.error(err);
+          }
+        });
       }
-      else {
-        navigate("/home");
-      }
-    }).catch(err => {
-      if (axios.isAxiosError(err) && err.code === "ERR_CANCELED") {
-        console.error("Request has been canceled!");
-      } else {
-        console.error(err);
-      }
-    });
+    }
+    init();
 
     return () => {
       if (socket.current) {
@@ -145,7 +148,15 @@ function App() {
         <Context.Provider value={contextValue}>
           <QueueContext.Provider value={queueContextValue}>
             {
-              user ? <Outlet /> : <h1>ft_transcendence</h1>
+              !isServerAvailable &&
+              <div className="alert-disconnected">
+                <h3>
+                  You are disconnected. Please refresh the page.
+                </h3>
+              </div>
+            }
+            {
+              user && <Outlet />
             }
             <QueueTimer />
           </QueueContext.Provider>

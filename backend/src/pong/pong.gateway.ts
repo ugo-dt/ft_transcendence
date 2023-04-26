@@ -15,6 +15,7 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private readonly logger: Logger;
 
   constructor(private readonly pongService: PongService) {
+    pongService.__init__();
     this.logger = new Logger("PongGateway");
     setInterval(() => {
       if (Queue.size() >= 2) {

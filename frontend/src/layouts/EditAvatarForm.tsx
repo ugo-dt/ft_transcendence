@@ -17,7 +17,7 @@ function EditAvatarForm({
   const formValues: FormFile[] = [
     {
       value: file,
-      info: 'Image must be less than 1kb',
+      info: 'Select an image',
       onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files.length > 0) {
           setFile(event.target.files[0]);

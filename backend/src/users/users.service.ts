@@ -118,11 +118,11 @@ export class UsersService {
   public async getRating(id: number) { return (await this._user(id)).rating;}
   public async getPaddleColor(id: number) { return (await this._user(id)).paddleColor;}
   
-  public setUsername(id: number, username: string) { return this.update(id, { username: username }); }
-  public setAvatar(id: number, avatar: string) { return this.update(id, { avatar: avatar }); }
-  public setOnline(id: number) { return this.update(id, { status: STATUS_ONLINE }); }
-  public setInGame(id: number) { return this.update(id, { status: STATUS_IN_GAME }); }
-  public setOffline(id: number) { return this.update(id, { status: STATUS_OFFLINE }); }
-  public setRating(id: number, rating: number) { return this.update(id, { rating: rating }); }
-  public setPaddleColor(id: number, paddleColor: string) { return this.update(id, { paddleColor: paddleColor }); }
+  public async setUsername(id: number, username: string) { return this.update(id, { username: username }); }
+  public async setAvatar(id: number, avatar: string) { return this.update(id, { avatar: avatar }); }
+  public async setOnline(id: number) { return this.update(id, { status: STATUS_ONLINE }); }
+  public async setInGame(id: number) { return this.update(id, { status: STATUS_IN_GAME }); }
+  public async setOffline(id: number) { return this.update(id, { status: STATUS_OFFLINE }); }
+  public async setRating(id: number, rating: number) { return this.update(id, { rating: rating }); }
+  public async setPaddleColor(id: number, paddleColor: string) { return this.update(id, { paddleColor: paddleColor }); }
 }

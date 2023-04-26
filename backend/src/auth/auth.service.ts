@@ -39,7 +39,6 @@ export class AuthService {
         access_token: tokens.access_token,
       }
     })));
-    console.log(data);
     return data;
   }
 

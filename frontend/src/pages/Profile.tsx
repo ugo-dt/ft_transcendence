@@ -24,9 +24,6 @@ function Profile() {
     }
     const profileName = window.location.pathname.split("/").pop()!;
     document.title = "ft_transcendence - " + profileName;
-    if (!context.socketConnected) {
-      return ;
-    }
     window.history.replaceState({}, document.title);
     async function getProfile() {
       setLoading(true);

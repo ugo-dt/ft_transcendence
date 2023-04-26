@@ -1,6 +1,5 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
-
 import Friends from "./pages/Friends";
 import Chat from "./pages/Chat";
 import Game from "./pages/Game";

@@ -39,35 +39,6 @@ namespace Queue {
     return Array.from(__queue_.keys());
   }
 
-  // async function _findBestMatch(usersService: UsersService, player: Client, joinTime: number): Promise<Client | null> {
-  //   const timeInQueue = (new Date().getTime() - joinTime) / 1000;
-  //   const maxEloDiff = Elo.kFactor * Math.max(1, timeInQueue);
-  //   const playerRating = await usersService.getRating(player.id);
-
-  //   const eligiblePlayers = Array.from<Client>(__queue_.keys()).filter(async (p) => {
-  //     p.id !== player.id && Math.abs(playerRating - await usersService.getRating(p.id)) <= maxEloDiff
-  //   });
-
-  //   if (eligiblePlayers.length > 0) {
-  //     //   eligiblePlayers.sort((a, b) => {
-  //     //     Math.abs(playerRating - a.rating) - Math.abs(playerRating - b.rating)
-  //     //   });
-  //     //   return eligiblePlayers[0];
-  //     let closest = eligiblePlayers[0];
-  //     let closestRating = await usersService.getRating(closest.id);
-  //     const playerRating = await usersService.getRating(player.id);
-  //     for (const p of eligiblePlayers) {
-  //       const pRating = await usersService.getRating(p.id);
-  //       if (Math.abs(playerRating - pRating) < Math.abs(playerRating - closestRating)) {
-  //         closest = p;
-  //         closestRating = pRating;
-  //       }
-  //     }
-  //     return closest;
-  //   }
-  //   return null;
-  // }
-
   async function asyncFilter<T>(arr: T[], predicate: (item: T) => Promise<boolean>): Promise<T[]> {
     const results: T[] = [];
     for (const item of arr) {
@@ -86,8 +57,6 @@ namespace Queue {
     const clients = Array.from<Client>(__queue_.keys()).filter(c => c.id != player.id);
     const eligiblePlayers = await asyncFilter(clients, async (p: Client) =>
       Math.abs(playerRating - await usersService.getRating(p.id)) <= maxEloDiff);
-    console.log(eligiblePlayers);
-
     if (eligiblePlayers.length > 0) {
       const eligibleRatings = await Promise.all(eligiblePlayers.map(async (p) => ({
         id: p.id,
@@ -110,9 +79,6 @@ namespace Queue {
       return;
     }
     const player2 = await _findBestMatch(pongService.getUsersService(), player1, joinTime1);
-
-    // const player2 = player1;
-
     if (player2) {
       pongService.startGame(server, player1, player2, GAMETYPE_RANKED);
     }

@@ -2,7 +2,8 @@ import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 import { IUser, IGameRoom } from "../types";
 
 namespace __url_ {
-  export const __api_base_url_ = "http://192.168.1.178:3000/api";
+  export const __api_base_url_ = "http://localhost:3000/api";
+  export const __app_base_ = '/app';
   export const __users_base_ = '/users';
   export const __game_base_ = '/pong';
   export const __chat_base_ = '/chat';
@@ -36,7 +37,7 @@ namespace __url_ {
 class Request {
   private static __axios_: AxiosInstance;
 
-  // This functions runs directly after its creation and acts like a constructor
+  // This function runs directly after its creation and acts like a constructor
   private static __init__ = (() => {
     Request.__axios_ = axios.create({
       baseURL: __url_.__api_base_url_,
@@ -47,14 +48,14 @@ class Request {
       async (error) => {
         const originalReq = error.config;
         if (error.response.status === 403 && !originalReq._retry) {
-          console.log('request: error 403');
+          // console.log('request: error 403');
           originalReq._retry = true;
           const url = __url_.__refresh_token_;
           try {
             await axios.post(url);
             return axios(originalReq);
           } catch (newError) {
-            console.error('unable to refresh token');
+            // console.error('unable to refresh token');
             return Promise.reject(newError);
           }
         }
@@ -89,6 +90,14 @@ class Request {
       return res.data;
     }).catch(() => {
       return null;
+    });
+  }
+
+  public static async isServerAvailable(): Promise<boolean> {
+    return await Request.__axios_.head(__url_.__app_base_ + '/is-available').then(res => {
+      return res.status === 200;
+    }).catch(() => {
+      return false;
     });
   }
 

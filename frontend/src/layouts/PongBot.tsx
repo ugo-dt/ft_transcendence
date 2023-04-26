@@ -1,11 +1,10 @@
+import "./style/Pong.css"
 import { useEffect, useState } from "react";
 import { useKeyState } from "use-key-state";
 import { IGameState, IPlayer } from "../types";
 import { CANVAS_DEFAULT_HEIGHT, CANVAS_DEFAULT_WIDTH, DEBUG_MODE, OFFLINE_MODE, TARGET_FPS } from "../constants";
 import usePong from "../hooks/usePong";
 import Canvas from "../components/Canvas";
-
-import "./style/Pong.css"
 
 interface DebugProps {
   gameState: IGameState,
@@ -97,7 +96,7 @@ function PongBot({
   rightPlayerData,
   mode,
 }: PongBotProps) {
-  const [canvas, setCanvas]: [Canvas, any] = useState(new Canvas(canvasWidth, canvasHeight, null));
+  const [canvas] = useState(new Canvas(canvasWidth, canvasHeight, null));
   const [gameState, updateGame, resetGame, pause, setPause, setBallPause, setLeftIsCom, setRightIsCom] = usePong(canvas, mode, leftPlayerData, rightPlayerData);
   const { space } = useKeyState({ space: 'space' });
 

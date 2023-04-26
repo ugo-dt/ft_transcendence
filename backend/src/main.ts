@@ -9,8 +9,8 @@ import RedisStore from 'connect-redis';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
-  const port = configService.get('PORT');
-  const clientPort = configService.get('CLIENT_PORT');
+  const port = configService.get('PORT_BACKEND');
+  const clientPort = configService.get('PORT_FRONTEND');
 
   // const redisClient = createClient();
   // redisClient.connect().catch(console.error);
@@ -19,7 +19,7 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   app.enableCors({
     origin: [
-      `http://192.168.1.178:${clientPort}`,
+      `http://localhost:${clientPort}`,
     ],
     credentials: true,
   });

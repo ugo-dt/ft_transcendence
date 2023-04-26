@@ -1,10 +1,3 @@
-/**
- * 
- * get friends list
- * show list of friends (name, rating, status, button)
- * disable button if status != online
- */
-
 import { useContext, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { Context, QueueContext, UserContext } from "../context";
@@ -197,9 +190,6 @@ function Friends() {
   }
 
   useEffect(() => {
-    if (!context.socketConnected) {
-      return;
-    }
     window.history.replaceState({}, document.title);
     getFriendsList();
     getChallengeList();

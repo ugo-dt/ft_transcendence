@@ -1,17 +1,11 @@
-// Rankings page
-//
-// Users should be able to:
-//  See the top players (and their profile)
-//
-//  See their current ranking
-
 import { useEffect, useState } from "react";
 import { IUser } from "../types";
-import "../layouts/style/RoomList.css"
-import "./style/Rankings.css"
 import Request from "../components/Request";
 import { useNavigate } from "react-router";
+import "../layouts/style/RoomList.css"
+import "./style/Rankings.css"
 
+// todo: see current ranking
 function Rankings() {
   document.title = "ft_transcendence - Leaderboard";
   const navigate = useNavigate();

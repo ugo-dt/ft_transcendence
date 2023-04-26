@@ -52,7 +52,7 @@ function Form<T extends FormType>({
                 <h5 style={{ fontWeight: 'lighter' }}>{value.info}</h5>
                 <section>
                   <input
-                    id="form-input-field"
+                    className="form-input-field"
                     type={_getValueType(value)}
                     placeholder={value.placeholder}
                     value={typeof value.value === 'string' ? value.value : undefined}

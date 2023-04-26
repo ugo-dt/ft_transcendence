@@ -7,7 +7,7 @@ import Queue from "./Matchmaking/Queue";
 @WebSocketGateway({
   namespace: 'pong',
   cors: {
-    origin: 'http://localhost:5173',
+    origin: '*',
   }
 })
 export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -15,6 +15,7 @@ export class PongGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private readonly logger: Logger;
 
   constructor(private readonly pongService: PongService) {
+    this.
     pongService.__init__();
     this.logger = new Logger("PongGateway");
     setInterval(() => {

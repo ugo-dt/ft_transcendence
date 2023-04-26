@@ -6,11 +6,12 @@ import { CurrentUserInterceptor } from './interceptors/current-user.interceptor'
 import { MessageBody } from '@nestjs/websockets';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { createWriteStream } from 'fs';
+import { EnvService } from 'src/config/env.service';
 
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor, CurrentUserInterceptor)
 export class UsersController {
-  constructor(private usersService: UsersService) { }
+  constructor(private usersService: UsersService, private envService: EnvService) { }
 
   @Get("me")
   getMyInfo(@CurrentUser() user: User): User {
@@ -58,7 +59,7 @@ export class UsersController {
     const writeStream = createWriteStream(fullpath);
     writeStream.write(file.buffer);
     writeStream.end();
-    return this.usersService.setAvatar(user.id, `http://localhost:3000/${fullpath}`);
+    return this.usersService.setAvatar(user.id, `${this.envService.get('HOST_BACKEND')}/${fullpath}`);
   }
 
   @Post("edit/paddle-color")

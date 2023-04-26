@@ -60,7 +60,7 @@ form {
   padding-top: 10px;
 }
 
-#form-input-field {
+.form-input-field {
   margin-bottom: 5px;
   border: 1px solid #ccc;
   border-radius: 3px;

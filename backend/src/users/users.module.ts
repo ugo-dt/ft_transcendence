@@ -4,11 +4,12 @@ import { User } from './entities/user.entity';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { CurrentUserInterceptor } from './interceptors/current-user.interceptor';
+import { EnvService } from 'src/config/env.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User])],
   controllers: [UsersController],
-  providers: [UsersService, CurrentUserInterceptor],
+  providers: [UsersService, CurrentUserInterceptor, EnvService],
   exports: [UsersService],
 })
 export class UsersModule {}

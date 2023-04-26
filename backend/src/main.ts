@@ -10,7 +10,6 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
   const port = configService.get('PORT_BACKEND');
-  const clientPort = configService.get('PORT_FRONTEND');
 
   // const redisClient = createClient();
   // redisClient.connect().catch(console.error);
@@ -19,7 +18,7 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   app.enableCors({
     origin: [
-      `http://localhost:${clientPort}`,
+      `${configService.get('HOST_FRONTEND')}`,
     ],
     credentials: true,
   });

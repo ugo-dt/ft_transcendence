@@ -2,7 +2,7 @@ import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 import { IUser, IGameRoom } from "../types";
 
 namespace __url_ {
-  export const __api_base_url_ = "http://localhost:3000/api";
+  export const __api_base_url_ = `${import.meta.env.VITE_BACKEND_HOST}/api`;
   export const __app_base_ = '/app';
   export const __users_base_ = '/users';
   export const __game_base_ = '/pong';

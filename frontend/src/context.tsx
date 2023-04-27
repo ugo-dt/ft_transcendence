@@ -6,11 +6,15 @@ import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 interface ContextValue {
   serverUrl: string,
   pongSocket: React.MutableRefObject<Socket<DefaultEventsMap, DefaultEventsMap> | null>
+  loading: boolean,
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>,
 }
 
 export const Context = createContext<ContextValue>({
   serverUrl: "",
   pongSocket: {} as React.MutableRefObject<Socket<DefaultEventsMap, DefaultEventsMap> | null>,
+  loading: false,
+  setLoading: () => {},
 });
 
 interface AuthContextValue {

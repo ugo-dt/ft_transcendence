@@ -1,11 +1,10 @@
 import { useContext, useEffect, useRef, useState } from 'react'
-import { Outlet, useNavigate, useSearchParams } from 'react-router-dom'
+import { NavLink, Outlet, useNavigate, useSearchParams } from 'react-router-dom'
 import { Context, QueueContext, UserContext } from './context'
 import { Socket, io } from 'socket.io-client'
 import { CssBaseline } from '@mui/material'
 import { IUser } from './types'
 import Navbar from './layouts/Navbar'
-import axios from "axios";
 import { DefaultEventsMap } from '@socket.io/component-emitter'
 import Request from './components/Request'
 import './App.css'
@@ -58,10 +57,13 @@ function App() {
   const [parameters] = useSearchParams();
   const isServerAvailableRef = useRef<boolean>(true);
   const [isServerAvailable, setIsServerAvailable] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(true);
 
   const contextValue = {
     serverUrl: serverUrl,
     pongSocket: socket,
+    loading: loading,
+    setLoading: setLoading,
   };
 
   const queueContextValue = {
@@ -74,18 +76,20 @@ function App() {
 
   async function connect(data: IUser) {
     if (socket.current && socket.current.connected) {
+      setLoading(false);
       return;
     }
     socket.current = io(serverUrl + '/pong', {
       autoConnect: false,
       query: data,
     });
-    if (socket) {
+    if (socket.current) {
       socket.current.connect();
       socket.current.on('disconnect', onDisconnect);
       socket.current.on('client-connected', (res: IUser) => {
         setUser(res);
-      })
+        setLoading(false);
+      });
     }
   }
 
@@ -94,24 +98,18 @@ function App() {
       socket.current.disconnect();
     }
     isServerAvailableRef.current = false;
-    setIsServerAvailable(isServerAvailableRef.current);   
+    setIsServerAvailable(isServerAvailableRef.current);
   }
-  
+
   useEffect(() => {
     async function init() {
       isServerAvailableRef.current = await Request.isServerAvailable();
-      setIsServerAvailable(isServerAvailableRef.current);      
+      setIsServerAvailable(isServerAvailableRef.current);
       if (isServerAvailableRef.current) {
         if (parameters.get("code")) {
           Request.signIn(parameters.get("code")).then(res => {
             navigate("/home");
             window.location.reload();
-          }).catch(err => {
-            if (axios.isAxiosError(err) && err.code === "ERR_CANCELED") {
-              console.error("Request has been canceled!");
-            } else {
-              console.error(err);
-            }
           });
         }
         Request.me().then(res => {
@@ -119,15 +117,13 @@ function App() {
             connect(res);
           }
           else {
+            setLoading(false);
             navigate("/home");
           }
-        }).catch(err => {
-          if (axios.isAxiosError(err) && err.code === "ERR_CANCELED") {
-            console.error("Request has been canceled!");
-          } else {
-            console.error(err);
-          }
         });
+      }
+      else {        
+        setLoading(false);
       }
     }
     init();
@@ -144,23 +140,36 @@ function App() {
     <div className="App">
       <CssBaseline />
       <UserContext.Provider value={{ user, setUser }}>
-        <Navbar />
-        <Context.Provider value={contextValue}>
-          <QueueContext.Provider value={queueContextValue}>
-            {
-              !isServerAvailable &&
-              <div className="alert-disconnected">
-                <h3>
-                  You are disconnected. Please refresh the page.
-                </h3>
-              </div>
-            }
-            {
-              user && <Outlet />
-            }
-            <QueueTimer />
-          </QueueContext.Provider>
-        </Context.Provider>
+        {
+          !loading &&
+          <>
+            <Navbar />
+            <Context.Provider value={contextValue}>
+              <QueueContext.Provider value={queueContextValue}>
+                {
+                  !isServerAvailable &&
+                  <div className="alert-disconnected">
+                    <h3>
+                      You are disconnected. Please refresh the page.
+                    </h3>
+                  </div>
+                }
+                {
+                  user ? <Outlet /> :
+                    <div style={{ textAlign: 'center' }}>
+                      <h1>ft_transcendence</h1>
+                      <NavLink className="NavLink" to={import.meta.env.VITE_API_REDIRECT_URI}>
+                        <button style={{ padding: '10px', fontWeight: 'bold', cursor: 'pointer' }}>
+                          Sign in with 42
+                        </button>
+                      </NavLink>
+                    </div>
+                }
+                <QueueTimer />
+              </QueueContext.Provider>
+            </Context.Provider>
+          </>
+        }
       </UserContext.Provider>
     </div >
   )

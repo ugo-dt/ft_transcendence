@@ -1,5 +1,5 @@
-import { useContext, useState } from "react";
-import Form, { FormFile } from "../components/Form";
+import React, { useContext, useState } from "react";
+import Form, { FormFile, FormType } from "../components/Form";
 import Request from "../components/Request";
 import { UserContext } from "../context";
 import { useNavigate } from "react-router";
@@ -14,17 +14,39 @@ function EditAvatarForm({
   const user = useContext(UserContext).user;
   const [file, setFile] = useState<File | null>(null);
   const navigate = useNavigate();
-  const formValues: FormFile[] = [
+  const formValues: FormType[] = [
     {
       value: file,
-      info: 'Select an image',
+      type: 'file',
+      label: 'Select an image',
       onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files.length > 0) {
           setFile(event.target.files[0]);
         }
       }
+    },
+    {
+      type: 'button',
+      info: "Reset to default avatar",
+      buttonText: 'Reset',
+      onClick: () => resetAvatar(),
+    },
+  ];
+  
+  
+  const resetAvatar = async () => {
+    if (!user) {
+      return;
     }
-  ]
+    Request.resetAvatar().then(res => {
+      if (res) {
+        window.location.reload();
+        navigate("/profile/" + user.username, {state: {info: 'Avatar reset to default.'}});
+      }
+    }).catch(err => {
+      console.error('Could not change avatar: ', err);
+    });
+  };
 
   const submitAvatar = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();

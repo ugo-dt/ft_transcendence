@@ -59,7 +59,7 @@ export class AuthService {
         refreshToken,
         id42,
         login,
-        `${this.envService.get('HOST_BACKEND')}/public/images/noavatar.png`,
+        `${this.envService.get('BACKEND_HOST')}/public/images/noavatar.png`,
         'online',
         Elo.defaultRating,
         'white',

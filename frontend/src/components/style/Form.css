@@ -92,3 +92,7 @@ form {
   background-color: #555;
   cursor: unset;
 }
+
+.form-button {
+  padding: 3px;
+}

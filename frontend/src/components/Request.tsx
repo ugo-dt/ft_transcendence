@@ -36,6 +36,7 @@ namespace __url_ {
 
 class Request {
   private static __axios_: AxiosInstance;
+  private static controller = new AbortController();
 
   // This function runs directly after its creation and acts like a constructor
   private static __init__ = (() => {
@@ -65,9 +66,12 @@ class Request {
   })();
 
   private static async __make_get_request_<T>(url: string): Promise<T | null> {
-    return await Request.__axios_.get(url).then(res => {
+    return await Request.__axios_.get(url, {signal: this.controller.signal}).then(res => {
       return res.data;
-    }).catch(() => {
+    }).catch(err => {
+      if (axios.isAxiosError(err) && err.code === "ERR_CANCELED") {
+        console.error("Request has been canceled!");
+      }
       return null;
     });
   }
@@ -80,7 +84,10 @@ class Request {
   private static async __make_post_request_<T>(url: string, data?: any, config?: AxiosRequestConfig<any> | undefined): Promise<T | null> {
     return await Request.__axios_.post(url, data, config).then(res => {
       return res.data;
-    }).catch(() => {
+    }).catch(err => {
+      if (axios.isAxiosError(err) && err.code === "ERR_CANCELED") {
+        console.error("Request has been canceled!");
+      }
       return null;
     });
   }
@@ -88,7 +95,10 @@ class Request {
   private static async __make_delete_request_<T>(url: string): Promise<T | null> {
     return await Request.__axios_.delete(url).then(res => {
       return res.data;
-    }).catch(() => {
+    }).catch(err => {
+      if (axios.isAxiosError(err) && err.code === "ERR_CANCELED") {
+        console.error("Request has been canceled!");
+      }
       return null;
     });
   }
@@ -96,7 +106,10 @@ class Request {
   public static async isServerAvailable(): Promise<boolean> {
     return await Request.__axios_.head(__url_.__app_base_ + '/is-available').then(res => {
       return res.status === 200;
-    }).catch(() => {
+    }).catch(err => {
+      if (axios.isAxiosError(err) && err.code === "ERR_CANCELED") {
+        console.error("Request has been canceled!");
+      }
       return false;
     });
   }
@@ -163,6 +176,10 @@ class Request {
         },
       }
     );
+  }
+
+  public static async resetAvatar(): Promise<IUser | null> {
+    return await Request.__make_delete_request_(__url_.__edit_avatar_);
   }
 
   public static async editPaddleColor(color: string): Promise<IUser | null> {

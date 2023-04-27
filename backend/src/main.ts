@@ -9,22 +9,29 @@ import RedisStore from 'connect-redis';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
-  const port = configService.get('PORT_BACKEND');
+  const port = configService.get('BACKEND_PORT');
 
-  // const redisClient = createClient();
-  // redisClient.connect().catch(console.error);
-  // const redisStore = new RedisStore({client: redisClient});
+  const redisClient = createClient({
+    socket: {
+      host: 'redis',
+      port: 6379,
+    }
+  });
+  redisClient.connect().catch(console.error);
+  const redisStore = new RedisStore({
+    client: redisClient,
+  });
 
   app.setGlobalPrefix('api');
   app.enableCors({
     origin: [
-      `${configService.get('HOST_FRONTEND')}`,
+      `${configService.get('FRONTEND_HOST')}`,
     ],
     credentials: true,
   });
   app.useGlobalPipes(new ValidationPipe({whitelist: true}));
   app.use(session({
-    // store: redisStore,
+    store: redisStore,
     secret: "a-secret-string",
     resave: false,
     saveUninitialized: false,

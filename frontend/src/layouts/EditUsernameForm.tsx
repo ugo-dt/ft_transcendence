@@ -19,6 +19,7 @@ function EditUsernameForm({
     {
       value: editUsernameValue,
       label: '',
+      type: 'text',
       placeholder: 'New username',
       info: 'Username must be between 3 and 15 characters',
       isValid: isValid,

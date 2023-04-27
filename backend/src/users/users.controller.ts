@@ -53,13 +53,18 @@ export class UsersController {
   @Post("edit/avatar")
   @UseInterceptors(FileInterceptor('image'))
   async editAvatar(@CurrentUser() user: User, @UploadedFile() file: Express.Multer.File): Promise<User> {
-    const dirname = 'public/user';
+    const dirname = this.envService.get('AVATARS_DIR');
     const filename = user.id + '.' + Date.now() + '.' + file.mimetype.split("/").pop();
     const fullpath = dirname + '/' + filename;
     const writeStream = createWriteStream(fullpath);
     writeStream.write(file.buffer);
     writeStream.end();
-    return this.usersService.setAvatar(user.id, `${this.envService.get('HOST_BACKEND')}/${fullpath}`);
+    return this.usersService.setAvatar(user.id, `${this.envService.get('BACKEND_HOST')}/${fullpath}`);
+  }
+  
+  @Delete("edit/avatar")
+  async deleteAvatar(@CurrentUser() user: User): Promise<User> {
+    return this.usersService.setAvatar(user.id, this.envService.get('DEFAULT_AVATAR'));
   }
 
   @Post("edit/paddle-color")

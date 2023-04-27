@@ -9,6 +9,14 @@ services:
     env_file:
       - ./backend/.env
     restart: unless-stopped
+  
+  redis:
+    container_name: redis
+    image: redis
+    ports:
+      - 6379:6379
+    volumes:
+      - redis:/data
 
   backend:
     container_name: backend
@@ -16,8 +24,8 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     volumes:
-      - ./backend:/app
-      - ./backend/public:/app/public
+      - ./backend:/app/
+      - ./backend/public:/app/public/
     ports:
       - 3000:3000
     env_file:
@@ -31,10 +39,14 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    volumes:
-      - ./frontend:/app/
     ports:
       - 5173:5173
     env_file:
       - ./frontend/.env
+    volumes:
+      - ./frontend:/app/
     restart: unless-stopped
+
+volumes:
+  redis:
+    driver: local

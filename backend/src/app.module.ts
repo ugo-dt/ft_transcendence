@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PongModule } from './pong/pong.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -33,7 +33,7 @@ import { AppController } from './app.controller';
     RoomModule,
     AuthModule,
     PongModule,
-    ChatModule
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [],

@@ -2,6 +2,8 @@ import { Body, Controller, Post, Session, UseGuards } from '@nestjs/common';
 import { LoginAuthDto } from './dtos/login-auth.dto';
 import { AuthService } from './auth.service';
 import { AuthGuard } from './guards/auth.guard';
+import { GenOtpAuthDto } from './dtos/gen-otp-auth.dto';
+import { ValOtpAuthDto } from './dtos/val-top-auth.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -27,5 +29,15 @@ export class AuthController {
   @UseGuards(AuthGuard)
   refreshToken(@Session() session: any) {
     return this.authService.refreshToken(parseInt(session.userId));
+  }
+
+  @Post('genotp')
+  generateOtp(@Body() body: GenOtpAuthDto) {
+    return this.authService.generateOtp(body.phoneNumber);
+  }
+
+  @Post('valotp')
+  validateOtp(@Body() body: ValOtpAuthDto) {
+    return this.authService.validateOtp(body.phoneNumber, body.code);
   }
 }

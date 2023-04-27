@@ -16,13 +16,15 @@ export class UsersService {
     refreshToken: string,
     id42: number,
     username: string,
+    has2fa: boolean,
+    phoneNumber: string,
     avatar: string,
     status: string,
     rating: number,
     paddleColor: string,
     friends: string[],
   ): Promise<User> {
-    const user = this.repo.create({ accessToken, refreshToken, id42, username, avatar, status, rating, paddleColor, friends });
+    const user = this.repo.create({ accessToken, refreshToken, id42, username, has2fa, phoneNumber, avatar, status, rating, paddleColor, friends });
     return this.repo.save(user);
   }
 

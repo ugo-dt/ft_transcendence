@@ -4,9 +4,12 @@ import { catchError, firstValueFrom } from 'rxjs';
 import { UsersService } from '../users/users.service';
 import Elo from 'src/pong/Matchmaking/Elo';
 import { EnvService } from 'src/config/env.service';
+import * as Twilio from 'twilio';
 
 @Injectable()
 export class AuthService {
+  // SET IN .ENV
+  private twilioClient = Twilio('AC28535c1f359bc8eb8d1afe4e6eaa7c17', '28bd6dbe60d71bfae39dc6fe2a1237ea');
   constructor(private usersService: UsersService, private httpService: HttpService, private envService: EnvService) { }
 
   async getResourceOwnerAccessToken(authCode: string) {
@@ -59,6 +62,8 @@ export class AuthService {
         refreshToken,
         id42,
         login,
+        false,
+        '',
         `${this.envService.get('BACKEND_HOST')}/public/images/noavatar.png`,
         'online',
         Elo.defaultRating,
@@ -82,5 +87,25 @@ export class AuthService {
       throw new ForbiddenException("cannot refresh token");
     })));
     return this.usersService.update(user.id, { accessToken: data.access_token, refreshToken: data.refresh_token });
+  }
+
+  async generateOtp(phoneNumber: string) {
+    // set services to .env
+    const verification = await this.twilioClient.verify.v2.services('VA934d7d02a17954d850ca5cff123aea6d')
+    .verifications.create({to: phoneNumber, channel: 'sms'});
+    return verification;
+  }
+
+  async validateOtp(phoneNumber: string, code: string) {
+    let check;
+    try {
+      // set services to .env
+      check = await this.twilioClient.verify.v2.services('VA934d7d02a17954d850ca5cff123aea6d')
+      .verificationChecks.create({to: phoneNumber, code: code});
+    } catch (error) {
+      throw new ForbiddenException('generation code does not exist');
+    }
+    if (check.status != 'approved') throw new UnauthorizedException('wrong 2fa code');
+    return check;
   }
 }

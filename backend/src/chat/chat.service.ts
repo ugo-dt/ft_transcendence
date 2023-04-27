@@ -1,123 +1,107 @@
-import { Injectable, Logger } from '@nestjs/common';
-import User, { IUser } from './User/User';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Socket } from 'socket.io';
-import Channel, { IChannel } from './Channel/Channel';
-import Message, { IMessage } from './Message/Message';
 import { Server } from 'socket.io';
-import * as crypto from 'crypto';
+import { ChannelService } from './channel/channel.service';
+import { Message } from './message/entity/message.entity';
+import { MessageService } from './message/message.service';
+import Client from 'src/Client/Client';
 
 @Injectable()
 export class ChatService {
+	private readonly logger: Logger;
+	constructor(
+		private readonly messageService: MessageService,
+		private readonly channelService: ChannelService,
+	) {
+	  this.logger = new Logger("ChatService");
+	}
 
-	public async handleUserConnected(userSocket: Socket): Promise<void> { }
+	private _timestamp_mmddyy() {
+		const currentDate = new Date();
+		const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
+		const day = currentDate.getDate().toString().padStart(2, '0');
+		const year = currentDate.getFullYear().toString().substr(-2);
+		const hours = currentDate.getHours().toString().padStart(2, '0');
+		const minutes = currentDate.getMinutes().toString().padStart(2, '0');
+		const seconds = currentDate.getSeconds().toString().padStart(2, '0');
+		const time = `${hours}:${minutes}:${seconds}`;
+		return `${month}/${day}/${year} ${time}`;
+	}
 
-	public async handleUserDisconnect(userSocket: Socket): Promise<void> {
-		const user = User.at(userSocket);
-		if (!user) {
-			return;
+	public async handleSendMessage(userSocket: Socket, data: any, server: Server): Promise<Message | null> {
+		const channel = await this.channelService.findOneId(data.destination);
+		if (!channel) {
+			throw new NotFoundException('channel not found');
 		}
-		User.delete(userSocket);
-	}
-
-	public handleCreateUser(userSocket: Socket, name: string): IUser {
-		const user = User.new(userSocket, name);
-		console.log("User.list(): ", User.list());
-		return user.IUser();
-	}
-
-	public handleCreateChannel(userSocket: Socket, newChannel: any, server: Server) {
-		const channel = Channel.new(newChannel);
-		if (channel) {
-			channel.addUser(User.at(userSocket) as User);
-			channel.addAdmin(User.at(userSocket) as User);
+		const client = Client.at(userSocket);
+		if (!client) {
+			throw new NotFoundException('user not found');
 		}
-		User.at(userSocket)?.userChannels.add(channel);
-		console.log("Channel.list(): ", Channel.list());
-		server.emit('update');
-		return channel.IChannel();
+		const message = await this.messageService.create(data.content, this._timestamp_mmddyy(), client.id, data.destination);
+		this.channelService.newMessage(channel.id, message);
+		server.to(channel.room).emit('update');
+		return message;
 	}
 
-	public handleGetUserChannels(userSocket: Socket): IChannel[] {
-		const userChannels = User.at(userSocket)?.userChannels;
-		if (!userChannels) {
-			return [];
+	//public handleInviteUser(userSocket: Socket, data: any, server: Server) {
+	//	const channel: Channel | null = Channel.at(data.currentChannelId);
+	//	const user: User | null = User.at(data.ChanneSettingslInputValue);
+	//	if (!user)
+	//		return { data: null };
+	//	if (channel) {
+	//		channel.addUser(user);
+	//		console.log("Channel.list(): ", Channel.list());
+	//		server.emit('update');
+	//	}
+	//	return (user?.IUser());
+	//}
+
+	//public handleKickUser(userSocket: Socket, data: any, server: Server) {
+	//	const channel: Channel | null = Channel.at(data.currentChannelId);
+	//	const user: User | null = User.at(data.ChanneSettingslInputValue);
+	//	if (!user)
+	//		return { data: null };
+	//	if (channel) {
+	//		channel.removeUser(user);
+	//		console.log("Channel.list(): ", Channel.list());
+	//		server.emit('update');
+	//	}
+	//	return (user?.IUser());
+	//}
+
+	public async handleLeaveChannel(userSocket: Socket, id: number, server: Server) {
+		const channel = await this.channelService.findOneId(id);
+		if (!channel) {
+			throw new NotFoundException('channel not found');
 		}
-		const channels: IChannel[] = [];
-		userChannels.forEach((channel: Channel) => {
-			channels.push(channel.IChannel());
-		});
-		return channels;
-	}
-
-	public handleCreateMessage(userSocket: Socket, data: any, server: Server): IMessage {
-		const message = Message.new(userSocket, data)
-		Channel.at(message.destination)?.pushMessageToChannel(message);
-		server.emit('update');
-		return message.IMessage();
-	}
-
-	public handleInviteUser(userSocket: Socket, data: any, server: Server) {
-		const channel: Channel | null = Channel.at(data.currentChannelId);
-		const user: User | null = User.at(data.ChanneSettingslInputValue);
-		if (!user)
-			return {data: null};
-		if (channel){
-			channel.addUser(user);
-			console.log("Channel.list(): ", Channel.list());
-			server.emit('update');
+		const client = Client.at(userSocket);
+		if (!client) {
+			throw new NotFoundException('user not found');
 		}
-		return (user?.IUser());
+		this.channelService.removeUser(channel.id, client.id);
+		server.to(channel.room).emit('update');
+		return channel;
 	}
-	
-	public handleKickUser(userSocket: Socket, data: any, server: Server) {
-		const channel: Channel | null = Channel.at(data.currentChannelId);
-		const user: User | null = User.at(data.ChanneSettingslInputValue);
-		if (!user)
-			return {data: null};
-		if (channel){
-			channel.removeUser(user);
-			console.log("Channel.list(): ", Channel.list());
-			server.emit('update');
+
+	public async handleJoinChannel(userSocket: Socket, id: number, password: string, server: Server) {
+		const channel = await this.channelService.findOneId(id);
+		if (!channel) {
+			throw new NotFoundException('channel not found');
 		}
-		return (user?.IUser());
-	}
-
-	public handleLeaveChannel(userSocket: Socket, data: any, server: Server) {
-		const channel: Channel | null = Channel.at(data.currentChannelId);
-		const user: User | null = User.at(userSocket);
-		if (channel && user)
-		{
-			channel.removeUser(user);
-			server.emit('update');
+		const client = Client.at(userSocket);
+		if (!client) {
+			throw new NotFoundException('user not found');
 		}
-	}
+		this.channelService.addUser(channel.id, client.id, password);
+		server.to(channel.room).emit('update');
+		return channel;
 
-	public handleJoinChannel(userSocket:Socket, data: any, server: Server) {
-		const channel: Channel | null = Channel.at(data.currentChannelId);
-		const user: User | null = User.at(userSocket);
-		if (!user)
-			return ;
-		if (channel){
-			if (channel.password !== undefined && channel.password !== crypto.createHash('sha256').update(data.channelPasswordInputValue).digest('hex'))
-			{
-				return {data: null};
-			}
-			channel.addUser(user);
-			console.log("Channel.list(): ", Channel.list());
-			server.emit('update');
-		}
-		return channel?.IChannel();
-	}
-
-	public handleGetAllChannels(): IChannel[] {
-		return this.channels();
-	}
-
-	public users(): IUser[] {
-		return User.list();
-	}
-
-	public channels(): IChannel[] {
-		return Channel.list();
+		//if (channel.password !== undefined && channel.password !== crypto.createHash('sha256').update(data.channelPasswordInputValue).digest('hex')) {
+		//	return { data: null };
+		//}
+		//channel.addUser(user);
+		//console.log("Channel.list(): ", Channel.list());
+		//server.emit('update');
+		//return channel?.IChannel();
 	}
 }

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 
 const NotFound = () => {
+  document.title = "ft_transcendence - Not found";
 	return (
     <div className="NotFound" style={{textAlign: 'center'}}>
       <h1>404</h1>

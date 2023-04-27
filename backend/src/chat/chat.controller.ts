@@ -1,18 +1,7 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller } from '@nestjs/common';
 import { ChatService } from './chat.service';
-import { IUser } from './User/User';
-import { IChannel } from './Channel/Channel';
+import { ChannelService } from './channel/channel.service';
+import { UsersService } from 'src/users/users.service';
 
 @Controller('chat')
-export class ChatController {
-	constructor(private readonly chatService:ChatService) { }
-	@Get('users')
-	getUsers(): IUser[] {
-	  return this.chatService.users();
-	}
-  
-	@Get('rooms')
-	getRooms(): IChannel[] {
-	  return this.chatService.channels();
-	}
-}
+export class ChatController { }

@@ -16,6 +16,10 @@
   margin: 20px;
 }
 
+.Pong {
+  text-align: center;
+}
+
 .game-area {
   user-select: none;
   display: flex;

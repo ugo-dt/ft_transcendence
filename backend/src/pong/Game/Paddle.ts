@@ -21,6 +21,7 @@ export default class Paddle {
 
   constructor(
     x: number,
+    color: string
   ) {
     this._x = x;
     this._y = 200;
@@ -28,7 +29,7 @@ export default class Paddle {
     this._defaultY = 200;
     this._width = 15;
     this._height = 80;
-    this._color = "white";
+    this._color = color;
     this._velocityY = 0;
   }
 

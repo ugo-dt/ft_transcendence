@@ -3,27 +3,23 @@ import { IUser } from "../types/IUser";
 import { IChannel } from "../types/IChannel";
 import { CHAT_BROWSE_CHANNEL_ICON, CHAT_GEAR_ICON } from "../constants";
 import { Socket } from "socket.io-client";
+import CreateChannelForm from "./CreateChannelForm";
+import './style/Channels.css'
 
 interface ChannelsProps {
 	currentChannelId: number;
 	channels: IChannel[];
 	setCurrentChannelId: (channelId: number) => void;
-	socket: Socket;
-	update: () => void;
-	openForm: (arg0: string) => void;
 }
 
-function Channels({ currentChannelId, channels, setCurrentChannelId, socket, update, openForm }: ChannelsProps) {
-
-	const [isCreateChannelFormVisible, setIsCreateChannelFormVisible] = useState(false);
+function Channels({ currentChannelId, channels, setCurrentChannelId }: ChannelsProps) {
+	const [isCreateChannelFormOpen, setIsCreateChannelFormOpen] = useState(false);
 	const [ChanneSettingslInputValue, setChanneSettingslInputValue] = useState("");
 
-	const closeForm = (formToClose: string) => {
-		const form = document.getElementById(formToClose);
-		if (form) {
-			form.style.visibility = "hidden";
-		}
-	};
+	function onClickCreateChannel() { 
+		setIsCreateChannelFormOpen(!isCreateChannelFormOpen); 
+		console.log("channels: ", channels);
+	}
 
 	function handleInputChange(e: React.ChangeEvent<HTMLInputElement>): void {
 		setChanneSettingslInputValue(e.target.value);
@@ -36,27 +32,11 @@ function Channels({ currentChannelId, channels, setCurrentChannelId, socket, upd
 	}
 
 	function inviteUser(): void {
-		socket.emit('invite-user', { ChanneSettingslInputValue, currentChannelId }, (response: { data: IUser | null }) => {
-			closeForm("form_channel_settings");
-			setChanneSettingslInputValue("");
-			if (response.data === null)
-				alert('User not found.')
-			else {
-				console.log(response);
-			}
-		})
+
 	}
 
 	function kickUser(): void {
-		socket.emit('kick-user', { ChanneSettingslInputValue, currentChannelId }, (response: { data: IUser | null }) => {
-			closeForm("form_channel_settings");
-			setChanneSettingslInputValue("");
-			if (response.data === null)
-				alert('User not found.')
-			else {
-				console.log(response);
-			}
-		})
+
 	}
 
 	function muteUser(): void {
@@ -65,7 +45,7 @@ function Channels({ currentChannelId, channels, setCurrentChannelId, socket, upd
 
 	function banUser(): void {
 		console.log('banUser');
-		
+
 	}
 
 	function unBanUser(): void {
@@ -74,18 +54,15 @@ function Channels({ currentChannelId, channels, setCurrentChannelId, socket, upd
 
 	function adminUser(): void {
 		console.log('adminUser');
-		
+
 	}
 
 	function changePassword(): void {
 		console.log('changePassword');
-		
+
 	}
 
 	function leaveChannel(): void {
-		socket.emit('leave-channel', { currentChannelId });
-		closeForm("form_channel_settings");
-		setChanneSettingslInputValue("");
 		const currentIndex = channels.findIndex((channel) => channel.id === currentChannelId);
 		const previousChannel = channels[currentIndex - 1];
 		const subsequentChannel = channels[currentIndex + 1];
@@ -96,13 +73,12 @@ function Channels({ currentChannelId, channels, setCurrentChannelId, socket, upd
 			newChannelId = subsequentChannel.id;
 		}
 		setCurrentChannelId(newChannelId);
-		update();
 	}
 
 	return (
-		<div id="div_channels">
-			<div id="div_top_module">
-				<button
+		<div className="div-channels">
+			<div className="div-top-module">
+				{/*<button
 					style={{ pointerEvents: currentChannelId === -1 ? 'none' : 'all' }} // and hidden if not admin
 					id="button_channel_settings"
 					onClick={() => openForm("form_channel_settings")}
@@ -111,9 +87,9 @@ function Channels({ currentChannelId, channels, setCurrentChannelId, socket, upd
 						id="img_channel_settings"
 						src={CHAT_GEAR_ICON}
 						draggable="false" />
-				</button>
-				<h2 id="h2_channel_title">Channels</h2>
-				<button
+				</button>*/}
+				<h1>Channels</h1>
+				{/*<button
 					id="button_channel_browse"
 					onClick={() => openForm("div_main_browse_channels")}
 				>
@@ -121,9 +97,9 @@ function Channels({ currentChannelId, channels, setCurrentChannelId, socket, upd
 						id="img_channel_settings"
 						src={CHAT_BROWSE_CHANNEL_ICON}
 						draggable="false" />
-				</button>
+				</button>*/}
 			</div>
-			<form id="form_channel_settings">
+			{/*<form id="form_channel_settings">
 				<button
 					type="button"
 					className="button_close_create_channel"
@@ -178,8 +154,8 @@ function Channels({ currentChannelId, channels, setCurrentChannelId, socket, upd
 					>Leave the channel
 					</button>
 				</div>
-			</form>
-			{channels && channels.map((channel, index) => (
+			</form>*/}
+			{/*{channels && channels.map((channel, index) => (
 				<div key={channel.id} id='div_buttons'>
 					<button
 						onClick={() => setCurrentChannelId(channel.id)}
@@ -188,11 +164,17 @@ function Channels({ currentChannelId, channels, setCurrentChannelId, socket, upd
 						{channel.name}
 					</button>
 				</div>
-			))}
+			))}*/}
 			<button
-				id="button_open_create"
-				onClick={() => openForm("form_create_channel")}
+				className="btn-channels"
+			>
+				TEST
+			</button>
+			<button
+				className="btn-channels-create"
+				onClick={() => onClickCreateChannel()}
 			>+</button>
+			{isCreateChannelFormOpen && <CreateChannelForm onClose={onClickCreateChannel} />}
 		</div>
 
 	);

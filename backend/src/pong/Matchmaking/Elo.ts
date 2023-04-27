@@ -1,5 +1,6 @@
 namespace Elo {
   export const kFactor: number = 32;
+  export const defaultRating = 1200;
 
   function _getExpectedScore(playerRating: number, opponentRating: number): number {
     const exponent = (opponentRating - playerRating) / 400;

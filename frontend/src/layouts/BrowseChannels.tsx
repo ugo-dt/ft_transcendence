@@ -24,7 +24,7 @@ function BrowseChannels({ setChannelPasswordInputValue, currentChannelId, allCha
 
 	function joinChannel(currentChannelId: number) {
 		const selectedChannel = allChannels.find(channel => channel.id === currentChannelId);
-		if (!selectedChannel?.users.includes(user.name)) {
+		if (!selectedChannel?.users.includes(user.username)) {
 			if (selectedChannel?.password === undefined)
 			{
 				socket.emit('join-channel', { currentChannelId, }, (response: IChannel) => {

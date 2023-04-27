@@ -15,7 +15,7 @@ const GameModes = () => {
     navigate("/play/computer");
   }
   function playFriend() {
-    alert("Unimplemented.");
+    navigate("/friends");
   }
 
   return (

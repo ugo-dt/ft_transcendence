@@ -104,7 +104,7 @@
 	background-color: #6b6b6b;
 }
 
-#div_channels {
+/*#div_channels {
 	display: flex;
 	flex-direction: column;
 	margin-top: 3%;
@@ -120,7 +120,7 @@
 	background-color: rgb(28, 28, 28);
 	border-radius: 10px;
 	box-shadow: 0 10px 10px rgba(0, 0, 0, .12);
-}
+}*/
 
 #button_user_profile {
 	cursor: pointer;
@@ -323,12 +323,12 @@
 	max-width: 96%;
 }
 
-#div_main_user_list {
+/*#div_main_user_list {
 	width: 250px;
 	background-color: rgb(43, 43, 43);
 	margin-left: 2%;
 	height: 600px;
-}
+}*/
 
 #h2_user_list {
 	text-align: center;
@@ -441,4 +441,57 @@
 
 #debug_date {
 	color: white;
+}
+
+/*------------------------------------------------*/
+
+
+/*---CHAT---*/
+.chat {
+	display: flex;
+	flex-direction: row;
+}
+
+/*---ChatWindow---*/
+.div-chat-window {
+	width: 50%;
+}
+
+/*---UserTagAndChannels---*/
+#div-user-tag-and-channels {
+	width: 20%;
+}
+
+#div-user {
+	font-size: large;
+	color: white;
+	border-style: none;
+	background-color: #1d1d1d;
+	overflow-x: hidden;
+	border-radius: 15px;
+}
+
+#img-avatar {
+	border-radius: 20px;
+	margin-top: 1%;
+}
+
+/*---Channels---*/
+#div-channels {
+	display: flex;
+	flex-direction: column;
+	overflow-y: scroll;
+	width: 100%;
+	height: 450px;
+	padding-top: 20px;
+	background-color: #292929;
+	border-radius: 15px;
+	box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, .5);
+}
+
+/*---UserList---*/
+#div-main-user-list {
+	width: 20%;
+	background-color: rgb(43, 43, 43);
+	height: 600px;
 }

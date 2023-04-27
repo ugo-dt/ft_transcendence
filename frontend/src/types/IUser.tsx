@@ -1,8 +1,13 @@
 import { IChannel } from "./IChannel";
 
 export interface IUser {
-	id: number;
-	name: string;
-	avatar: string | null;
-	userChannels: any[];
+  id: number,
+  id42: number,
+  username: string,
+  avatar: string,
+  status: string,
+  rating: number,
+  paddleColor: string,
+  friends: string[],
+  userChannels: any[],
 }

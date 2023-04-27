@@ -1,44 +1,38 @@
 import "./style/PlayOnline.css"
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
-import { Context } from "../context";
+import { Context, QueueContext } from "../context";
 
 function PlayOnline() {
-  const socket = useContext(Context).pongSocketRef.current;
+  document.title = "ft_transcendence - Game";
+  const socket = useContext(Context).pongSocket.current;
+  const { queueTimer, setQueueTimer, inQueue, setInQueue, queueInterval } = useContext(QueueContext);
   const navigate = useNavigate();
-  const inQueueRef = useRef(false);
-  const [inQueue, setInQueue] = useState(false);
   const inGame = useRef(false);
-  const [timer, setTimer] = useState({ minutes: 0, seconds: 0 });
-  const intervalRef = useRef<number>();
 
-  const { minutes, seconds } = timer;
+  const { minutes, seconds } = queueTimer;
   const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
   function handleClick() {
-    if (!socket.connected) {
+    if (!socket || !socket.connected) {
       return ;
     }
-    if (!inQueueRef.current) {
+    if (!inQueue) {      
       socket.emit('join-queue');
-      inQueueRef.current = true;
       setInQueue(true);
-      intervalRef.current = window.setInterval(() => {
-        setTimer((prevTimer) => {
+      queueInterval.current = window.setInterval(() => {
+        setQueueTimer((prevTimer) => {
           const seconds = prevTimer.seconds + 1;
           const minutes = prevTimer.minutes + Math.floor(seconds / 60);
           return { minutes, seconds: seconds % 60 };
         });
       }, 1000);
-      console.log('Joined queue.');
     }
     else {
-      socket.emit('leave-queue');
-      inQueueRef.current = false;
       setInQueue(false);
-      window.clearInterval(intervalRef.current);
-      setTimer({minutes: 0, seconds: 0});
-      console.log('Left queue.');
+      window.clearInterval(queueInterval.current);
+      queueInterval.current = undefined;
+      setQueueTimer({minutes: 0, seconds: 0});
     }
   }
 
@@ -46,23 +40,24 @@ function PlayOnline() {
     if (inGame.current) {
       return ;
     }
+    setInQueue(false);
+    window.clearInterval(queueInterval.current);
+    queueInterval.current = undefined;
+    setQueueTimer({minutes: 0, seconds: 0});
     inGame.current = true;
-    console.log("Started game", data);
     const gameUrl = "/game/" + data.roomId;
     navigate(gameUrl, { state: { roomId: data.roomId, role: 'player' } });
   }
 
-  function onEndGame() {
-    console.log("game ends");
-  }
-
   useEffect(() => {
+    if (!socket) {
+      navigate("/home");
+      return ;
+    }
     socket.on('startGame', (data: any) => { onStartGame(data) });
-    socket.on('endGame', onEndGame);
 
     return () => {
       socket.off('startGame', (data: any) => { onStartGame(data) });
-      socket.off('endGame', onEndGame);
     };
   }, []);
 
@@ -76,16 +71,9 @@ function PlayOnline() {
             padding: '10px',
             margin: '10px'
           }}
-        >
-          <h3>
-            {
-              (inQueue && 'Cancel') || 'Find a match'
-            }
-          </h3>
+        > <h3>{(inQueue && 'Cancel') || 'Find a match'}</h3>
         </button>
-        <h4 id="timer">
-          {inQueue ? formattedTime : ''}
-        </h4>
+        <h4 id="timer">{inQueue ? formattedTime : ''}</h4>
       </div>
     </div>
   );

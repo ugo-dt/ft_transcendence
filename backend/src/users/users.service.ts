@@ -1,39 +1,202 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
+import { ChannelService } from 'src/chat/channel/channel.service';
+import Client from 'src/Client/Client';
+
+const STATUS_ONLINE = 'online';
+const STATUS_IN_GAME = 'in game';
+const STATUS_OFFLINE = 'offline';
 
 @Injectable()
 export class UsersService {
-	constructor(@InjectRepository(User) private repo: Repository<User>) {}
+  private readonly logger: Logger;
+  constructor(@InjectRepository(User) private repo: Repository<User>, private channelService: ChannelService) {
+    this.logger = new Logger("UsersService");
+  }
 
-	create(accessToken: string, refreshToken: string, id42: number, username: string, avatar: string): Promise<User> {
-		const user = this.repo.create({accessToken, refreshToken, id42, username, avatar});
-		return this.repo.save(user);
-	}
+  public create(
+    accessToken: string,
+    refreshToken: string,
+    id42: number,
+    username: string,
+    avatar: string,
+    status: string,
+    rating: number,
+    paddleColor: string,
+    friends: string[],
+    blocked: string[],
+    userChannels: number[],
+  ): Promise<User> {
+    const user = this.repo.create({ accessToken, refreshToken, id42, username, avatar, status, rating, paddleColor, friends, blocked, userChannels });
+    return this.repo.save(user);
+  }
 
-	findOneId(id: number): Promise<User | null> {
-		return this.repo.findOneBy({id});
-	}
+  private async _user(id: number): Promise<User> {
+    const user = await this.repo.findOneBy({ id });
+    if (!user) {
+      throw new NotFoundException("user not found");
+    }
+    return (user);
+  }
 
-	findOneId42(id42: number): Promise<User | null> {
-		return this.repo.findOneBy({id42});
-	}
+  public findOneUsername(username: string): Promise<User | null> {
+    /** The ILike option allows matching of strings based on comparison with a pattern.
+     * The key word ILIKE can be used instead of LIKE to make the match case-insensitive
+     * according to the active locale. This is not in the SQL standard but is a PostgreSQL extension. */
+    return this.repo.findOneBy({ username: ILike(username) });
+  }
 
-	findAll(): Promise<User[]> {
-		return this.repo.find();
-	}
+  public findOneId(id: number): Promise<User | null> {
+    return this.repo.findOneBy({ id });
+  }
 
-	async update(id: number, attrs: Partial<User>): Promise<User> {
-		const user = await this.findOneId(id);
-		if (!user) throw new NotFoundException("user not found");
-		Object.assign(user, attrs);
-		return this.repo.save(user);
-	}
+  public findOneId42(id42: number): Promise<User | null> {
+    return this.repo.findOneBy({ id42 });
+  }
 
-	async remove(id: number): Promise<User> {
-		const user = await this.findOneId(id);
-		if (!user) throw new NotFoundException("user not found");
-		return this.repo.remove(user);
-	}
+  public findAll(): Promise<User[]> {
+    return this.repo.find();
+  }
+
+  public async rankings() {
+    const users = (await this.findAll()).sort((a, b) => (b.rating - a.rating));
+    return users.slice(0, 50);
+  }
+
+  public async addFriend(id: number, friendName: string): Promise<User> {
+    const user = await this.findOneId(id);
+    const friend = await this.findOneUsername(friendName);
+    if (!user || !friend) {
+      throw new NotFoundException("user not found");
+    }
+    if (!user.friends.includes(friendName)) {
+      user.friends.push(friendName);
+    }
+    return this.repo.save(user);
+  }
+
+  public async removeFriend(id: number, friendName: string): Promise<User> {
+    const user = await this.findOneId(id);
+    const friend = await this.findOneUsername(friendName);
+    if (!user || !friend) {
+      throw new NotFoundException("user not found");
+    }
+    const index = user.friends.findIndex(f => f === friendName);
+    if (index === -1) {
+      throw new NotFoundException("no such friend");
+    }
+    user.friends.splice(index, 1);
+    return this.repo.save(user);
+  }
+
+  public async blockUser(id: number, username: string): Promise<User> {
+    const user = await this.findOneId(id);
+    const userToBlock = await this.findOneUsername(username);
+    if (!user || !userToBlock) {
+      throw new NotFoundException("user not found");
+    }
+    if (!user.blocked.includes(username)) {
+      user.blocked.push(username);
+    }
+    return this.repo.save(user);
+  }
+
+  public async unblockUser(id: number, username: string): Promise<User> {
+    const user = await this.findOneId(id);
+    const userToUnblock = await this.findOneUsername(username);
+    if (!user || !userToUnblock) {
+      throw new NotFoundException("user not found");
+    }
+    const index = user.blocked.findIndex(f => f === username);
+    if (index === -1) {
+      throw new NotFoundException("user not found");
+    }
+    user.blocked.splice(index, 1);
+    return this.repo.save(user);
+  }
+
+  public async addChannel(userId: number, channelId: number) {
+    const user = await this.findOneId(userId);
+    if (!user) {
+      throw new NotFoundException("user not found");
+    }
+    const channel = await this.channelService.findOneId(channelId);
+    if (!channel) {
+      throw new NotFoundException("channel not found");
+    }
+	console.log("channel.id: ", channel.id);
+    if (!user.userChannels.includes(channel.id)) {
+      user.userChannels.push(channel.id);
+    }
+    const client = Client.at(userId);
+    if (client) {
+      client.addChannel(channel.id);
+    }
+    return this.repo.save(user);
+  }
+
+  public async removeChannel(userId: number, channelId: number) {
+    const user = await this.findOneId(userId);
+    if (!user) {
+      throw new NotFoundException("user not found");
+    }
+    const channel = await this.channelService.findOneId(channelId);
+    if (!channel) {
+      throw new NotFoundException("channel not found");
+    }
+    const index = user.userChannels.findIndex(c => c === channelId);
+    if (index === -1) {
+      throw new NotFoundException("user not found");
+    }
+    user.userChannels.splice(index, 1);
+    const client = Client.at(userId);
+    if (client) {
+      client.removeChannel(channelId);
+    }
+    return this.repo.save(user);
+  }
+
+  public async update(id: number, attrs: Partial<User>): Promise<User> {
+    const user = await this.findOneId(id);
+    if (!user) {
+      throw new NotFoundException("user not found");
+    }
+    Object.assign(user, attrs);
+    return this.repo.save(user);
+  }
+
+  public async remove(id: number): Promise<User> {
+    const user = await this.findOneId(id);
+    if (!user) {
+      throw new NotFoundException("user not found");
+    }
+    return this.repo.remove(user);
+  }
+
+  private async _isStatus(id: number, status: typeof STATUS_ONLINE | typeof STATUS_IN_GAME | typeof STATUS_OFFLINE): Promise<boolean> {
+    const user = await this.findOneId(id);
+    if (!user) {
+      throw new NotFoundException("user not found");
+    }
+    return (user.status === status);
+  }
+
+  public isOnline(id: number): Promise<boolean> { return this._isStatus(id, STATUS_ONLINE); }
+  public isInGame(id: number): Promise<boolean> { return this._isStatus(id, STATUS_IN_GAME); }
+  public isOffline(id: number): Promise<boolean> { return this._isStatus(id, STATUS_OFFLINE); }
+
+  public async getUsername(id: number) { return (await this._user(id)).username; }
+  public async getAvatar(id: number) { return (await this._user(id)).avatar; }
+  public async getRating(id: number) { return (await this._user(id)).rating; }
+  public async getPaddleColor(id: number) { return (await this._user(id)).paddleColor; }
+
+  public setUsername(id: number, username: string) { return this.update(id, { username: username }); }
+  public setAvatar(id: number, avatar: string) { return this.update(id, { avatar: avatar }); }
+  public setOnline(id: number) { return this.update(id, { status: STATUS_ONLINE }); }
+  public setInGame(id: number) { return this.update(id, { status: STATUS_IN_GAME }); }
+  public setOffline(id: number) { return this.update(id, { status: STATUS_OFFLINE }); }
+  public setRating(id: number, rating: number) { return this.update(id, { rating: rating }); }
+  public setPaddleColor(id: number, paddleColor: string) { return this.update(id, { paddleColor: paddleColor }); }
 }

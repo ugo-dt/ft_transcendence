@@ -1,0 +1,94 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #333;
+  padding: 10px;
+  padding-left: 80px;
+  padding-right: 80px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  color: #fff;
+}
+
+.modal-content {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+}
+
+.modal-title {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.modal-close {
+  position: absolute;
+  top: 1%;
+  right: 5%;
+  font-size: 24px;
+  color: #aaa;
+  cursor: pointer;
+  z-index: 998;
+}
+
+.modal-close:hover {
+  color: #666;
+}
+
+label {
+  font-weight: bold;
+}
+
+form {
+  padding-top: 10px;
+}
+
+.form-input-field {
+  margin-bottom: 5px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  padding: 1px;
+  font-size: 16px;
+}
+
+.form-submit-button {
+  background-color: #008cba;
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  padding: 10px;
+  margin-top: 5px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.form-submit-button:hover {
+  background-color: #006a8e;
+}
+
+.form-submit-button:disabled {
+  background-color: #555;
+  color: #777;
+}
+
+.form-submit-button:disabled:hover {
+  background-color: #555;
+  cursor: unset;
+}

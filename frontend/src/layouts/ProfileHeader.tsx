@@ -15,6 +15,10 @@ import EditAvatarForm from "./EditAvatarForm";
 import { useNavigate } from "react-router";
 import GameInvite from "./GameInvite";
 import "./style/ProfileHeader.css"
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
+import 'react-phone-number-input/style.css';
+import PhoneInput from 'react-phone-number-input';
+import { E164Number } from "libphonenumber-js/types";
 
 function PaddleColorBox({ profileColor, color }: { profileColor: string, color: string }) {
   const setUser = useContext(UserContext).setUser;
@@ -49,10 +53,19 @@ function ProfileHeader({ profile }: { profile: IUser }) {
   const [isAvatarFormOpen, setIsAvatarFormOpen] = useState(false);
   const [isUsernameFormOpen, setIsUsernameFormOpen] = useState(false);
   const [isChallengeOpen, setIsChallengeOpen] = useState(false);
+  const [open2fa, setOpen2fa] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState<E164Number | undefined>(undefined);
+
+  function handle2faOpen() {
+    setOpen2fa(true);
+  }
+
+  function handle2faClose() {
+    setOpen2fa(false);
+  }
 
   function onClickEditUsername() { setIsUsernameFormOpen(!isUsernameFormOpen); }
   function onClickEditAvatar() { setIsAvatarFormOpen(!isAvatarFormOpen); }
-  function onClick2FA() { console.log("2FA"); }
 
   function onClickAddFriend() {
     if (!user) {
@@ -133,10 +146,25 @@ function ProfileHeader({ profile }: { profile: IUser }) {
                     <EditIcon className="profile-header-actions-icon" /> Edit username
                   </div>
                   <div role="button" className="profile-header-actions-btn edit-profile-btn"
-                    onClick={onClick2FA}
+                    onClick={handle2faOpen}
                   >
                     <VpnKeyIcon className="profile-header-actions-icon" /> Enable 2FA
                   </div>
+                  <Dialog open={open2fa} onClose={handle2faClose}>
+                    <DialogTitle>Activate 2FA</DialogTitle>
+                    <DialogContent>
+                      <DialogContentText>
+                        To activate 2FA enter a valid phone number. You will then receive
+                        a SMS with a code you will have to confirm.
+                      </DialogContentText>
+                      <PhoneInput international countryCallingCodeEditable={false} defaultCountry="FR" value={phoneNumber} onChange={setPhoneNumber} />
+                      <Button variant="outlined" onClick={() => console.log(phoneNumber)}>Send SMS</Button>
+                    </DialogContent>
+                    <DialogActions>
+                      <Button onClick={handle2faClose}>Cancel</Button>
+                      <Button onClick={handle2faClose}>Confirm 2FA</Button>
+                    </DialogActions>
+                  </Dialog>
                 </section>
               </div>
             ) : (

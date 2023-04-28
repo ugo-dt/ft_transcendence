@@ -15,9 +15,9 @@ import EditAvatarForm from "./EditAvatarForm";
 import { useNavigate } from "react-router";
 import GameInvite from "./GameInvite";
 import "./style/ProfileHeader.css"
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Stack, TextField } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from "@mui/material";
 import 'react-phone-number-input/style.css';
-import PhoneInput from 'react-phone-number-input';
+import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
 import { E164Number } from "libphonenumber-js/types";
 import Grid from "@mui/material/Unstable_Grid2";
 import SendIcon from "@mui/icons-material/Send";
@@ -57,6 +57,8 @@ function ProfileHeader({ profile }: { profile: IUser }) {
   const [isChallengeOpen, setIsChallengeOpen] = useState(false);
   const [open2fa, setOpen2fa] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState<E164Number | undefined>(undefined);
+  const [isSendSMSButtonDisabled, setIsSendSMSButtonDisabled] = useState(false);
+  const [isConfirmButtonDisabled, setIsConfirmButtonDisabled] = useState(true);
 
   function handle2faOpen() {
     setOpen2fa(true);
@@ -90,6 +92,21 @@ function ProfileHeader({ profile }: { profile: IUser }) {
   function onClickChallenge() { setIsChallengeOpen(!isChallengeOpen); }
   function onClickMessage() { console.log("message"); }
   function onClickBlock() { console.log("block"); }
+
+  function onClickSendSMS() {
+    if (phoneNumber) { // avoid undefined syntax error on the line below
+      const str = phoneNumber.toString();
+      if (isValidPhoneNumber(str)) {
+        Request.generateOtp(str);
+        setIsSendSMSButtonDisabled(true);
+        setIsConfirmButtonDisabled(false);
+      }
+    }
+  }
+
+  function onClickConfirmSMS() {
+    Request.validateOtp('', '');
+  }
 
   useEffect(() => {
     if (user && profile && user.friends && user.friends.length > 0) {
@@ -164,16 +181,18 @@ function ProfileHeader({ profile }: { profile: IUser }) {
                           <PhoneInput international countryCallingCodeEditable={false} defaultCountry="FR" value={phoneNumber} onChange={setPhoneNumber} />
                         </Grid>
                         <Grid xs={4}>
-                          <Button variant="contained" endIcon={<SendIcon />} onClick={() => console.log(phoneNumber)}>Send SMS</Button>
+                          <Button variant="contained" endIcon={<SendIcon />} onClick={onClickSendSMS} disabled={isSendSMSButtonDisabled}>Send SMS</Button>
                         </Grid>
-                        <Grid xs={12} display="flex" justifyContent="center">
+                        <Grid xs={8} display="flex" justifyContent="center">
                           <TextField id="outlined-size-small" label="SMS Code" variant="outlined" size="small" />
+                        </Grid>
+                        <Grid xs={4}>
+                        <Button variant="contained" disabled={isConfirmButtonDisabled} onClick={onClickConfirmSMS}>Confirm code</Button>
                         </Grid>
                       </Grid>
                     </DialogContent>
                     <DialogActions>
-                      <Button onClick={handle2faClose}>Cancel</Button>
-                      <Button onClick={handle2faClose}>Confirm 2FA</Button>
+                      <Button onClick={handle2faClose}>Close</Button>
                     </DialogActions>
                   </Dialog>
                 </section>

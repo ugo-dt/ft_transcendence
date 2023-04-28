@@ -13,6 +13,8 @@ namespace __url_ {
   export const __sign_in_ = __auth_base_ + '/signin';
   export const __sign_out_ = __auth_base_ + '/signout';
   export const __refresh_token_ = __auth_base_ + '/refresh';
+  export const __generate_otp__ = __auth_base_ + '/genotp';
+  export const __validate_otp__ = __auth_base_ + '/valotp';
 
   // Users
   export const __users_me_ = __users_base_ + '/me';
@@ -124,6 +126,14 @@ class Request {
 
   public static async refreshToken(): Promise<any | null> {
     return await Request.__make_get_request_(__url_.__refresh_token_);
+  }
+
+  public static async generateOtp(phoneNumber: string): Promise<any | null> {
+    return await Request.__make_post_request_(__url_.__generate_otp__, {phoneNumber});
+  }
+
+  public static async validateOtp(phoneNumber: string, code: string): Promise<any | null> {
+    return await Request.__make_post_request_(__url_.__validate_otp__, {phoneNumber, code});
   }
 
   public static async me(): Promise<IUser | null> {

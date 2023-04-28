@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { ChangeEvent, useContext, useEffect, useState } from "react";
 import { IUser } from "../types";
 import { QueueContext, UserContext } from "../context";
 import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
@@ -15,7 +15,7 @@ import EditAvatarForm from "./EditAvatarForm";
 import { useNavigate } from "react-router";
 import GameInvite from "./GameInvite";
 import "./style/ProfileHeader.css"
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from "@mui/material";
+import { Alert, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from "@mui/material";
 import 'react-phone-number-input/style.css';
 import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
 import { E164Number } from "libphonenumber-js/types";
@@ -57,15 +57,22 @@ function ProfileHeader({ profile }: { profile: IUser }) {
   const [isChallengeOpen, setIsChallengeOpen] = useState(false);
   const [open2fa, setOpen2fa] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState<E164Number | undefined>(undefined);
+  const [otp, setOtp] = useState('');
   const [isSendSMSButtonDisabled, setIsSendSMSButtonDisabled] = useState(false);
   const [isConfirmButtonDisabled, setIsConfirmButtonDisabled] = useState(true);
+  const [otpMessageState, setOtpMessageState] = useState(0);
 
   function handle2faOpen() {
+    setOtpMessageState(0);
     setOpen2fa(true);
   }
 
   function handle2faClose() {
     setOpen2fa(false);
+    setIsSendSMSButtonDisabled(false);
+    setIsConfirmButtonDisabled(true);
+    setPhoneNumber(undefined);
+    setOtp('');
   }
 
   function onClickEditUsername() { setIsUsernameFormOpen(!isUsernameFormOpen); }
@@ -105,7 +112,21 @@ function ProfileHeader({ profile }: { profile: IUser }) {
   }
 
   function onClickConfirmSMS() {
-    Request.validateOtp('', '');
+    if (phoneNumber) { // avoid undefined syntax error on the line below
+      const res = Request.validateOtp(phoneNumber.toString(), otp);
+      if (res !== null) {
+        // set user 2fa to true with call to backend
+        // display success message
+        setOtpMessageState(1);
+      } else {
+        setOtpMessageState(2);
+      }
+    }
+    handle2faClose();
+  }
+
+  function onChangeSMSCode(event: ChangeEvent<HTMLInputElement>) {
+    setOtp(event.target.value);
   }
 
   useEffect(() => {
@@ -184,7 +205,7 @@ function ProfileHeader({ profile }: { profile: IUser }) {
                           <Button variant="contained" endIcon={<SendIcon />} onClick={onClickSendSMS} disabled={isSendSMSButtonDisabled}>Send SMS</Button>
                         </Grid>
                         <Grid xs={8} display="flex" justifyContent="center">
-                          <TextField id="outlined-size-small" label="SMS Code" variant="outlined" size="small" />
+                          <TextField id="outlined-size-small" label="SMS Code" variant="outlined" size="small" onChange={onChangeSMSCode} value={otp}/>
                         </Grid>
                         <Grid xs={4}>
                         <Button variant="contained" disabled={isConfirmButtonDisabled} onClick={onClickConfirmSMS}>Confirm code</Button>
@@ -196,6 +217,8 @@ function ProfileHeader({ profile }: { profile: IUser }) {
                     </DialogActions>
                   </Dialog>
                 </section>
+                {otpMessageState == 1 && <Alert severity="success">You have succesfully activated 2FA!</Alert>}
+                {otpMessageState == 2 && <Alert severity="error">You have entered a wrong code, retry.</Alert>}
               </div>
             ) : (
               <div className="profile-buttons-container">

@@ -15,10 +15,12 @@ import EditAvatarForm from "./EditAvatarForm";
 import { useNavigate } from "react-router";
 import GameInvite from "./GameInvite";
 import "./style/ProfileHeader.css"
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Stack, TextField } from "@mui/material";
 import 'react-phone-number-input/style.css';
 import PhoneInput from 'react-phone-number-input';
 import { E164Number } from "libphonenumber-js/types";
+import Grid from "@mui/material/Unstable_Grid2";
+import SendIcon from "@mui/icons-material/Send";
 
 function PaddleColorBox({ profileColor, color }: { profileColor: string, color: string }) {
   const setUser = useContext(UserContext).setUser;
@@ -157,8 +159,17 @@ function ProfileHeader({ profile }: { profile: IUser }) {
                         To activate 2FA enter a valid phone number. You will then receive
                         a SMS with a code you will have to confirm.
                       </DialogContentText>
-                      <PhoneInput international countryCallingCodeEditable={false} defaultCountry="FR" value={phoneNumber} onChange={setPhoneNumber} />
-                      <Button variant="outlined" onClick={() => console.log(phoneNumber)}>Send SMS</Button>
+                      <Grid container columnSpacing={2} rowSpacing={4}>
+                        <Grid xs={8}>
+                          <PhoneInput international countryCallingCodeEditable={false} defaultCountry="FR" value={phoneNumber} onChange={setPhoneNumber} />
+                        </Grid>
+                        <Grid xs={4}>
+                          <Button variant="contained" endIcon={<SendIcon />} onClick={() => console.log(phoneNumber)}>Send SMS</Button>
+                        </Grid>
+                        <Grid xs={12} display="flex" justifyContent="center">
+                          <TextField id="outlined-size-small" label="SMS Code" variant="outlined" size="small" />
+                        </Grid>
+                      </Grid>
                     </DialogContent>
                     <DialogActions>
                       <Button onClick={handle2faClose}>Cancel</Button>

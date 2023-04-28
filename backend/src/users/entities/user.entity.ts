@@ -32,9 +32,9 @@ export class User {
   @Column()
   paddleColor: string;
 
-  @Column("text", {array: true, nullable: true}) 
-  friends: string[];
+  @Column("int", {array: true, nullable: true}) 
+  friends: number[];
 
-  @Column("text", {array: true, nullable: true}) 
-  blocked: string[];
+  @Column("int", {array: true, nullable: true}) 
+  blocked: number[];
 }

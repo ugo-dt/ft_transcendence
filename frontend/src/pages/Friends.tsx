@@ -77,7 +77,7 @@ function InviteRow({ friendId: friendId }: { friendId: number }) {
   )
 }
 
-function FriendRow({ friendname }: { friendname: string }) {
+function FriendRow({ friendId }: { friendId: number }) {
   const navigate = useNavigate();
   const [friend, setFriend] = useState<IUser | null>(null);
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -88,7 +88,7 @@ function FriendRow({ friendname }: { friendname: string }) {
   }
 
   useEffect(() => {
-    Request.getProfile(friendname).then(res => {
+    Request.getProfileFromId(friendId).then(res => {
       if (res) {
         setFriend(res);
       }
@@ -128,7 +128,7 @@ function Friends() {
   const context = useContext(Context);
   const socket = useContext(Context).pongSocket;
   const user = useContext(UserContext).user;
-  const [friendList, setFriendList] = useState<string[]>([]);
+  const [friendList, setFriendList] = useState<number[]>([]);
   const [challengeList, setChallengeList] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
   const [friendInputValue, setFriendInputValue] = useState("");
@@ -243,8 +243,8 @@ function Friends() {
                       </tbody>
                       <tbody id="friends-table">
                         {
-                          friendList.map((friendname, index) => (
-                            <FriendRow key={index} friendname={friendname} />
+                          friendList.map((friendId, index) => (
+                            <FriendRow key={index} friendId={friendId} />
                           ))
                         }
                       </tbody>

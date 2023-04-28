@@ -23,6 +23,7 @@ namespace __url_ {
   export const __add_friend_ = __users_base_ + '/add-friend'
   export const __remove_friend_ = __users_base_ + '/remove-friend'
   export const __rankings_ = __users_base_ + '/get/rankings';
+  export const __user_ranking_ = __users_base_ + '/get/user-ranking';
   export const __edit_paddle_ = __users_base_ + '/edit/paddle-color';
 
   // Game
@@ -146,16 +147,20 @@ class Request {
     return this.__make_array_get_request_(__url_.__rankings_);
   }
 
+  public static async getUserRanking(id: number): Promise<number | null> {
+    return this.__make_get_request_(__url_.__user_ranking_ + '/' + id);
+  }
+
   public static async getRoomList(): Promise<IGameRoom[]> {
     return this.__make_array_get_request_(__url_.__rooms_);
   }
 
-  public static async addFriend(friendUsername: string) {
-    return await Request.__make_post_request_(__url_.__add_friend_, { friendUsername: friendUsername });
+  public static async addFriend(friendId: number) {
+    return await Request.__make_post_request_(__url_.__add_friend_, { friendId: friendId });
   }
 
-  public static async removeFriend(friendUsername: string) {
-    return await Request.__make_delete_request_(__url_.__remove_friend_ + '/' + friendUsername);
+  public static async removeFriend(friendId: number) {
+    return await Request.__make_delete_request_(__url_.__remove_friend_ + '/' + friendId);
   }
 
   public static async isValidUsername(newUsername: string): Promise<string | null> {

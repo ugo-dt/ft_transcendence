@@ -63,7 +63,6 @@ export class AuthService {
         'online',
         Elo.defaultRating,
         'white',
-        [],
       );
     }
     return user;

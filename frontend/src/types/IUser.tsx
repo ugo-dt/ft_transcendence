@@ -6,5 +6,6 @@ export interface IUser {
   status: string,
   rating: number,
   paddleColor: string,
-  friends: string[],
+  friends: number[],
+  blocked: number[],
 }

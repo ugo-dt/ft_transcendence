@@ -42,6 +42,11 @@ export class UsersController {
   getRankings(): Promise<User[]> {
     return this.usersService.rankings();
   }
+  
+  @Get('get/user-ranking/:id')
+  gerUserRanking(@Param("id") id: number): Promise<number> {
+    return this.usersService.userRanking(id);
+  }
 
   @Post("edit/username")
   editUsername(@CurrentUser() user: User, @MessageBody() data: { username: string }): Promise<User> {
@@ -73,13 +78,13 @@ export class UsersController {
   }
 
   @Post("add-friend/")
-  async addFriend(@CurrentUser() user: User, @MessageBody() data: { friendUsername: string }) {
-    return await this.usersService.addFriend(user.id, data.friendUsername);
+  async addFriend(@CurrentUser() user: User, @MessageBody() data: { friendId: number }) {
+    return await this.usersService.addFriend(user.id, data.friendId);
   }
 
-  @Delete("remove-friend/:friendUsername")
-  async removeFriend(@CurrentUser() user: User, @Param("friendUsername") friendUsername: string) {
-    return await this.usersService.removeFriend(user.id, friendUsername);
+  @Delete("remove-friend/:friendId")
+  async removeFriend(@CurrentUser() user: User, @Param("friendId") friendId: number) {
+    return await this.usersService.removeFriend(user.id, friendId);
   }
 
   @Get('edit/is-valid-username')

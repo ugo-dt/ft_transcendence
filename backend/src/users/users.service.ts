@@ -23,11 +23,19 @@ export class UsersService {
     status: string,
     rating: number,
     paddleColor: string,
-    friends: string[],
-    blocked: string[],
-    userChannels: number[],
   ): Promise<User> {
-    const user = this.repo.create({ accessToken, refreshToken, id42, username, avatar, status, rating, paddleColor, friends, blocked, userChannels });
+    const user = this.repo.create({
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+      id42: id42,
+      username: username,
+      avatar: avatar,
+      status: status,
+      rating: rating,
+      paddleColor,
+      friends: [],
+      blocked: [],
+    });
     return this.repo.save(user);
   }
 
@@ -63,25 +71,34 @@ export class UsersService {
     return users.slice(0, 50);
   }
 
-  public async addFriend(id: number, friendName: string): Promise<User> {
+  public async userRanking(userId: number) {
+    const rankings = (await this.findAll()).sort((a, b) => (b.rating - a.rating));
+    const index = rankings.findIndex(user => user.id === Number(userId));
+    if (index === -1) {
+      throw new NotFoundException("user not found");
+    }
+    return index + 1;
+  }
+
+  public async addFriend(id: number, friendId: number): Promise<User> {
     const user = await this.findOneId(id);
-    const friend = await this.findOneUsername(friendName);
+    const friend = await this.findOneId(friendId);
     if (!user || !friend) {
       throw new NotFoundException("user not found");
     }
-    if (!user.friends.includes(friendName)) {
-      user.friends.push(friendName);
+    if (!user.friends.includes(friendId)) {
+      user.friends.push(friendId);
     }
     return this.repo.save(user);
   }
 
-  public async removeFriend(id: number, friendName: string): Promise<User> {
+  public async removeFriend(id: number, friendId: number): Promise<User> {
     const user = await this.findOneId(id);
-    const friend = await this.findOneUsername(friendName);
+    const friend = await this.findOneId(friendId);
     if (!user || !friend) {
       throw new NotFoundException("user not found");
     }
-    const index = user.friends.findIndex(f => f === friendName);
+    const index = user.friends.findIndex(f => f === friend.id);
     if (index === -1) {
       throw new NotFoundException("no such friend");
     }
@@ -89,25 +106,25 @@ export class UsersService {
     return this.repo.save(user);
   }
 
-  public async blockUser(id: number, username: string): Promise<User> {
+  public async blockUser(id: number, blockedId: number): Promise<User> {
     const user = await this.findOneId(id);
-    const userToBlock = await this.findOneUsername(username);
+    const userToBlock = await this.findOneId(blockedId);
     if (!user || !userToBlock) {
       throw new NotFoundException("user not found");
     }
-    if (!user.blocked.includes(username)) {
-      user.blocked.push(username);
+    if (!user.blocked.includes(blockedId)) {
+      user.blocked.push(blockedId);
     }
     return this.repo.save(user);
   }
 
-  public async unblockUser(id: number, username: string): Promise<User> {
+  public async unblockUser(id: number, blockedId: number): Promise<User> {
     const user = await this.findOneId(id);
-    const userToUnblock = await this.findOneUsername(username);
+    const userToUnblock = await this.findOneId(blockedId);
     if (!user || !userToUnblock) {
       throw new NotFoundException("user not found");
     }
-    const index = user.blocked.findIndex(f => f === username);
+    const index = user.blocked.findIndex(f => f === Number(blockedId));
     if (index === -1) {
       throw new NotFoundException("user not found");
     }

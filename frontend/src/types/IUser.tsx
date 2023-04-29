@@ -8,6 +8,7 @@ export interface IUser {
   status: string,
   rating: number,
   paddleColor: string,
-  friends: string[],
-  userChannels: any[],
+  friends: number[],
+  blocked: number[],
+  userChannels: IChannel[],
 }

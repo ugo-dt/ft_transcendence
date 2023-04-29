@@ -27,6 +27,7 @@ namespace __url_ {
   export const __block_user_ = __users_base_ + '/block-user'
   export const __unblock_user_ = __users_base_ + '/unblock-user'
   export const __rankings_ = __users_base_ + '/get/rankings';
+  export const __user_ranking_ = __users_base_ + '/get/user-ranking';
   export const __edit_paddle_ = __users_base_ + '/edit/paddle-color';
 
   // Game
@@ -155,16 +156,20 @@ class Request {
     return Request.__make_array_get_request_(__url_.__rankings_);
   }
 
+  public static async getUserRanking(id: number): Promise<number | null> {
+    return this.__make_get_request_(__url_.__user_ranking_ + '/' + id);
+  }
+
   public static async getRoomList(): Promise<IGameRoom[]> {
     return Request.__make_array_get_request_(__url_.__rooms_);
   }
 
-  public static async addFriend(friendUsername: string) {
-    return await Request.__make_post_request_(__url_.__add_friend_, { friendUsername: friendUsername });
+  public static async addFriend(friendId: number) {
+    return await Request.__make_post_request_(__url_.__add_friend_, { friendId: friendId });
   }
 
-  public static async removeFriend(friendUsername: string) {
-    return await Request.__make_delete_request_(__url_.__remove_friend_ + '/' + friendUsername);
+  public static async removeFriend(friendId: number) {
+    return await Request.__make_delete_request_(__url_.__remove_friend_ + '/' + friendId);
   }
 
   public static async isValidUsername(newUsername: string): Promise<string | null> {
@@ -196,12 +201,12 @@ class Request {
   }
 
   /*---Chat---*/
-  public static async blockUser(username: string) {
-    return await Request.__make_post_request_(__url_.__add_friend_, { friendUsername: username });
+  public static async blockUser(id: number) {
+    return await Request.__make_post_request_(__url_.__add_friend_, { id: id });
   }
 
-  public static async unblockUser(username: string) {
-    return await Request.__make_delete_request_(__url_.__remove_friend_ + '/' + username);
+  public static async unblockUser(id: number) {
+    return await Request.__make_delete_request_(__url_.__remove_friend_ + '/' + id);
   }
 
   public static async createChannel(name: string, password: string, isDm: boolean): Promise<IUser | null> {

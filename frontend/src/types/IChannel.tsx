@@ -8,6 +8,7 @@ export interface IChannel {
 	isDm: boolean;
 	users: number[];
 	admins: number[];
-	banned: number[];
 	muted: number[];
+	banned: number[];
+	room: string;
 }

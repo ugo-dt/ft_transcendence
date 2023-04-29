@@ -19,7 +19,7 @@ function Profile() {
   const url = window.location.pathname;
   const profileName = url.split("/").pop()!;
   document.title = "ft_transcendence - " + profileName;
-  
+
   useEffect(() => {
     if (url === '/profile' || url === '/profile/') {
       return navigate("/home");
@@ -35,7 +35,7 @@ function Profile() {
         };
 		console.log("profileData: ", profileData);
         setProfile(profileData);
-        Request.getUserMatchHistory(profileData.id).then((historyData) => {;        
+        Request.getUserMatchHistory(profileData.id).then((historyData) => {
           setHistoryList(historyData);
         });
       }).catch(err => {

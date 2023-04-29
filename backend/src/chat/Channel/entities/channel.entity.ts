@@ -21,7 +21,7 @@ export class Channel {
   users: number[];
 
   @Column("int", {array: true, nullable: true}) 
-  admin: number[];
+  admins: number[];
   
   @Column("int", {array: true, nullable: true}) 
   muted: number[];

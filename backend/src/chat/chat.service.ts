@@ -69,32 +69,32 @@ export class ChatService {
 	//	return (user?.IUser());
 	//}
 
-	public async handleLeaveChannel(userSocket: Socket, id: number, server: Server) {
-		const channel = await this.channelService.findOneId(id);
-		if (!channel) {
-			throw new NotFoundException('channel not found');
-		}
-		const client = Client.at(userSocket);
-		if (!client) {
-			throw new NotFoundException('user not found');
-		}
-		this.channelService.removeUser(channel.id, client.id);
-		server.to(channel.room).emit('update');
-		return channel;
-	}
+	//public async handleLeaveChannel(userSocket: Socket, id: number, server: Server) {
+	//	const channel = await this.channelService.findOneId(id);
+	//	if (!channel) {
+	//		throw new NotFoundException('channel not found');
+	//	}
+	//	const client = Client.at(userSocket);
+	//	if (!client) {
+	//		throw new NotFoundException('user not found');
+	//	}
+	//	this.channelService.removeUser(channel.id, client.id);
+	//	server.to(channel.room).emit('update');
+	//	return channel;
+	//}
 
-	public async handleJoinChannel(userSocket: Socket, id: number, password: string, server: Server) {
-		const channel = await this.channelService.findOneId(id);
-		if (!channel) {
-			throw new NotFoundException('channel not found');
-		}
-		const client = Client.at(userSocket);
-		if (!client) {
-			throw new NotFoundException('user not found');
-		}
-		this.channelService.addUser(channel.id, client.id, password);
-		server.to(channel.room).emit('update');
-		return channel;
+	//public async handleJoinChannel(userSocket: Socket, id: number, password: string, server: Server) {
+	//	const channel = await this.channelService.findOneId(id);
+	//	if (!channel) {
+	//		throw new NotFoundException('channel not found');
+	//	}
+	//	const client = Client.at(userSocket);
+	//	if (!client) {
+	//		throw new NotFoundException('user not found');
+	//	}
+	//	this.channelService.addUser(channel.id, client.id, password);
+	//	server.to(channel.room).emit('update');
+	//	return channel;
 
 		//if (channel.password !== undefined && channel.password !== crypto.createHash('sha256').update(data.channelPasswordInputValue).digest('hex')) {
 		//	return { data: null };
@@ -103,5 +103,5 @@ export class ChatService {
 		//console.log("Channel.list(): ", Channel.list());
 		//server.emit('update');
 		//return channel?.IChannel();
-	}
+	//}
 }

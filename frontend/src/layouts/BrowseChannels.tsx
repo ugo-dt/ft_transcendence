@@ -1,92 +1,59 @@
-import { Socket } from "socket.io-client";
-import { CHAT_LOCK_ICON } from "../constants";
-import { IChannel } from "../types/IChannel";
-import { IUser } from "../types/IUser";
+import { useEffect, useRef, useState } from "react";
+import { CHAT_REFRESH_ICON } from "../constants";
+import { IChannel } from "../types";
+import './style/BrowseChannels.css'
+import JoinPasswordForm from "./JoinPasswordForm";
+import Request from "../components/Request";
 
 interface BrowseChannelsProps {
-	currentChannelId: number;
+	onClose?: () => void,
 	allChannels: IChannel[];
-	closeForm: (arg0: string) => void;
-	openForm: (arg0: string) => void;
-	socket: Socket;
-	setCurrentChannelId: (channelId: number) => void;
-	user: IUser;
-	channelPasswordInputValue: string;
-	setChannelPasswordInputValue: (arg0: string) => void;
+	refresh: () => void;
 }
 
-function BrowseChannels({ setChannelPasswordInputValue, currentChannelId, allChannels, closeForm, socket, setCurrentChannelId, openForm, user, channelPasswordInputValue }: BrowseChannelsProps) {
-	const channelsToDisplay = allChannels.filter(channel => !channel.isDm);
+function BrowseChannels({ onClose, allChannels, refresh }: BrowseChannelsProps) {
+	const [isJoinPasswordOpen, setIsJoinPasswordOpen] = useState(false);
 
-	function handleInputChange(e: React.ChangeEvent<HTMLInputElement>): void {
-		setChannelPasswordInputValue(e.target.value);
-	}
+	function onClickJoinPassword() { setIsJoinPasswordOpen(!isJoinPasswordOpen); }
 
-	function joinChannel(currentChannelId: number) {
-		const selectedChannel = allChannels.find(channel => channel.id === currentChannelId);
-		if (!selectedChannel?.users.includes(user.username)) {
-			if (selectedChannel?.password === undefined)
-			{
-				socket.emit('join-channel', { currentChannelId, }, (response: IChannel) => {
-					if (response.password === undefined) {
-						setCurrentChannelId(response.id);
-						closeForm("div_main_browse_channels");
-					}
-				});
-			}
-			else
-			{
-				openForm("form_channel_password");
-				console.log('lol');
-				socket.emit('join-channel', { currentChannelId, channelPasswordInputValue }, (response: IChannel) => {
-					if (response.password === undefined) {
-						setCurrentChannelId(response.id);
-					}
-				});
-				closeForm("div_main_browse_channels");
-				setChannelPasswordInputValue("");
-			}
+	function joinChannel(channel: IChannel) {
+		if (!channel) {
+			return ;
+		}
+		console.log("allChannels: ", allChannels);
+
+		if (channel.password != null && channel.password.length) {
+			console.log(channel.password);
+			setIsJoinPasswordOpen(true);
+		}
+		else {
+			Request.joinChannel(channel.id).then((res) => {
+				// handle response
+			});
 		}
 	}
 
 	return (
-		<div id="div_main_browse_channels">
-			<form id="form_channel_password"
-			>
-					<button type="button" className="button_close_create_channel" onClick={() => closeForm("form_channel_password")}>
-						✕
-					</button>
-					<label id="label_create_channel" htmlFor="text">
-						<b>Channel Password</b>
-					</label>
-					<input
-						className="input_create_channel"
-						type="text"
-						placeholder="Enter a password..."
-						name="name"
-						value={channelPasswordInputValue}
-						onChange={(e) => handleInputChange(e)}
-					/>
-				</form>
-			<button
-				type="button"
-				className="button_close_create_channel"
-				onClick={() => closeForm("div_main_browse_channels")}>
-				✕
+		<div className="browse-channels">
+			<h1>Browse Channels</h1>
+			<button className="btn-browse-refresh" onClick={refresh}>
+				<img
+					className="img-btn-refresh"
+					src={CHAT_REFRESH_ICON}
+					alt="fesse" />
 			</button>
-			<h2 id="h2_browse_channels">Browse channels</h2>
-			<div id="div_browse_channels">
-				{channelsToDisplay.map(channel => (
-					<div key={channel.id} className={currentChannelId === channel.id ? "selected" : ""}>
-						<button
-							id="button_browse_channels"
-							onClick={() => joinChannel(channel.id)}>{channel.name}</button>
-						{channel.password !== undefined && (
-							<img id="img_lock" src={CHAT_LOCK_ICON} draggable="false" />
-						)}
-					</div>
-				))}
+			<div className="modal-close" role="button" onClick={onClose}>&times;</div>
+			<div className="browse-channels-list">
+				{allChannels.map((channel, index) => (
+					<button
+						key={index}
+						className='btn-browse-channels'
+						onClick={() => joinChannel(channel)}
+					>
+						{channel.name} &#x1F464; {channel.users.length} {channel.password ? '\u{1F512}' : ''}
+					</button>))}
 			</div>
+			{isJoinPasswordOpen && <JoinPasswordForm onClose={onClickJoinPassword} />}
 		</div>
 	);
 }

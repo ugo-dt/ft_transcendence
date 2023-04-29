@@ -69,17 +69,19 @@
 //	);
 //};
 
-import { useEffect, useState } from "react";
-import { IUser } from "../types/IUser";
+import { useContext, useState } from "react";
 import Request from "../components/Request";
 import Form, { FormText } from "../components/Form";
-import { IChannel } from "../types/IChannel";
+import { Context } from "../context";
+import { useNavigate } from "react-router";
 
 interface CreateChannelFormProps {
 	onClose?: () => void,
 }
 
 function CreateChannelForm({ onClose }: CreateChannelFormProps) {
+	const { setCurrentChannelId } = useContext(Context);
+	const navigate = useNavigate();
 	const [channelNameValue, setChannelNameValue] = useState("");
 	const [channelPasswordValue, setChannelPasswordValue] = useState("");
 	const [isValid, setIsValid] = useState(false);
@@ -118,6 +120,7 @@ function CreateChannelForm({ onClose }: CreateChannelFormProps) {
 		{
 			value: channelPasswordValue,
 			label: 'Password',
+			type: 'password',
 			placeholder: 'Channel Password',
 			isPwd: true,
 			onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -127,18 +130,17 @@ function CreateChannelForm({ onClose }: CreateChannelFormProps) {
 		},
 	];
 
-	async function submitChannelName(event: React.FormEvent<HTMLFormElement>) {
+	async function submitChannel(event: React.FormEvent<HTMLFormElement>) {
 		event.preventDefault();
-		console.log(channelNameValue);
-		
 		Request.createChannel(channelNameValue, channelPasswordValue, false).then((res) => {
 			console.log("res: ", res);
-			if (res) {
-				setChannelNameValue("");
-				setChannelPasswordValue("");
-				window.location.reload();
-			}
-
+			if (!res)
+				return;
+			setCurrentChannelId(res.id);
+			navigate("/messages", { state: {id: res.id}});
+			window.location.reload();
+			setChannelNameValue("");
+			setChannelPasswordValue("");
 		}).catch(err => {
 			console.log(err);
 		});
@@ -149,7 +151,7 @@ function CreateChannelForm({ onClose }: CreateChannelFormProps) {
 			<Form
 				values={formValues}
 				title="Create a new channel"
-				onSubmit={submitChannelName}
+				onSubmit={submitChannel}
 				onClose={onClose}
 			/>
 		</div>

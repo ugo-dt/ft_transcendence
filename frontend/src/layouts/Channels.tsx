@@ -1,25 +1,31 @@
 import { useEffect, useState } from "react";
 import { IUser } from "../types/IUser";
 import { IChannel } from "../types/IChannel";
-import { CHAT_BROWSE_CHANNEL_ICON, CHAT_GEAR_ICON } from "../constants";
-import { Socket } from "socket.io-client";
+import { CHAT_BROWSE_CHANNEL_ICON, CHAT_GEAR_ICON, CHAT_LEAVE_CHANNEL_ICON } from "../constants";
 import CreateChannelForm from "./CreateChannelForm";
+import ChannelNewPasswordForm from "./ChannelNewPasswordForm";
 import './style/Channels.css'
+import Request from "../components/Request";
+import BrowseChannels from "./BrowseChannels";
 
 interface ChannelsProps {
+	user: IUser;
 	currentChannelId: number;
 	channels: IChannel[];
+	setChannels: (arg0: IChannel[]) => void;
 	setCurrentChannelId: (channelId: number) => void;
 }
 
-function Channels({ currentChannelId, channels, setCurrentChannelId }: ChannelsProps) {
+function Channels({ user, currentChannelId, channels, setChannels, setCurrentChannelId }: ChannelsProps) {
 	const [isCreateChannelFormOpen, setIsCreateChannelFormOpen] = useState(false);
+	const [isChannelNewPasswordFormOpen, setIsChannelNewPasswordFormOpen] = useState(false);
+	const [isBrowseChannelsOpen, setIsBrowseChannelsOpen] = useState(false);
 	const [ChanneSettingslInputValue, setChanneSettingslInputValue] = useState("");
+	const [allChannels, setAllChannels] = useState<IChannel[]>([]);
 
-	function onClickCreateChannel() { 
-		setIsCreateChannelFormOpen(!isCreateChannelFormOpen); 
-		console.log("channels: ", channels);
-	}
+	function onClickCreateChannel() { setIsCreateChannelFormOpen(!isCreateChannelFormOpen); }
+	function onClickChannelSettings() { setIsChannelNewPasswordFormOpen(!isChannelNewPasswordFormOpen); }
+	function onClickBrowseChannels() { setIsBrowseChannelsOpen(!isBrowseChannelsOpen); }
 
 	function handleInputChange(e: React.ChangeEvent<HTMLInputElement>): void {
 		setChanneSettingslInputValue(e.target.value);
@@ -59,125 +65,106 @@ function Channels({ currentChannelId, channels, setCurrentChannelId }: ChannelsP
 
 	function changePassword(): void {
 		console.log('changePassword');
-
 	}
 
-	function leaveChannel(): void {
-		const currentIndex = channels.findIndex((channel) => channel.id === currentChannelId);
-		const previousChannel = channels[currentIndex - 1];
-		const subsequentChannel = channels[currentIndex + 1];
-		let newChannelId = -1;
-		if (previousChannel) {
-			newChannelId = previousChannel.id;
-		} else if (subsequentChannel) {
-			newChannelId = subsequentChannel.id;
+	function leaveChannel(id: number): void {
+		if (currentChannelId !== -1) {
+			Request.leaveChannel(id).then(() => {
+				Request.getUserChannels().then((res) => {
+					if (res)
+						setChannels(res);
+				});
+			});
+			const currentIndex = channels.findIndex((channel) => channel.id === currentChannelId);
+			const previousChannel = channels[currentIndex - 1];
+			const subsequentChannel = channels[currentIndex + 1];
+			let newChannelId = -1;
+			if (previousChannel) {
+				newChannelId = previousChannel.id;
+			} else if (subsequentChannel) {
+				newChannelId = subsequentChannel.id;
+			}
+			setCurrentChannelId(newChannelId);
 		}
-		setCurrentChannelId(newChannelId);
 	}
+
+	async function refresh() {
+		console.log('refresh');
+		Request.getAllChannels().then((res) => {
+			if (res)
+				setAllChannels(res);
+		});
+	}
+
+	function browseChannels() {
+		setIsBrowseChannelsOpen(!isBrowseChannelsOpen);
+		refresh();
+	}
+
+	useEffect(() => {
+		console.log("currentChannelId: ", currentChannelId);
+	}, [currentChannelId]);
 
 	return (
-		<div className="div-channels">
-			<div className="div-top-module">
-				{/*<button
-					style={{ pointerEvents: currentChannelId === -1 ? 'none' : 'all' }} // and hidden if not admin
-					id="button_channel_settings"
-					onClick={() => openForm("form_channel_settings")}
-				>
-					<img
-						id="img_channel_settings"
-						src={CHAT_GEAR_ICON}
-						draggable="false" />
-				</button>*/}
+		<>
+			<div className="div-channels">
 				<h1>Channels</h1>
-				{/*<button
-					id="button_channel_browse"
-					onClick={() => openForm("div_main_browse_channels")}
-				>
+				<div className="div-channels-list">
+					{channels && channels.map((channel, index) => (
+						<button
+							className={channel.id === currentChannelId ? 'btn-channels-current' : 'btn-channels'}
+							onClick={() => setCurrentChannelId(channel.id)}
+							key={index}>
+							{channel.name}
+						</button>
+					))}
+					<button
+						className="btn-channels-create"
+						onClick={() => onClickCreateChannel()}
+					>+</button>
+				</div>
+				<div
+					className="user-tag">
 					<img
-						id="img_channel_settings"
-						src={CHAT_BROWSE_CHANNEL_ICON}
-						draggable="false" />
-				</button>*/}
+						className="user-avatar"
+						src={user.avatar} />
+					<b><p
+						className="p-username"
+					>{user.username}</p></b>
+				</div>
+				<div className="div-btns">
+					<button
+						disabled={currentChannelId === -1}
+						className="btn-channels-settings"
+						onClick={onClickChannelSettings}
+					>
+						<img
+							className="btn-channels-settings-img"
+							src={CHAT_GEAR_ICON} />
+					</button>
+					<button
+						className="btn-channels-settings"
+						onClick={browseChannels}
+					>
+						<img
+							className="btn-channels-settings-img"
+							src={CHAT_BROWSE_CHANNEL_ICON} />
+					</button>
+					<button
+						className="btn-channels-settings"
+						onClick={() => leaveChannel(currentChannelId)}
+					>
+						<img
+							className="btn-channels-settings-img"
+							src={CHAT_LEAVE_CHANNEL_ICON} />
+					</button>
+				</div>
 			</div>
-			{/*<form id="form_channel_settings">
-				<button
-					type="button"
-					className="button_close_create_channel"
-					onClick={() => closeForm("form_channel_settings")}>
-					✕
-				</button>
-				<h3 id="h3_channel_settings_title">Channel Settings</h3>
-				<input
-					id="input_channel_settings"
-					type="text"
-					placeholder="Enter Username"
-					value={ChanneSettingslInputValue}
-					onKeyDown={handleKeyDown}
-					onChange={(e) => handleInputChange(e)}
-				/>
-				<div>
-					<button
-						className="button_channel_settings"
-						type="button"
-						onClick={inviteUser}
-					>invite</button>
-					<button
-						className="button_channel_settings"
-						type="button"
-						onClick={banUser}
-					>ban</button>
-					<button
-						className="button_channel_settings"
-						type="button"
-						onClick={kickUser}
-					>kick</button>
-					<button
-						className="button_channel_settings"
-						type="button"
-						onClick={muteUser}
-					>mute</button>
-					<button
-						className="button_channel_settings"
-						type="button"
-						onClick={adminUser}
-					>admin</button>
-					<button
-						className="button_channel_settings"
-						type="button"
-						onClick={changePassword}
-					>Set a new password
-					</button>
-					<button
-						className="button_channel_settings"
-						type="button"
-						onClick={leaveChannel}
-					>Leave the channel
-					</button>
-				</div>
-			</form>*/}
-			{/*{channels && channels.map((channel, index) => (
-				<div key={channel.id} id='div_buttons'>
-					<button
-						onClick={() => setCurrentChannelId(channel.id)}
-						id={channel.id === currentChannelId ? "button_channel_current" : "button_channel"}
-						key={index}>
-						{channel.name}
-					</button>
-				</div>
-			))}*/}
-			<button
-				className="btn-channels"
-			>
-				TEST
-			</button>
-			<button
-				className="btn-channels-create"
-				onClick={() => onClickCreateChannel()}
-			>+</button>
 			{isCreateChannelFormOpen && <CreateChannelForm onClose={onClickCreateChannel} />}
-		</div>
-
-	);
+			{isChannelNewPasswordFormOpen && <ChannelNewPasswordForm onClose={onClickChannelSettings} currentChannelId={currentChannelId} />}
+			{isBrowseChannelsOpen && <BrowseChannels onClose={onClickBrowseChannels} allChannels={allChannels} refresh={refresh}/>}
+		</>
+	); 
 }
 
 export default Channels

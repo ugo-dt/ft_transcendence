@@ -1,16 +1,20 @@
 .div-channels {
-	background-color: var(--profile-header-info-background-color);
+	margin-left: 1%;
+	margin-right: 2%;
+	width: 20%;
+}
+
+.div-channels-list {
+	background-color: rgb(31, 31, 31);
 	border-radius: 10px;
-	border-width: 1px;
 	box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, .5);
 	display: flex;
 	flex-direction: column;
-	margin-left: 1%;
-	margin-top: 8%;
 	overflow-y: scroll;
+	margin-top: 2%;
+	margin-bottom: 5%;
 	padding-top: 20px;
 	height: 450px;
-	width: 250px;
 }
 
 .h2-channel-title {
@@ -19,9 +23,8 @@
 	text-align: center;
 }
 
-
-.btn-channels, .btn-channels-create {
-	background-color: rgb(86, 88, 91);
+.btn-channels, .btn-channels-create, .btn-channels-current, .btn-channels-settings {
+	background-color: rgb(55, 57, 59);
 	border-radius: 10px;
 	border-style: none;
 	box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, .5);
@@ -29,13 +32,70 @@
 	cursor: pointer;
 	font-size: large;
 	font-weight: bolder;
-	margin-top: 5%;
+	margin-top: 1%;
+	margin-bottom: 4%;
 	margin-left: auto;
 	margin-right: auto;
 	padding: 15px;
-	width: 60%;
+	width: 50%;
+	transition: .2s ease-in-out;
+}
+
+.btn-channels-current {
+	background-color: rgb(83, 85, 89);
+}
+
+.btn-channels-disabled {
+	background-color: rgb(83, 85, 89);
+}
+
+.btn-channels-settings {
+	margin-top: 2%;
+	width: 73px;
+	height: 50px;
+}
+
+.btn-channels-settings-img {
+	width: 20px;
+	height: 20px;
+}
+
+.btn-channels:hover, .btn-channels-create:hover, .btn-channels-current:hover, .btn-channels-settings:hover {
+	background-color:  rgb(83, 85, 89);
 }
 
 .btn-channels-create {
 	font-size: x-large;
+}
+
+.user-tag {
+	background-color: rgb(31, 31, 31);
+	border-radius: 10px;
+	box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, .5);
+	display: flex;
+	flex-direction: row;
+	padding: 4%;
+	align-items: center;
+	margin-top: 5%;
+	margin-bottom: 2%;
+	width: 100%;
+	overflow-x: scroll;
+}
+
+.user-avatar {
+	width: 40px;
+	height: 40px;
+	border-radius: 25px;
+	margin-right: 8%;
+}
+
+.p-username {
+	font-size: x-large;
+}
+
+.div-btns {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	width: 100%;
 }

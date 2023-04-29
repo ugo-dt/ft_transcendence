@@ -82,7 +82,7 @@ function ProfileHeader({ profile }: { profile: IUser }) {
         setIsFriend(true);
       }
     }
-  }, [context,]);
+  }, [context]);
 
   return (
     <div className="profile-header-container">

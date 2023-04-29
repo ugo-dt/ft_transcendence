@@ -1,4 +1,4 @@
-import { ClassSerializerInterceptor, Controller, Delete, Get, Logger, Param, Post, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { ClassSerializerInterceptor, Controller, Delete, Get, Param, Post, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { User } from './entities/user.entity';
@@ -6,16 +6,14 @@ import { CurrentUserInterceptor } from './interceptors/current-user.interceptor'
 import { MessageBody } from '@nestjs/websockets';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { createWriteStream } from 'fs';
+import { EnvService } from 'src/config/env.service';
 import { ChannelService } from 'src/chat/channel/channel.service';
 import { Channel } from 'src/chat/channel/entities/channel.entity';
 
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor, CurrentUserInterceptor)
 export class UsersController {
-  private readonly logger: Logger;
-  constructor(private usersService: UsersService, private channelService: ChannelService) {
-    this.logger = new Logger("UsersController");
-  }
+  constructor(private usersService: UsersService, private envService: EnvService, private channelService: ChannelService) { }
 
   @Get("me")
   getMyInfo(@CurrentUser() user: User): User {
@@ -57,13 +55,18 @@ export class UsersController {
   @Post("edit/avatar")
   @UseInterceptors(FileInterceptor('image'))
   async editAvatar(@CurrentUser() user: User, @UploadedFile() file: Express.Multer.File): Promise<User> {
-    const dirname = 'public/user';
+    const dirname = this.envService.get('AVATARS_DIR');
     const filename = user.id + '.' + Date.now() + '.' + file.mimetype.split("/").pop();
     const fullpath = dirname + '/' + filename;
     const writeStream = createWriteStream(fullpath);
     writeStream.write(file.buffer);
     writeStream.end();
-    return this.usersService.setAvatar(user.id, `http://192.168.1.136:3000/${fullpath}`);
+    return this.usersService.setAvatar(user.id, `${this.envService.get('BACKEND_HOST')}/${fullpath}`);
+  }
+  
+  @Delete("edit/avatar")
+  async deleteAvatar(@CurrentUser() user: User): Promise<User> {
+    return this.usersService.setAvatar(user.id, this.envService.get('DEFAULT_AVATAR'));
   }
 
   @Post("edit/paddle-color")
@@ -86,7 +89,7 @@ export class UsersController {
 	return await this.usersService.blockUser(user.id, data.username);
   }
 
-  @Delete("unblock-friend/:username")
+  @Delete("unblock/:username")
   async unblockUser(@CurrentUser() user: User, @Param("username") username: string) {
     return await this.usersService.unblockUser(user.id, username);
   }
@@ -108,18 +111,48 @@ export class UsersController {
 
   /*---Chat---*/
 
-  @Post('create-channel')
-	async createChannel(@CurrentUser() user: User, @MessageBody() data: { name: string, password: string, isDm: boolean}): Promise<Channel> {
-		return await this.channelService.create(data.name, data.password, data.isDm, user.id, this.usersService);
-	}
+  @Post('channels/create-channel')
+  async createChannel(@CurrentUser() user: User, @MessageBody() data: { name: string, password: string, isDm: boolean}): Promise<Channel> {
+		console.log('create-channel');
+	  return await this.channelService.create(data.name, data.password, data.isDm, user.id, this.usersService);
+  }
 
-	@Delete('delete-channel/:id')
-	async deleteChannel(@CurrentUser() user: User, @Param("id") id: number): Promise<Channel> {
-		return await this.channelService.delete(id, user.id, this.usersService);
-	}
+  @Delete('channels/delete-channel/:id')
+  async deleteChannel(@CurrentUser() user: User, @Param("id") id: number): Promise<Channel> {
+	  return await this.channelService.delete(id, user.id, this.usersService);
+  }
 
-	@Post('join-channel/:id')
-	async joinChannel(@CurrentUser() user: User, @Param("id") id: number, @MessageBody() password: string) {
-		return await this.channelService.addUser(id, user.id, password);
-	}
+  @Post('channels/join-channel/:id')
+  async joinChannel(@CurrentUser() user: User, @Param("id") id: number, @MessageBody() password: string) {
+	  return await this.channelService.addUser(id, user.id, password);
+  }
+
+  @Post('channels/leave-channel/:id')
+  async leaveChannel(@CurrentUser() user: User, @Param("id") id: number) {
+	console.log('leave-channel: ', id);
+	  return await this.channelService.removeUser(id, user.id, this.usersService);
+  }
+
+  @Get('channels/user-channels')
+  async getUserChannels(@CurrentUser() user: User): Promise<Channel[]> {
+	console.log('get-user-channels');
+	return await this.usersService.getUserChannels(user, this.channelService);
+  }
+
+  @Get('channels/channel-users/:id')
+  async getChannelUsers(@CurrentUser() user: User, @Param("id") id: number): Promise<User[]> {
+	console.log('get-channel-users');
+	return await this.channelService.getChannelUsers(id, this.usersService);
+  }
+
+  @Post('channels/edit-channel-password')
+  async editChannelPassword(@CurrentUser() user: User, @MessageBody() data: { channelId: number, newPassword: string }): Promise<Channel> {
+	console.log('editChannelPassword', data.newPassword);
+    return await this.channelService.editPassword(user.id, data.channelId, data.newPassword);
+  }
+
+  @Get('channels/all')
+  async getAllChannels(): Promise<Channel[]> {
+	return await this.channelService.findAll();
+  }
 }

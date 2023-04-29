@@ -1,7 +1,7 @@
+import "./style/ProfileHistory.css"
 import { useState } from "react";
 import { IGameRoom } from "../types";
 import { useNavigate } from "react-router";
-import "./style/ProfileHistory.css"
 
 function ProfileHistory({ history, profileId }: { history: IGameRoom[], profileId: number }) {
   const navigate = useNavigate();

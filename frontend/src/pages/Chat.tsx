@@ -1,42 +1,68 @@
 import { useContext, useEffect, useState } from "react";
-import { UserContext } from "../context";
-import { useNavigate } from "react-router";
+import { Context, UserContext } from "../context";
+import { useLocation, useNavigate } from "react-router";
 import { IChannel } from "../types/IChannel";
 import Request from "../components/Request";
 import Channels from "../layouts/Channels";
-
-
-/**
- * get all channels
- * 
- * 
- */
+import { IUser } from "../types";
+import ChatWindow from "../layouts/ChatWindow";
+import './style/Chat.css';
+import UserList from "../layouts/UserList";
 
 function Chat() {
+	const state = useLocation().state;
 	const navigate = useNavigate();
 	const user = useContext(UserContext).user;
 	const setUser = useContext(UserContext).setUser;
 	const [channels, setChannels] = useState<IChannel[]>([]);
-	const [currentChannelId, setCurrentChannelId] = useState<number>(-1);
+	const [channelUsers, setChannelUsers] = useState<IUser[]>([]);
+	const { currentChannelId, setCurrentChannelId } = useContext(Context);
 
 	useEffect(() => {
-		Request.me().then(res => {
-			if (res) {
+		if (!user) {
+			return;
+		}
+		console.log("state:", state);
+		if (state && state.id != undefined) {
+			setCurrentChannelId(state.id);
+			navigate("/messages", { state: {} });
+		}
+		Request.getUserChannels().then(res => {
+			if (res)
+				setChannels(res);
+			
+		});
+		Request.getProfile(user.username).then(res => {
+			if (res)
 				setUser(res);
-				setChannels(res.userChannels);
-			}
 		})
-		if (user)
-		console.log("user.userChannels: ", user.userChannels);
 	}, []);
 
+	useEffect(() => {
+		if (currentChannelId === -1)
+		{
+			setChannelUsers([]);
+		}
+		else
+		{
+			Request.getChannelUsers(currentChannelId).then((res) => {
+				if (res)
+				setChannelUsers(res);
+			});
+		}
+	}, [currentChannelId]);
+
 	return (
-		<div className="Chat">
+		<div className="chat">
 			<Channels
+				user={user as IUser}
 				currentChannelId={currentChannelId}
 				channels={channels}
+				setChannels={setChannels}
 				setCurrentChannelId={setCurrentChannelId}
 			/>
+			<ChatWindow />
+			<UserList channelUsers={channelUsers} />
 		</div>
 	);
 }

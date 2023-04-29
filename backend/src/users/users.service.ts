@@ -1,9 +1,10 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
-import { ChannelService } from 'src/chat/channel/channel.service';
 import Client from 'src/Client/Client';
+import { ChannelService } from 'src/chat/channel/channel.service';
+import { Channel } from 'src/chat/channel/entities/channel.entity';
 
 const STATUS_ONLINE = 'online';
 const STATUS_IN_GAME = 'in game';
@@ -11,10 +12,7 @@ const STATUS_OFFLINE = 'offline';
 
 @Injectable()
 export class UsersService {
-  private readonly logger: Logger;
-  constructor(@InjectRepository(User) private repo: Repository<User>, private channelService: ChannelService) {
-    this.logger = new Logger("UsersService");
-  }
+  constructor(@InjectRepository(User) private repo: Repository<User>) { }
 
   public create(
     accessToken: string,
@@ -122,17 +120,12 @@ export class UsersService {
     if (!user) {
       throw new NotFoundException("user not found");
     }
-    const channel = await this.channelService.findOneId(channelId);
-    if (!channel) {
-      throw new NotFoundException("channel not found");
-    }
-	console.log("channel.id: ", channel.id);
-    if (!user.userChannels.includes(channel.id)) {
-      user.userChannels.push(channel.id);
+    if (!user.userChannels.includes(channelId)) {
+      user.userChannels.push(channelId);
     }
     const client = Client.at(userId);
     if (client) {
-      client.addChannel(channel.id);
+      client.addChannel(channelId);
     }
     return this.repo.save(user);
   }
@@ -141,10 +134,6 @@ export class UsersService {
     const user = await this.findOneId(userId);
     if (!user) {
       throw new NotFoundException("user not found");
-    }
-    const channel = await this.channelService.findOneId(channelId);
-    if (!channel) {
-      throw new NotFoundException("channel not found");
     }
     const index = user.userChannels.findIndex(c => c === channelId);
     if (index === -1) {
@@ -191,12 +180,22 @@ export class UsersService {
   public async getAvatar(id: number) { return (await this._user(id)).avatar; }
   public async getRating(id: number) { return (await this._user(id)).rating; }
   public async getPaddleColor(id: number) { return (await this._user(id)).paddleColor; }
+  public async getUserChannels(user: User, channelService: ChannelService) {
+	const channels: Channel[] = [];
+	for (const id of user.userChannels.values()) {
+		const channel = await channelService.findOneId(id);
+		if (channel) {
+			channels.push(channel);
+		}
+	}
+	return channels;
+}
 
-  public setUsername(id: number, username: string) { return this.update(id, { username: username }); }
-  public setAvatar(id: number, avatar: string) { return this.update(id, { avatar: avatar }); }
-  public setOnline(id: number) { return this.update(id, { status: STATUS_ONLINE }); }
-  public setInGame(id: number) { return this.update(id, { status: STATUS_IN_GAME }); }
-  public setOffline(id: number) { return this.update(id, { status: STATUS_OFFLINE }); }
-  public setRating(id: number, rating: number) { return this.update(id, { rating: rating }); }
-  public setPaddleColor(id: number, paddleColor: string) { return this.update(id, { paddleColor: paddleColor }); }
+  public async setUsername(id: number, username: string) { return this.update(id, { username: username }); }
+  public async setAvatar(id: number, avatar: string) { return this.update(id, { avatar: avatar }); }
+  public async setOnline(id: number) { return this.update(id, { status: STATUS_ONLINE }); }
+  public async setInGame(id: number) { return this.update(id, { status: STATUS_IN_GAME }); }
+  public async setOffline(id: number) { return this.update(id, { status: STATUS_OFFLINE }); }
+  public async setRating(id: number, rating: number) { return this.update(id, { rating: rating }); }
+  public async setPaddleColor(id: number, paddleColor: string) { return this.update(id, { paddleColor: paddleColor }); }
 }

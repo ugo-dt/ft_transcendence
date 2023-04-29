@@ -1,9 +1,10 @@
-import { ForbiddenException, Injectable, Logger, MethodNotAllowedException, NotFoundException } from "@nestjs/common";
+import { ForbiddenException, Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { Channel } from "./entities/channel.entity";
 import { UsersService } from "src/users/users.service";
 import { Message } from "../message/entity/message.entity";
+import { User } from "src/users/entities/user.entity";
 
 @Injectable()
 export class ChannelService {
@@ -20,19 +21,17 @@ export class ChannelService {
 				isDm: isDm,
 				messages: [],
 				users: [userId],
-				admin: [userId],
+				admins: [userId],
 				muted: [],
 				banned: [],
 				room: '',
 			}
 		);
-		const user = await usersService.findOneId(userId);
-		if (!user)
-			throw new NotFoundException('user not found');
-		channel.room = 'channel-room-' + channel.id;
 		const promise = await this.repo.save(channel);
-		usersService.addChannel(user.id, channel.id);
+		channel.room = 'channel-room-' + channel.id;
 		this.logger.log(`Saved channel ${promise.id}`);
+		await usersService.addChannel(userId, channel.id);
+		console.log("channel: ", channel);
 		return promise;
 	}
 
@@ -41,11 +40,11 @@ export class ChannelService {
 		if (!channel) {
 			throw new NotFoundException('channel not found');
 		}
-		if (!channel.admin.includes(userId)) {
+		if (!channel.admins.includes(userId)) {
 			throw new ForbiddenException('forbidden');
 		}
 		for (const user of channel.users.values()) {
-			usersService.removeChannel(user, channel.id);
+			await usersService.removeChannel(user, channel.id);
 		}
 		return this.repo.remove(channel);
 	}
@@ -66,11 +65,12 @@ export class ChannelService {
 		if (channel.password.length && channel.password !== password) {
 			throw new ForbiddenException('wrong password');
 		}
-		channel.users.push(userId);
+		if (!channel.users.includes(userId))
+			channel.users.push(userId);
 		return this.repo.save(channel);
 	}
 
-	async removeUser(channelId: number, userId: number) {
+	async removeUser(channelId: number, userId: number, usersService: UsersService) {
 		const channel = await this.findOneId(channelId);
 		if (!channel) {
 			throw new NotFoundException('channel not found');
@@ -78,7 +78,17 @@ export class ChannelService {
 		const index = channel.users.indexOf(userId);
 		if (index > -1) {
 			channel.users.splice(index, 1);
+			if (channel.admins.includes(userId)) {
+				channel.admins.splice(index, 1);
+				if (channel.admins.length === 0 && channel.users.length > 0) {
+					const newAdmin = channel.users[0];
+					if (newAdmin) {
+						channel.admins.push(newAdmin);
+					}
+				}
+			}
 		}
+		await usersService.removeChannel(userId, channel.id);
 		return this.repo.save(channel);
 	}
 
@@ -100,6 +110,36 @@ export class ChannelService {
 		if (index > -1) {
 			channel.messages.splice(index, 1);
 		}
+		return this.repo.save(channel);
+	}
+
+	public async getChannelUsers(id: number, usersService: UsersService) {
+		const channel = await this.findOneId(id);
+		if (!channel) {
+			throw new NotFoundException('channel not found');
+		}
+		const users: User[] = [];
+		for (const userId of channel.users) {
+			const user = await usersService.findOneId(userId);
+			if (user) {
+				users.push(user);
+			}
+		}
+		return users;
+	}
+
+	public async editPassword(userId: number, channelId: number, newPassword: string) {
+		if (newPassword === undefined)
+			throw new NotFoundException('newPassword undefined');
+		const channel = await this.findOneId(channelId);
+		if (!channel) {
+			throw new NotFoundException('channel not found');
+		}
+		if (!channel.admins.includes(userId)) {
+			throw new ForbiddenException('forbidden');
+		}
+		channel.password = newPassword;
+		console.log("channel: ", channel);
 		return this.repo.save(channel);
 	}
 }

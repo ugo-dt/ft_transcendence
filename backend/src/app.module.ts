@@ -16,21 +16,22 @@ import { AppGateway } from './app.gateway';
 import { ChannelModule } from './chat/channel/channel.module';
 import { MessageModule } from './chat/message/message.module';
 import { ChatService } from './chat/chat.service';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: '../.env' }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
       serveRoot: '/public',
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'localhost',
-      port: 5455,
-      username: 'nestjs',
-      password:  'nestjspassword',
-      database: 'nestjs',
+      host: 'postgres',
+      port: 5432,
+      username: 'postgres',
+      password:  'postgres',
+      database: 'postgres',
       entities: [User, Room, Channel, Message],
       synchronize: true,
     }),
@@ -42,7 +43,7 @@ import { ChatService } from './chat/chat.service';
     RoomModule,
     AuthModule,
   ],
-  controllers: [],
+  controllers: [AppController],
   providers: [AppGateway, ChatService],
 })
 export class AppModule { }

@@ -1,24 +1,28 @@
 import "./style/Form.css"
 
 interface FormTypeInfo {
+  type?: string,
   label?: string,
   placeholder?: string,
   info?: string,
   isValid?: boolean,
   valid?: string,
   error?: string,
+  buttonText?: string,
   isPwd?: boolean | undefined,
 }
 
 interface FormBaseType<T> extends FormTypeInfo {
-  value: T | null,
-  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void,
+  value?: T | null,
+  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void,
+  onClick?: () => void;
 }
 
 export type FormText = FormBaseType<string>;
 export type FormFile = FormBaseType<File>;
+export type FormButton = FormBaseType<null>;
 
-type FormType = FormText | FormFile;
+export type FormType = FormText | FormFile | FormButton;
 
 export interface FormProps<T = FormType> {
   values: T[],
@@ -33,12 +37,6 @@ function Form<T extends FormType>({
   onSubmit,
   onClose,
 }: FormProps<T>) {
-  function _getValueType(value: T) {
-    if (typeof value.value === 'string') {
-      return 'text';
-    }
-    return 'file';
-  }
 
   return (
     <div className="Form modal">
@@ -52,18 +50,30 @@ function Form<T extends FormType>({
                 <label>{value.label}</label>
                 <h5 style={{ fontWeight: 'lighter' }}>{value.info}</h5>
                 <section>
-                  <input
+                  {
+                    value.type === 'button' ?
+                    <button
+                      type="button"
+                      className="form-button"
+                      onClick={value.onClick}
+                    > {value.buttonText}
+                    </button> :
+                    <input
                     className="form-input-field"
-                    type={value.isPwd ? "password" : _getValueType(value)}
+                    type={value.type}
                     placeholder={value.placeholder}
                     value={typeof value.value === 'string' ? value.value : undefined}
                     onChange={value.onChange}
-                  />
+                    />
+                  }
                 </section>
                 {
-                  value.isValid
-                  ? <h4 style={{ fontWeight: 'lighter', color: '#00e676' }}>{value.valid}&nbsp;</h4>
-                  : <h4 style={{ fontWeight: 'lighter', color: 'red' }}>{value.error}&nbsp;</h4>
+                  value.type === 'text' &&
+                  (
+                    value.isValid
+                    ? <h4 style={{ fontWeight: 'lighter', color: '#00e676' }}>{value.valid}&nbsp;</h4>
+                    : <h4 style={{ fontWeight: 'lighter', color: 'red' }}>{value.error}&nbsp;</h4>
+                  )
                 }
               </div>
             ))

@@ -2,17 +2,18 @@ import React from "react";
 import { useEffect, useRef, useState } from "react";
 import { IChannel } from "../types/IChannel";
 import { CHAT_DEFAULT_AVATAR } from "../constants";
-import messageSound from "../../assets/sound/messageSound.mp3"
+import messageSound from "../../assets/sound/messageSound.mp3";
+import './style/ChatWindow.css';
 
-interface ChatWindowProps {
-	handleSubmitNewMessage: (arg0: string) => void;
-	clearMessages: () => void;
-	clearChannels: () => void;
-	setMessageInputValue: (arg0: string) => void;
-	channels: any[];
-	currentChannelId: number;
-	messageInputValue: string;
-}
+//interface ChatWindowProps {
+//	//handleSubmitNewMessage: (arg0: string) => void;
+//	//clearMessages: () => void;
+//	//clearChannels: () => void;
+//	//setMessageInputValue: (arg0: string) => void;
+//	//channels: any[];
+//	//currentChannelId: number;
+//	//messageInputValue: string;
+//}
 
 //const ChatWindow = ({ channels,
 //	handleSubmitNewMessage,
@@ -108,41 +109,72 @@ interface ChatWindowProps {
 //	);
 //}
 
+interface ChatWindowProps {
+	currentChannelId: number;
+	channels: IChannel[];
+
+};
+
 function ChatWindow() {
+	const messagesEndRef = useRef<(null) | HTMLLIElement>(null);
+	const [messageInputValue, setMessageInputValue] = useState("");
+
+	function handleSubmitNewMessage(message: string) {
+		console.log("message: ", message);
+		setMessageInputValue("");
+	}
+
+	const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+		if (event.key === 'Enter') {
+			handleSubmitNewMessage(messageInputValue);
+		}
+	};
+
+	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const { name } = e.target;
+		if (name === "input bar") {
+			setMessageInputValue(e.target.value);
+		}
+	};
+
+	function scrollToBottom(): void {
+		if (messagesEndRef.current) {
+			messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+		}
+	}
+
 	return (
-		<div className="div-chat-window">
-			<h1 id="h1_main_title">Chat</h1>
-			<div id="div_messages_box">
+		<div className="div-chat">
+			<h1 className="h1-main-title">Chat</h1>
+			<div className="div-chat-window">
 				<ul>
 					{/*{channels && channels.map((channel: IChannel) => {
-						if (channel.id === currentChannelId) {
-							return channel.history.map((message: any, messageIndex: number) => (
-								<div id="div_message" key={messageIndex}>
-									<img id="img_avatar" src={CHAT_DEFAULT_AVATAR} alt="" width={40} height={40}/>
-									<li id={"li_messages"}>
-										<p><b>{message.sender} </b><small>{message.timestamp}</small></p>
-										{message.content}
-									</li>
-								</div>
+					if (channel.id === currentChannelId) {
+						return channel.history.map((message: any, messageIndex: number) => (
+							<div id="div_message" key={messageIndex}>
+							<img id="img_avatar" src={CHAT_DEFAULT_AVATAR} alt="" width={40} height={40}/>
+							<li id={"li_messages"}>
+							<p><b>{message.sender} </b><small>{message.timestamp}</small></p>
+							{message.content}
+							</li>
+							</div>
 							))
 						}
 					})}*/}
 					{/*<li ref={messagesEndRef} />*/}
 				</ul>
 			</div>
-			<div id="div_input_box">
-				<input
-					//style={{ pointerEvents: currentChannelId === -1 ? 'none' : 'all' }}
-					//ref={inputRef}
-					placeholder='Type a message...'
-					id="div_input_bar"
-					name="input_bar"
-					type="text"
-					//value={messageInputValue}
-					//onKeyDown={(e) => handleKeyDown(e)}
-					//onChange={(e) => handleInputChange(e)}
-				/>
-			</div>
+			<input
+				//style={{ pointerEvents: currentChannelId === -1 ? 'none' : 'all' }}
+				//ref={inputRef}
+				placeholder='Type a message...'
+				className="input-bar"
+				name="input bar"
+				type="text"
+				value={messageInputValue}
+				onKeyDown={(e) => handleKeyDown(e)}
+				onChange={(e) => handleInputChange(e)}
+			/>
 		</div>
 	)
 }

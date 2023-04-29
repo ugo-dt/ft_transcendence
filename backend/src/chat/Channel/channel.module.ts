@@ -10,7 +10,7 @@ import { UsersModule } from "src/users/users.module";
 	imports: [TypeOrmModule.forFeature([Channel])],
 	controllers: [ChannelController],
 	providers: [ChannelService],
-	exports: [ChannelService, ChannelModule],
+	exports: [ChannelService],
   })
   export class ChannelModule {}
   

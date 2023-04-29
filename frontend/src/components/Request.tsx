@@ -1,8 +1,10 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 import { IUser, IGameRoom } from "../types";
+import { IChannel } from "../types/IChannel";
 
 namespace __url_ {
-  export const __api_base_url_ = "http://192.168.1.136:3000/api";
+  export const __api_base_url_ = `${import.meta.env.VITE_BACKEND_HOST}/api`;
+  export const __app_base_ = '/app';
   export const __users_base_ = '/users';
   export const __game_base_ = '/pong';
   export const __chat_base_ = '/chat';
@@ -33,14 +35,19 @@ namespace __url_ {
 
   // Chat
   export const __all_channels_ = __channels_base_ + '/all';
-  export const __user_channels_ = __users_base_ + '/user-channels';
-  export const __create_channel_ = __users_base_ + '/create-channel';
+  export const __edit_channel_password_ = __users_base_ + '/channels/edit-channel-password';
+  export const __user_channels_ = __users_base_ + '/channels/user-channels';
+  export const __channel_users_ = __users_base_ + '/channels/channel-users';
+  export const __create_channel_ = __users_base_ + '/channels/create-channel';
+  export const __join_channel_ = __users_base_ + '/channels/join-channel';
+  export const __leave_channel_ = __users_base_ + '/channels/leave-channel';
 }
 
 class Request {
   private static __axios_: AxiosInstance;
+  private static controller = new AbortController();
 
-  // This functions runs directly after its creation and acts like a constructor
+  // This function runs directly after its creation and acts like a constructor
   private static __init__ = (() => {
     Request.__axios_ = axios.create({
       baseURL: __url_.__api_base_url_,
@@ -51,14 +58,14 @@ class Request {
       async (error) => {
         const originalReq = error.config;
         if (error.response.status === 403 && !originalReq._retry) {
-          console.log('request: error 403');
+          // console.log('request: error 403');
           originalReq._retry = true;
           const url = __url_.__refresh_token_;
           try {
             await axios.post(url);
             return axios(originalReq);
           } catch (newError) {
-            console.error('unable to refresh token');
+            // console.error('unable to refresh token');
             return Promise.reject(newError);
           }
         }
@@ -68,9 +75,12 @@ class Request {
   })();
 
   private static async __make_get_request_<T>(url: string): Promise<T | null> {
-    return await Request.__axios_.get(url).then(res => {
+    return await Request.__axios_.get(url, {signal: this.controller.signal}).then(res => {
       return res.data;
-    }).catch(() => {
+    }).catch(err => {
+      if (axios.isAxiosError(err) && err.code === "ERR_CANCELED") {
+        console.error("Request has been canceled!");
+      }
       return null;
     });
   }
@@ -83,7 +93,10 @@ class Request {
   private static async __make_post_request_<T>(url: string, data?: any, config?: AxiosRequestConfig<any> | undefined): Promise<T | null> {
     return await Request.__axios_.post(url, data, config).then(res => {
       return res.data;
-    }).catch(() => {
+    }).catch(err => {
+      if (axios.isAxiosError(err) && err.code === "ERR_CANCELED") {
+        console.error("Request has been canceled!");
+      }
       return null;
     });
   }
@@ -91,8 +104,22 @@ class Request {
   private static async __make_delete_request_<T>(url: string): Promise<T | null> {
     return await Request.__axios_.delete(url).then(res => {
       return res.data;
-    }).catch(() => {
+    }).catch(err => {
+      if (axios.isAxiosError(err) && err.code === "ERR_CANCELED") {
+        console.error("Request has been canceled!");
+      }
       return null;
+    });
+  }
+
+  public static async isServerAvailable(): Promise<boolean> {
+    return await Request.__axios_.head(__url_.__app_base_ + '/is-available').then(res => {
+      return res.status === 200;
+    }).catch(err => {
+      if (axios.isAxiosError(err) && err.code === "ERR_CANCELED") {
+        console.error("Request has been canceled!");
+      }
+      return false;
     });
   }
 
@@ -121,15 +148,15 @@ class Request {
   }
 
   public static async getUserMatchHistory(id: number): Promise<IGameRoom[]> {
-    return this.__make_array_get_request_(__url_.__history_ + '/' + id);
+    return Request.__make_array_get_request_(__url_.__history_ + '/' + id);
   }
 
   public static async getRankings(): Promise<IUser[]> {
-    return this.__make_array_get_request_(__url_.__rankings_);
+    return Request.__make_array_get_request_(__url_.__rankings_);
   }
 
   public static async getRoomList(): Promise<IGameRoom[]> {
-    return this.__make_array_get_request_(__url_.__rooms_);
+    return Request.__make_array_get_request_(__url_.__rooms_);
   }
 
   public static async addFriend(friendUsername: string) {
@@ -160,6 +187,10 @@ class Request {
     );
   }
 
+  public static async resetAvatar(): Promise<IUser | null> {
+    return await Request.__make_delete_request_(__url_.__edit_avatar_);
+  }
+
   public static async editPaddleColor(color: string): Promise<IUser | null> {
     return await Request.__make_post_request_(__url_.__edit_paddle_, { color: color });
   }
@@ -177,8 +208,28 @@ class Request {
     return await Request.__make_post_request_(__url_.__create_channel_, { name: name, password: password, isDm: isDm });
   }
 
-  public static async getUserChannels() {
-	return await Request.__make_get_request_(__url_.__user_channels_);
+  public static async getUserChannels(): Promise<IChannel[]> {
+	return Request.__make_array_get_request_(__url_.__user_channels_);
+  }
+
+  public static async getChannelUsers(id: number): Promise<IUser[]> {
+	return Request.__make_array_get_request_(__url_.__channel_users_ + '/' + id);
+  }
+
+  public static async leaveChannel(id: number) {
+	return Request.__make_post_request_(__url_.__leave_channel_ + '/' + id, { id: id});
+  }
+
+  public static async editChannelPassword(channelId: number, newPassword: string): Promise<IChannel | null> {
+    return Request.__make_post_request_(__url_.__edit_channel_password_, { channelId: channelId, newPassword: newPassword });
+  }
+
+  public static async getAllChannels(): Promise<IChannel[]> {
+	return Request.__make_array_get_request_(__url_.__all_channels_);
+  }
+
+  public static async joinChannel(id: number) {
+	return Request.__make_post_request_(__url_.__join_channel_ + '/' + id);
   }
 }
 

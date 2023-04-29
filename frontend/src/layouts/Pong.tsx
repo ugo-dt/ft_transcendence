@@ -1,13 +1,12 @@
+import "./style/Pong.css"
 import { useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { useKeyState } from "use-key-state";
 import { Context } from "../context";
 import { IUser, IGameState, IPaddle, IGameRoom } from "../types";
-import { CANVAS_DEFAULT_FOREGROUND_COLOR, CANVAS_DEFAULT_NET_COLOR, CANVAS_DEFAULT_NET_GAP, TARGET_FPS } from "../constants";
+import { CANVAS_DEFAULT_NET_COLOR, CANVAS_DEFAULT_NET_GAP, TARGET_FPS } from "../constants";
 import GameOver from "./GameOver";
 import Canvas from "../components/Canvas";
-import { io } from "socket.io-client";
-import "./style/Pong.css"
 
 function PlayerInfo({ player, isLeft }: { player: IUser, isLeft: boolean }) {
   const navigate = useNavigate();

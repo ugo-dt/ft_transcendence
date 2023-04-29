@@ -16,7 +16,7 @@ export class AppGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private readonly logger: Logger;
 
   constructor(private readonly pongService: PongService, private readonly chatService: ChatService) {
-    this.logger = new Logger("PongGateway");
+    this.logger = new Logger("AppGateway");
     setInterval(() => {
       if (Queue.size() >= 2) {
         Queue.tryMatchPlayers(this.server, pongService);

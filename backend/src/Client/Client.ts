@@ -122,7 +122,9 @@ class Client {
 
   public addChannel(id: number) {
     if (!this._userChannels.includes(id)) {
-      this._userChannels.push(id);
+		this._userChannels.push(id);
+		console.log('added channel to user');
+		console.log("this._userChannels: ", this._userChannels);
     }
   }
 

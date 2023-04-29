@@ -42,6 +42,7 @@ namespace __url_ {
   export const __create_channel_ = __users_base_ + '/channels/create-channel';
   export const __join_channel_ = __users_base_ + '/channels/join-channel';
   export const __leave_channel_ = __users_base_ + '/channels/leave-channel';
+  export const __check_password_ = __users_base_ + '/channels/check-password';
 }
 
 class Request {
@@ -235,6 +236,10 @@ class Request {
 
   public static async joinChannel(id: number) {
 	return Request.__make_post_request_(__url_.__join_channel_ + '/' + id);
+  }
+
+  public static async checkPassword(id: number, password: string): Promise<boolean | null> {
+	return Request.__make_post_request_(__url_.__check_password_, { password: password });
   }
 }
 

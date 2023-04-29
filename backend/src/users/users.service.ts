@@ -35,6 +35,7 @@ export class UsersService {
       paddleColor,
       friends: [],
       blocked: [],
+	  userChannels: [],
     });
     return this.repo.save(user);
   }

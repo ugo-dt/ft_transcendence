@@ -11,7 +11,7 @@ interface CreateChannelFormProps {
 function ChannelNewPasswordForm({ onClose, currentChannelId }: CreateChannelFormProps) {
 	const navigate = useNavigate();
 	const [passwordValue, setPasswordValue] = useState("");
-	const [isValid, setIsValid] = useState(false);
+	const [isValid, setIsValid] = useState(true);
 	const [error, setError] = useState("");
 	const formValues: FormText[] = [
 		{
@@ -29,8 +29,6 @@ function ChannelNewPasswordForm({ onClose, currentChannelId }: CreateChannelForm
 					setError("");
 					return;
 				}
-				if (v.length >= 3)
-					setIsValid(true);
 				setPasswordValue(v);
 			},
 		}];
@@ -41,7 +39,8 @@ function ChannelNewPasswordForm({ onClose, currentChannelId }: CreateChannelForm
 			if (!res)
 				return;
 			setPasswordValue("");
-			onClose;
+			if (onClose)
+				onClose();
 		});
 	}
 

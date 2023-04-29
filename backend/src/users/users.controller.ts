@@ -118,7 +118,6 @@ export class UsersController {
 
   @Post('channels/create-channel')
   async createChannel(@CurrentUser() user: User, @MessageBody() data: { name: string, password: string, isDm: boolean}): Promise<Channel> {
-		console.log('create-channel');
 	  return await this.channelService.create(data.name, data.password, data.isDm, user.id, this.usersService);
   }
 
@@ -128,8 +127,8 @@ export class UsersController {
   }
 
   @Post('channels/join-channel/:id')
-  async joinChannel(@CurrentUser() user: User, @Param("id") id: number, @MessageBody() password: string) {
-	  return await this.channelService.addUser(id, user.id, password);
+  async joinChannel(@CurrentUser() user: User, @Param("id") id: number) {
+	  return await this.channelService.addUser(id, user.id, this.usersService);
   }
 
   @Post('channels/leave-channel/:id')
@@ -159,5 +158,10 @@ export class UsersController {
   @Get('channels/all')
   async getAllChannels(): Promise<Channel[]> {
 	return await this.channelService.findAll();
+  }
+
+  @Post('channels/check-password')
+  async checkPassword(@CurrentUser() user: User, @MessageBody() data: { id: number, password: string }): Promise<boolean> {
+	return await this.channelService.checkPassword(data.id, data.password);
   }
 }

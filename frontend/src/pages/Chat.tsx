@@ -27,10 +27,11 @@ function Chat() {
 			setCurrentChannelId(state.id);
 			navigate("/messages", { state: {} });
 		}
+		console.log("currentChannelId: ", currentChannelId);
 		Request.getUserChannels().then(res => {
 			if (res)
 				setChannels(res);
-			
+			console.log("res: ", res);
 		});
 		Request.getProfile(user.username).then(res => {
 			if (res)
@@ -40,9 +41,7 @@ function Chat() {
 
 	useEffect(() => {
 		if (currentChannelId === -1)
-		{
 			setChannelUsers([]);
-		}
 		else
 		{
 			Request.getChannelUsers(currentChannelId).then((res) => {
@@ -50,6 +49,7 @@ function Chat() {
 				setChannelUsers(res);
 			});
 		}
+		console.log("currentChannelId: ", currentChannelId);
 	}, [currentChannelId]);
 
 	return (

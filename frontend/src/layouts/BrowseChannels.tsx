@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { CHAT_REFRESH_ICON } from "../constants";
-import { IChannel } from "../types";
+import { IChannel, IUser } from "../types";
 import './style/BrowseChannels.css'
 import JoinPasswordForm from "./JoinPasswordForm";
 import Request from "../components/Request";
@@ -9,27 +9,34 @@ interface BrowseChannelsProps {
 	onClose?: () => void,
 	allChannels: IChannel[];
 	refresh: () => void;
+	user: IUser;
+	setChannels: (arg0: IChannel[]) => void;
+	setCurrentChannelId: (channelId: number) => void;
 }
 
-function BrowseChannels({ onClose, allChannels, refresh }: BrowseChannelsProps) {
+function BrowseChannels({ onClose, allChannels, refresh, user, setChannels, setCurrentChannelId }: BrowseChannelsProps) {
 	const [isJoinPasswordOpen, setIsJoinPasswordOpen] = useState(false);
+	const [currentChannel, setCurrentChannel] = useState<IChannel>();
 
 	function onClickJoinPassword() { setIsJoinPasswordOpen(!isJoinPasswordOpen); }
 
 	function joinChannel(channel: IChannel) {
-		if (!channel) {
-			return ;
-		}
-		console.log("allChannels: ", allChannels);
-
-		if (channel.password != null && channel.password.length) {
-			console.log(channel.password);
-			setIsJoinPasswordOpen(true);
-		}
-		else {
-			Request.joinChannel(channel.id).then((res) => {
-				// handle response
-			});
+		if (!channel.users.includes(user.id)) {
+			if (!channel) {
+				return;
+			}
+			if (channel.password != null && channel.password.length) {
+				setCurrentChannel(channel);
+				setIsJoinPasswordOpen(true);
+			}
+			else
+			{
+				Request.joinChannel(channel.id).then((res) => {
+					setCurrentChannelId(channel.id);
+					setIsJoinPasswordOpen(false);
+					refresh();
+				});
+			}
 		}
 	}
 
@@ -53,7 +60,14 @@ function BrowseChannels({ onClose, allChannels, refresh }: BrowseChannelsProps) 
 						{channel.name} &#x1F464; {channel.users.length} {channel.password ? '\u{1F512}' : ''}
 					</button>))}
 			</div>
-			{isJoinPasswordOpen && <JoinPasswordForm onClose={onClickJoinPassword} />}
+			{isJoinPasswordOpen && <JoinPasswordForm
+			onClose={onClickJoinPassword}
+			joinChannel={joinChannel}
+			channel={currentChannel as IChannel}
+			setCurrentChannelId={setCurrentChannelId}
+			setIsJoinPasswordOpen={setIsJoinPasswordOpen}
+			refresh={refresh}
+			/>}
 		</div>
 	);
 }

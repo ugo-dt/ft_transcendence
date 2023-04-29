@@ -5,6 +5,7 @@ import { Channel } from "./entities/channel.entity";
 import { UsersService } from "src/users/users.service";
 import { Message } from "../message/entity/message.entity";
 import { User } from "src/users/entities/user.entity";
+import * as crypto from 'crypto';
 
 @Injectable()
 export class ChannelService {
@@ -14,10 +15,12 @@ export class ChannelService {
 	}
 
 	async create(name: string, password: string, isDm: boolean, userId: number, usersService: UsersService): Promise<Channel> {
+		const pwd = crypto.createHash('sha256').update(password).digest('hex');
+		console.log("pwd: ", pwd);
 		const channel = this.repo.create(
 			{
 				name: name,
-				password: password,
+				password: pwd,
 				isDm: isDm,
 				messages: [],
 				users: [userId],
@@ -27,11 +30,11 @@ export class ChannelService {
 				room: '',
 			}
 		);
-		const promise = await this.repo.save(channel);
+		console.log("channel.passwordfsdqfsd: ", channel.password);
 		channel.room = 'channel-room-' + channel.id;
-		this.logger.log(`Saved channel ${promise.id}`);
+		const promise = await this.repo.save(channel);
 		await usersService.addChannel(userId, channel.id);
-		console.log("channel: ", channel);
+		this.logger.log(`Saved channel ${promise.id}`);
 		return promise;
 	}
 
@@ -57,17 +60,19 @@ export class ChannelService {
 		return this.repo.find();
 	}
 
-	async addUser(channelId: number, userId: number, password: string) {
+	async addUser(channelId: number, userId: number, usersService: UsersService) {
 		const channel = await this.findOneId(channelId);
 		if (!channel) {
 			throw new NotFoundException('channel not found');
 		}
-		if (channel.password.length && channel.password !== password) {
-			throw new ForbiddenException('wrong password');
-		}
 		if (!channel.users.includes(userId))
+		{
 			channel.users.push(userId);
-		return this.repo.save(channel);
+			await usersService.addChannel(userId, channel.id);
+			if (!channel.admins.includes(userId) && channel.admins.length === 0)
+			channel.admins.push(userId);
+		}
+		return await this.repo.save(channel);
 	}
 
 	async removeUser(channelId: number, userId: number, usersService: UsersService) {
@@ -89,7 +94,7 @@ export class ChannelService {
 			}
 		}
 		await usersService.removeChannel(userId, channel.id);
-		return this.repo.save(channel);
+		return await this.repo.save(channel);
 	}
 
 	async newMessage(id: number, message: Message) {
@@ -138,8 +143,15 @@ export class ChannelService {
 		if (!channel.admins.includes(userId)) {
 			throw new ForbiddenException('forbidden');
 		}
-		channel.password = newPassword;
-		console.log("channel: ", channel);
+		channel.password = crypto.createHash('sha256').update(newPassword).digest('hex');
 		return this.repo.save(channel);
+	}
+
+	public async checkPassword(id: number, password: string): Promise<boolean> {
+		const channel = await this.findOneId(id);
+		if (!channel) {
+			throw new NotFoundException('channel not found');
+		}
+		return (crypto.createHash('sha256').update(password).digest('hex') === channel.password);
 	}
 }

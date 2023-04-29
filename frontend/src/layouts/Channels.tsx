@@ -70,10 +70,7 @@ function Channels({ user, currentChannelId, channels, setChannels, setCurrentCha
 	function leaveChannel(id: number): void {
 		if (currentChannelId !== -1) {
 			Request.leaveChannel(id).then(() => {
-				Request.getUserChannels().then((res) => {
-					if (res)
-						setChannels(res);
-				});
+				refresh();
 			});
 			const currentIndex = channels.findIndex((channel) => channel.id === currentChannelId);
 			const previousChannel = channels[currentIndex - 1];
@@ -94,22 +91,27 @@ function Channels({ user, currentChannelId, channels, setChannels, setCurrentCha
 			if (res)
 				setAllChannels(res);
 		});
+		Request.getUserChannels().then(res => {
+			if (res)
+				setChannels(res);
+		});
 	}
 
 	function browseChannels() {
+		console.log("user.userChannels: ", user.userChannels);
 		setIsBrowseChannelsOpen(!isBrowseChannelsOpen);
 		refresh();
 	}
-
-	useEffect(() => {
-		console.log("currentChannelId: ", currentChannelId);
-	}, [currentChannelId]);
 
 	return (
 		<>
 			<div className="div-channels">
 				<h1>Channels</h1>
 				<div className="div-channels-list">
+					<button
+						className="btn-channels-create"
+						onClick={() => onClickCreateChannel()}
+					>+</button>
 					{channels && channels.map((channel, index) => (
 						<button
 							className={channel.id === currentChannelId ? 'btn-channels-current' : 'btn-channels'}
@@ -118,10 +120,6 @@ function Channels({ user, currentChannelId, channels, setChannels, setCurrentCha
 							{channel.name}
 						</button>
 					))}
-					<button
-						className="btn-channels-create"
-						onClick={() => onClickCreateChannel()}
-					>+</button>
 				</div>
 				<div
 					className="user-tag">
@@ -162,9 +160,15 @@ function Channels({ user, currentChannelId, channels, setChannels, setCurrentCha
 			</div>
 			{isCreateChannelFormOpen && <CreateChannelForm onClose={onClickCreateChannel} />}
 			{isChannelNewPasswordFormOpen && <ChannelNewPasswordForm onClose={onClickChannelSettings} currentChannelId={currentChannelId} />}
-			{isBrowseChannelsOpen && <BrowseChannels onClose={onClickBrowseChannels} allChannels={allChannels} refresh={refresh}/>}
+			{isBrowseChannelsOpen && <BrowseChannels
+				onClose={onClickBrowseChannels}
+				allChannels={allChannels}
+				refresh={refresh}
+				user={user}
+				setChannels={setChannels}
+				setCurrentChannelId={setCurrentChannelId} />}
 		</>
-	); 
+	);
 }
 
 export default Channels

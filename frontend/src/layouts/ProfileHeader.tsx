@@ -111,9 +111,10 @@ function ProfileHeader({ profile }: { profile: IUser }) {
     }
   }
 
-  function onClickConfirmSMS() {
+  async function onClickConfirmSMS() {
     if (phoneNumber) { // avoid undefined syntax error on the line below
-      const res = Request.validateOtp(phoneNumber.toString(), otp);
+      const res = await Request.validateOtp(phoneNumber.toString(), otp);
+      console.log(res);
       if (res !== null) {
         // set user 2fa to true with call to backend
         // display success message
@@ -217,8 +218,8 @@ function ProfileHeader({ profile }: { profile: IUser }) {
                     </DialogActions>
                   </Dialog>
                 </section>
-                {otpMessageState == 1 && <Alert severity="success">You have succesfully activated 2FA!</Alert>}
-                {otpMessageState == 2 && <Alert severity="error">You have entered a wrong code, retry.</Alert>}
+                {otpMessageState === 1 && <Alert severity="success">You have succesfully activated 2FA!</Alert>}
+                {otpMessageState === 2 && <Alert severity="error">You have entered a wrong code, retry.</Alert>}
               </div>
             ) : (
               <div className="profile-buttons-container">

@@ -1,9 +1,13 @@
 import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
 import { PongService } from "./pong/pong.service";
-import { Logger } from "@nestjs/common";
+import { Logger, NotFoundException } from "@nestjs/common";
 import Queue from "./pong/Matchmaking/Queue";
 import { ChatService } from "./chat/chat.service";
+import Client from "./Client/Client";
+import { UsersService } from "./users/users.service";
+import { MessageService } from "./chat/message/message.service";
+import { ChannelService } from "./chat/channel/channel.service";
 
 @WebSocketGateway({
   namespace: 'app',
@@ -15,7 +19,12 @@ export class AppGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
   private readonly logger: Logger;
 
-  constructor(private readonly pongService: PongService, private readonly chatService: ChatService) {
+  constructor(
+    private readonly pongService: PongService,
+    private readonly messageService: MessageService,
+    private readonly channelService: ChannelService,
+    private readonly chatService: ChatService,
+  ) {
     this.logger = new Logger("AppGateway");
     setInterval(() => {
       if (Queue.size() >= 2) {
@@ -124,8 +133,10 @@ export class AppGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('send-message')
-  public handlePushMessageToChannel(@ConnectedSocket() userSocket: Socket, @MessageBody() data: any) {
+  public async handlePushMessageToChannel(@ConnectedSocket() clientSocket: Socket, @MessageBody() data: any) {
     this.logger.log(`send-message`);
-    return this.chatService.handleSendMessage(userSocket, data, this.server);
+    console.log("message: ", data.message);
+    console.log("data.currentChannelId: ", data.currentChannelId);
+    return this.chatService.handlePushMessageToChannel(clientSocket, data.currentChannelId, data.message);
   }
 }

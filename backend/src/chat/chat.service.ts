@@ -1,47 +1,50 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Socket } from 'socket.io';
-import { Server } from 'socket.io';
 import { ChannelService } from './channel/channel.service';
-import { Message } from './message/entity/message.entity';
-import { MessageService } from './message/message.service';
+import { UsersService } from 'src/users/users.service';
 import Client from 'src/Client/Client';
+import { MessageService } from './message/message.service';
 
 @Injectable()
 export class ChatService {
 	private readonly logger: Logger;
 	constructor(
-		private readonly messageService: MessageService,
 		private readonly channelService: ChannelService,
+		private readonly usersService: UsersService,
+		private readonly messageService: MessageService,
 	) {
 	  this.logger = new Logger("ChatService");
 	}
 
-	private _timestamp_mmddyy() {
-		const currentDate = new Date();
-		const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
-		const day = currentDate.getDate().toString().padStart(2, '0');
-		const year = currentDate.getFullYear().toString().substr(-2);
-		const hours = currentDate.getHours().toString().padStart(2, '0');
-		const minutes = currentDate.getMinutes().toString().padStart(2, '0');
-		const seconds = currentDate.getSeconds().toString().padStart(2, '0');
-		const time = `${hours}:${minutes}:${seconds}`;
-		return `${month}/${day}/${year} ${time}`;
-	}
-
-	public async handleSendMessage(userSocket: Socket, data: any, server: Server): Promise<Message | null> {
-		const channel = await this.channelService.findOneId(data.destination);
-		if (!channel) {
-			throw new NotFoundException('channel not found');
-		}
-		const client = Client.at(userSocket);
+	public async handlePushMessageToChannel(clientSocket: Socket, channelId: number, content: string) {
+		const client = Client.at(clientSocket);
 		if (!client) {
+			throw new NotFoundException('client not found');
+		}
+		const user = await this.usersService.findOneId(client.id);
+		if (!user) {
 			throw new NotFoundException('user not found');
 		}
-		const message = await this.messageService.create(data.content, this._timestamp_mmddyy(), client.id, data.destination);
-		this.channelService.newMessage(channel.id, message);
-		server.to(channel.room).emit('update');
-		return message;
+		const message = await this.messageService.create(content, user.id, channelId);
+		return this.channelService.newMessage(channelId, message);
 	}
+
+
+	//public async handleSendMessage(userSocket: Socket, data: any, server: Server): Promise<Message | null> {
+	//	const channel = await this.channelService.findOneId(data.destination);
+	//	if (!channel) {
+	//		throw new NotFoundException('channel not found');
+	//	}
+	//	const client = Client.at(userSocket);
+	//	if (!client) {
+	//		throw new NotFoundException('user not found');
+	//	}
+	//	console.log("client: ", client);
+	//	const message = await this.messageService.create(data.content, this._timestamp_mmddyy(), client.id, data.destination);
+	//	this.channelService.newMessage(channel.id, message);
+	//	server.to(channel.room).emit('update');
+	//	return message;
+	//}
 
 	//public handleInviteUser(userSocket: Socket, data: any, server: Server) {
 	//	const channel: Channel | null = Channel.at(data.currentChannelId);

@@ -58,15 +58,12 @@ function App() {
   const isServerAvailableRef = useRef<boolean>(true);
   const [isServerAvailable, setIsServerAvailable] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(true);
-  const [currentChannelId, setCurrentChannelId] = useState<number>(-1);
 
   const contextValue = {
     serverUrl: serverUrl,
     pongSocket: socket,
     loading: loading,
     setLoading: setLoading,
-	currentChannelId: currentChannelId,
-	setCurrentChannelId: setCurrentChannelId,
   };
 
   const queueContextValue = {

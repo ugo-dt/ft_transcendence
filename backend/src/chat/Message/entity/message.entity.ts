@@ -5,14 +5,14 @@ export class Message {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({nullable: true})
   content: string;
 
   @Column()
   timestamp: string;
 
   @Column()
-  sender: number;
+  senderId: number;
 
   @Column()
   destination: number;

@@ -8,8 +8,6 @@ interface ContextValue {
   pongSocket: React.MutableRefObject<Socket<DefaultEventsMap, DefaultEventsMap> | null>
   loading: boolean,
   setLoading: React.Dispatch<React.SetStateAction<boolean>>,
-  currentChannelId: number,
-  setCurrentChannelId: React.Dispatch<React.SetStateAction<number>>,
 }
 
 export const Context = createContext<ContextValue>({
@@ -17,8 +15,6 @@ export const Context = createContext<ContextValue>({
   pongSocket: {} as React.MutableRefObject<Socket<DefaultEventsMap, DefaultEventsMap> | null>,
   loading: false,
   setLoading: () => {},
-  currentChannelId: -1,
-  setCurrentChannelId: () => {},
 });
 
 interface AuthContextValue {

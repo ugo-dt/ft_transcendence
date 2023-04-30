@@ -1,10 +1,3 @@
-import React from "react";
-import { useEffect, useRef, useState } from "react";
-import { IChannel } from "../types/IChannel";
-import { CHAT_DEFAULT_AVATAR } from "../constants";
-import messageSound from "../../assets/sound/messageSound.mp3";
-import './style/ChatWindow.css';
-
 //interface ChatWindowProps {
 //	//handleSubmitNewMessage: (arg0: string) => void;
 //	//clearMessages: () => void;
@@ -109,17 +102,78 @@ import './style/ChatWindow.css';
 //	);
 //}
 
-interface ChatWindowProps {
-	currentChannelId: number;
-	channels: IChannel[];
+import React, { useContext } from "react";
+import { useEffect, useRef, useState } from "react";
+import { IChannel } from "../types/IChannel";
+import { CHAT_DEFAULT_AVATAR } from "../constants";
+import messageSound from "../../assets/sound/messageSound.mp3";
+import './style/ChatWindow.css';
+import { Context, UserContext } from "../context";
+import { IUser } from "../types";
+import Request from "../components/Request";
+import { IMessage } from "../types/IMessage";
 
+interface MessageProps {
+	id: number,
+	user: IUser,
+}
+
+function Message({
+	id,
+	user
+}: MessageProps) {
+	const context = useContext(UserContext);
+	const [message, setMessage] = useState<IMessage | null>(null);
+	const [sender, setSender] = useState<IUser | null>(null);
+
+	useEffect(() => {
+		Request.getMessage(id).then(res => {
+			if (res) {
+				setMessage(res);
+				console.log("res: ", res);
+			}
+		});
+		if (!message) {
+			return;
+		}
+		Request.getProfileFromId(message.senderId).then(res => {
+			if (res) {
+				setSender(res);
+			}
+		});
+	}, [context]);
+
+	return (
+		<>
+			{
+				message && sender &&
+				<div className="div-message">
+
+					<img className="user-avatar" src={user.avatar} width={40} height={40} />
+					<li className={"li-messages"}>
+						<p><b>{sender.username}</b> {message.timestamp}</p>
+						{message.content}
+					</li>
+				</div>
+			}
+		</>
+	)
+}
+
+interface ChatWindowProps {
+	channel: IChannel | undefined;
+	user: IUser;
 };
 
-function ChatWindow() {
+function ChatWindow({ channel, user }: ChatWindowProps) {
+	const socket = useContext(Context).pongSocket.current;
 	const messagesEndRef = useRef<(null) | HTMLLIElement>(null);
 	const [messageInputValue, setMessageInputValue] = useState("");
 
 	function handleSubmitNewMessage(message: string) {
+		if (!socket || !socket.connected || !channel)
+			return;
+		socket.emit('send-message', { message: message, currentChannelId: channel.id });
 		console.log("message: ", message);
 		setMessageInputValue("");
 	}
@@ -143,38 +197,39 @@ function ChatWindow() {
 		}
 	}
 
+	useEffect(() => {
+		console.log("llo");
+	}, [])
+
 	return (
 		<div className="div-chat">
 			<h1 className="h1-main-title">Chat</h1>
-			<div className="div-chat-window">
-				<ul>
-					{/*{channels && channels.map((channel: IChannel) => {
-					if (channel.id === currentChannelId) {
-						return channel.history.map((message: any, messageIndex: number) => (
-							<div id="div_message" key={messageIndex}>
-							<img id="img_avatar" src={CHAT_DEFAULT_AVATAR} alt="" width={40} height={40}/>
-							<li id={"li_messages"}>
-							<p><b>{message.sender} </b><small>{message.timestamp}</small></p>
-							{message.content}
-							</li>
-							</div>
-							))
-						}
-					})}*/}
-					{/*<li ref={messagesEndRef} />*/}
-				</ul>
-			</div>
-			<input
-				//style={{ pointerEvents: currentChannelId === -1 ? 'none' : 'all' }}
-				//ref={inputRef}
-				placeholder='Type a message...'
-				className="input-bar"
-				name="input bar"
-				type="text"
-				value={messageInputValue}
-				onKeyDown={(e) => handleKeyDown(e)}
-				onChange={(e) => handleInputChange(e)}
-			/>
+			{
+				channel &&
+				<div>
+					<div className="div-chat-window">
+						<ul>
+							{
+								channel.messages.map((id: number) => (
+									<Message key={id} user={user} id={id} />
+								))
+							}
+							{/*<li ref={messagesEndRef} />*/}
+						</ul>
+					</div>
+					<input
+						style={{ pointerEvents: channel.id === -1 ? 'none' : 'all' }}
+						//ref={inputRef}
+						placeholder='Type a message...'
+						className="input-bar"
+						name="input bar"
+						type="text"
+						value={messageInputValue}
+						onKeyDown={(e) => handleKeyDown(e)}
+						onChange={(e) => handleInputChange(e)}
+					/>
+				</div>
+			}
 		</div>
 	)
 }

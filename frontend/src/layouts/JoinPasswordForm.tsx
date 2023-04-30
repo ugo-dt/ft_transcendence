@@ -8,12 +8,12 @@ interface BrowseChannelsProps {
 	submit?: () => void,
 	joinChannel: (arg0: IChannel) => void,
 	channel: IChannel;
-	setCurrentChannelId: (arg0: number) => void;
+	setCurrentChannel: (arg0: IChannel) => void;
 	setIsJoinPasswordOpen: (arg0: boolean) => void;
 	refresh: () => void;
 }
 
-function JoinPasswordForm({ onClose, joinChannel, channel, setCurrentChannelId, refresh, setIsJoinPasswordOpen }: BrowseChannelsProps) {
+function JoinPasswordForm({ onClose, joinChannel, channel, setCurrentChannel, refresh, setIsJoinPasswordOpen }: BrowseChannelsProps) {
 	const [passwordValue, setPasswordValue] = useState("");
 	const [isValid, setIsValid] = useState(false);
 	const [error, setError] = useState("");
@@ -49,7 +49,7 @@ function JoinPasswordForm({ onClose, joinChannel, channel, setCurrentChannelId, 
 				return;
 			}
 			Request.joinChannel(channel.id).then((res) => {
-				setCurrentChannelId(channel.id);
+				setCurrentChannel(channel);
 				setIsJoinPasswordOpen(false);
 				refresh();
 			});

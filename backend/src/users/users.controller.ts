@@ -164,4 +164,9 @@ export class UsersController {
   async checkPassword(@CurrentUser() user: User, @MessageBody() data: { id: number, password: string }): Promise<boolean> {
 	return await this.channelService.checkPassword(data.id, data.password);
   }
+
+  @Post('channels/kick-user')
+  async kickUser(@CurrentUser() user: User, @MessageBody() data: { id: number, password: string }): Promise<boolean> {
+	return await this.channelService.checkPassword(data.id, data.password);
+  }
 }

@@ -1,6 +1,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 import { IUser, IGameRoom } from "../types";
 import { IChannel } from "../types/IChannel";
+import { IMessage } from "../types/IMessage";
 
 namespace __url_ {
   export const __api_base_url_ = `${import.meta.env.VITE_BACKEND_HOST}/api`;
@@ -37,12 +38,14 @@ namespace __url_ {
   // Chat
   export const __all_channels_ = __channels_base_ + '/all';
   export const __edit_channel_password_ = __users_base_ + '/channels/edit-channel-password';
+  export const __remove_password_ = __users_base_ + '/channels/remove-password';
   export const __user_channels_ = __users_base_ + '/channels/user-channels';
   export const __channel_users_ = __users_base_ + '/channels/channel-users';
   export const __create_channel_ = __users_base_ + '/channels/create-channel';
   export const __join_channel_ = __users_base_ + '/channels/join-channel';
   export const __leave_channel_ = __users_base_ + '/channels/leave-channel';
   export const __check_password_ = __users_base_ + '/channels/check-password';
+  export const __message_ = __chat_base_ + '/message';
 }
 
 class Request {
@@ -215,31 +218,35 @@ class Request {
   }
 
   public static async getUserChannels(): Promise<IChannel[]> {
-	return Request.__make_array_get_request_(__url_.__user_channels_);
+	return await Request.__make_array_get_request_(__url_.__user_channels_);
   }
 
   public static async getChannelUsers(id: number): Promise<IUser[]> {
-	return Request.__make_array_get_request_(__url_.__channel_users_ + '/' + id);
+	return await Request.__make_array_get_request_(__url_.__channel_users_ + '/' + id);
   }
 
   public static async leaveChannel(id: number) {
-	return Request.__make_post_request_(__url_.__leave_channel_ + '/' + id, { id: id});
+	return await Request.__make_post_request_(__url_.__leave_channel_ + '/' + id, { id: id});
   }
 
   public static async editChannelPassword(channelId: number, newPassword: string): Promise<IChannel | null> {
-    return Request.__make_post_request_(__url_.__edit_channel_password_, { channelId: channelId, newPassword: newPassword });
+    return await Request.__make_post_request_(__url_.__edit_channel_password_, { channelId: channelId, newPassword: newPassword });
   }
 
   public static async getAllChannels(): Promise<IChannel[]> {
-	return Request.__make_array_get_request_(__url_.__all_channels_);
+	return await Request.__make_array_get_request_(__url_.__all_channels_);
   }
 
   public static async joinChannel(id: number) {
-	return Request.__make_post_request_(__url_.__join_channel_ + '/' + id);
+	return await Request.__make_post_request_(__url_.__join_channel_ + '/' + id);
   }
 
   public static async checkPassword(id: number, password: string): Promise<boolean | null> {
-	return Request.__make_post_request_(__url_.__check_password_, { password: password });
+	return await Request.__make_post_request_(__url_.__check_password_, { password: password });
+  }
+
+  public static async getMessage(id: number): Promise<IMessage | null> {
+	return await Request.__make_get_request_(__url_.__message_ + '/' + id);
   }
 }
 

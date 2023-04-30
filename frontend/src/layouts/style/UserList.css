@@ -1,5 +1,4 @@
 .div-user-list {
-	width: 20%;
 	margin-right: 1%;
 	height: 100%;
 	margin-left: 2%;
@@ -46,4 +45,5 @@
 	height: 40px;
 	border-radius: 25px;
 	margin-right: 8%;
+	display: block;
 }

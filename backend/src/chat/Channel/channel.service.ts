@@ -16,11 +16,12 @@ export class ChannelService {
 
 	async create(name: string, password: string, isDm: boolean, userId: number, usersService: UsersService): Promise<Channel> {
 		const pwd = crypto.createHash('sha256').update(password).digest('hex');
+		console.log("password: ", password);
 		console.log("pwd: ", pwd);
 		const channel = this.repo.create(
 			{
 				name: name,
-				password: pwd,
+				password: password === "" ? "" : pwd,
 				isDm: isDm,
 				messages: [],
 				users: [userId],
@@ -30,11 +31,11 @@ export class ChannelService {
 				room: '',
 			}
 		);
-		console.log("channel.passwordfsdqfsd: ", channel.password);
-		channel.room = 'channel-room-' + channel.id;
 		const promise = await this.repo.save(channel);
+		channel.room = 'channel-room-' + channel.id;
 		await usersService.addChannel(userId, channel.id);
 		this.logger.log(`Saved channel ${promise.id}`);
+		console.log("channel: ", channel);
 		return promise;
 	}
 
@@ -134,8 +135,7 @@ export class ChannelService {
 	}
 
 	public async editPassword(userId: number, channelId: number, newPassword: string) {
-		if (newPassword === undefined)
-			throw new NotFoundException('newPassword undefined');
+		const pwd = crypto.createHash('sha256').update(newPassword).digest('hex');
 		const channel = await this.findOneId(channelId);
 		if (!channel) {
 			throw new NotFoundException('channel not found');
@@ -143,7 +143,7 @@ export class ChannelService {
 		if (!channel.admins.includes(userId)) {
 			throw new ForbiddenException('forbidden');
 		}
-		channel.password = crypto.createHash('sha256').update(newPassword).digest('hex');
+		channel.password = pwd;
 		return this.repo.save(channel);
 	}
 
@@ -152,6 +152,8 @@ export class ChannelService {
 		if (!channel) {
 			throw new NotFoundException('channel not found');
 		}
+		console.log("channel.password: ", channel.password);
+		console.log("crypto.createHash('sha256').update(password).digest('hex'): ", crypto.createHash('sha256').update(password).digest('hex'));
 		return (crypto.createHash('sha256').update(password).digest('hex') === channel.password);
 	}
 }

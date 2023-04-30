@@ -15,7 +15,6 @@ import { Message } from './chat/message/entity/message.entity';
 import { AppGateway } from './app.gateway';
 import { ChannelModule } from './chat/channel/channel.module';
 import { MessageModule } from './chat/message/message.module';
-import { ChatService } from './chat/chat.service';
 import { AppController } from './app.controller';
 
 @Module({
@@ -44,6 +43,6 @@ import { AppController } from './app.controller';
     AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppGateway, ChatService],
+  providers: [AppGateway],
 })
 export class AppModule { }

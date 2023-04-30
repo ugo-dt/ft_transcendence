@@ -1,19 +1,20 @@
 import { useNavigate } from "react-router";
-import Form, { FormText } from "../components/Form";
+import Form, { FormText, FormType } from "../components/Form";
 import { useState } from "react";
 import Request from "../components/Request";
+import { IChannel } from "../types";
 
 interface CreateChannelFormProps {
 	onClose?: () => void,
-	currentChannelId: number;
+	currentChannel: IChannel | undefined;
 }
 
-function ChannelNewPasswordForm({ onClose, currentChannelId }: CreateChannelFormProps) {
+function ChannelNewPasswordForm({ onClose, currentChannel }: CreateChannelFormProps) {
 	const navigate = useNavigate();
 	const [passwordValue, setPasswordValue] = useState("");
-	const [isValid, setIsValid] = useState(true);
+	const [isValid, setIsValid] = useState(false);
 	const [error, setError] = useState("");
-	const formValues: FormText[] = [
+	const formValues: FormType[] = [
 		{
 			value: passwordValue,
 			label: 'Password',
@@ -29,13 +30,38 @@ function ChannelNewPasswordForm({ onClose, currentChannelId }: CreateChannelForm
 					setError("");
 					return;
 				}
+				if (v.length > 2)
+					setIsValid(true)
+				if (v.length <= 2)
+					setIsValid(false)
 				setPasswordValue(v);
 			},
+		}, {
+			type: 'button',
+			buttonText: 'Remove Password',
+			onClick: () => removePassword(),
 		}];
+
+	async function removePassword() {
+		console.log('remove Password');
+		if (!currentChannel) {
+			return ;
+		}
+		Request.editChannelPassword(currentChannel.id, "").then((res) => {
+			if (!res)
+				return;
+			setPasswordValue("");
+			if (onClose)
+				onClose();
+		});
+	}
 
 	async function submitNewPassword(event: React.FormEvent<HTMLFormElement>) {
 		event.preventDefault();
-		Request.editChannelPassword(currentChannelId, passwordValue).then((res) => {
+		if (!currentChannel) {
+			return ;
+		}
+		Request.editChannelPassword(currentChannel.id, passwordValue).then((res) => {
 			if (!res)
 				return;
 			setPasswordValue("");

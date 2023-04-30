@@ -10,13 +10,13 @@ import BrowseChannels from "./BrowseChannels";
 
 interface ChannelsProps {
 	user: IUser;
-	currentChannelId: number;
 	channels: IChannel[];
 	setChannels: (arg0: IChannel[]) => void;
-	setCurrentChannelId: (channelId: number) => void;
+	currentChannel: IChannel | undefined;
+	setCurrentChannel: (channelId: IChannel | undefined) => void;
 }
 
-function Channels({ user, currentChannelId, channels, setChannels, setCurrentChannelId }: ChannelsProps) {
+function Channels({ user, channels, setChannels, currentChannel, setCurrentChannel }: ChannelsProps) {
 	const [isCreateChannelFormOpen, setIsCreateChannelFormOpen] = useState(false);
 	const [isChannelNewPasswordFormOpen, setIsChannelNewPasswordFormOpen] = useState(false);
 	const [isBrowseChannelsOpen, setIsBrowseChannelsOpen] = useState(false);
@@ -67,21 +67,21 @@ function Channels({ user, currentChannelId, channels, setChannels, setCurrentCha
 		console.log('changePassword');
 	}
 
-	function leaveChannel(id: number): void {
-		if (currentChannelId !== -1) {
-			Request.leaveChannel(id).then(() => {
-				refresh();
-			});
-			const currentIndex = channels.findIndex((channel) => channel.id === currentChannelId);
-			const previousChannel = channels[currentIndex - 1];
-			const subsequentChannel = channels[currentIndex + 1];
-			let newChannelId = -1;
-			if (previousChannel) {
-				newChannelId = previousChannel.id;
-			} else if (subsequentChannel) {
-				newChannelId = subsequentChannel.id;
-			}
-			setCurrentChannelId(newChannelId);
+	function leaveChannel(): void {
+		if (!currentChannel) {
+			return;
+		}
+		Request.leaveChannel(currentChannel.id).then(() => {
+			refresh();
+		});
+		const currentIndex = channels.findIndex((channel) => channel.id === currentChannel.id);
+		const previousChannel = channels[currentIndex - 1];
+		const subsequentChannel = channels[currentIndex + 1];
+		let newChannelId = -1;
+		if (previousChannel) {
+			setCurrentChannel(previousChannel);
+		} else if (subsequentChannel) {
+			setCurrentChannel(subsequentChannel);
 		}
 	}
 
@@ -114,8 +114,8 @@ function Channels({ user, currentChannelId, channels, setChannels, setCurrentCha
 					>+</button>
 					{channels && channels.map((channel, index) => (
 						<button
-							className={channel.id === currentChannelId ? 'btn-channels-current' : 'btn-channels'}
-							onClick={() => setCurrentChannelId(channel.id)}
+							className={currentChannel && channel.id === currentChannel.id ? 'btn-channels-current' : 'btn-channels'}
+							onClick={() => setCurrentChannel(channel)}
 							key={index}>
 							{channel.name}
 						</button>
@@ -124,7 +124,9 @@ function Channels({ user, currentChannelId, channels, setChannels, setCurrentCha
 				<div
 					className="user-tag">
 					<img
-						className="user-avatar"
+						id="avatar-component"
+						width={40}
+						height={40}
 						src={user.avatar} />
 					<b><p
 						className="p-username"
@@ -132,7 +134,7 @@ function Channels({ user, currentChannelId, channels, setChannels, setCurrentCha
 				</div>
 				<div className="div-btns">
 					<button
-						disabled={currentChannelId === -1}
+						disabled={currentChannel && currentChannel.id === -1}
 						className="btn-channels-settings"
 						onClick={onClickChannelSettings}
 					>
@@ -150,7 +152,7 @@ function Channels({ user, currentChannelId, channels, setChannels, setCurrentCha
 					</button>
 					<button
 						className="btn-channels-settings"
-						onClick={() => leaveChannel(currentChannelId)}
+						onClick={leaveChannel}
 					>
 						<img
 							className="btn-channels-settings-img"
@@ -159,14 +161,15 @@ function Channels({ user, currentChannelId, channels, setChannels, setCurrentCha
 				</div>
 			</div>
 			{isCreateChannelFormOpen && <CreateChannelForm onClose={onClickCreateChannel} />}
-			{isChannelNewPasswordFormOpen && <ChannelNewPasswordForm onClose={onClickChannelSettings} currentChannelId={currentChannelId} />}
+			{isChannelNewPasswordFormOpen && <ChannelNewPasswordForm onClose={onClickChannelSettings} currentChannel={currentChannel} />}
 			{isBrowseChannelsOpen && <BrowseChannels
 				onClose={onClickBrowseChannels}
 				allChannels={allChannels}
 				refresh={refresh}
 				user={user}
 				setChannels={setChannels}
-				setCurrentChannelId={setCurrentChannelId} />}
+				currentChannel={currentChannel}
+				setCurrentChannel={setCurrentChannel} />}
 		</>
 	);
 }

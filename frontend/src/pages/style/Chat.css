@@ -1,6 +1,23 @@
 .chat {
 	display: flex;
-	flex-direction: row;
 	width: 100%;
 	height: 100%;
+}
+
+.chat-sections {
+	display: flex;
+}
+
+.chat-section-channels {
+	margin-left: 2%;
+}
+
+.chat-section-chat-window {
+	min-width: max-content;
+	width: 500px;
+}
+
+.chat-section-user-list {
+	margin-right: 2%;
+	margin-left: auto;
 }

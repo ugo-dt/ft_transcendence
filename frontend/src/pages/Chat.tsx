@@ -6,17 +6,17 @@ import Request from "../components/Request";
 import Channels from "../layouts/Channels";
 import { IUser } from "../types";
 import ChatWindow from "../layouts/ChatWindow";
-import './style/Chat.css';
 import UserList from "../layouts/UserList";
+import './style/Chat.css';
 
 function Chat() {
 	const state = useLocation().state;
 	const navigate = useNavigate();
 	const user = useContext(UserContext).user;
 	const setUser = useContext(UserContext).setUser;
-	const [channels, setChannels] = useState<IChannel[]>([]);
+	const [currentChannel, setCurrentChannel] = useState<IChannel | undefined>(undefined);
 	const [channelUsers, setChannelUsers] = useState<IUser[]>([]);
-	const { currentChannelId, setCurrentChannelId } = useContext(Context);
+	const [channels, setChannels] = useState<IChannel[]>([]);
 
 	useEffect(() => {
 		if (!user) {
@@ -24,10 +24,8 @@ function Chat() {
 		}
 		console.log("state:", state);
 		if (state && state.id != undefined) {
-			setCurrentChannelId(state.id);
 			navigate("/messages", { state: {} });
 		}
-		console.log("currentChannelId: ", currentChannelId);
 		Request.getUserChannels().then(res => {
 			if (res)
 				setChannels(res);
@@ -40,29 +38,41 @@ function Chat() {
 	}, []);
 
 	useEffect(() => {
-		if (currentChannelId === -1)
-			setChannelUsers([]);
-		else
-		{
-			Request.getChannelUsers(currentChannelId).then((res) => {
-				if (res)
-				setChannelUsers(res);
-			});
+		if (!currentChannel) {
+			return ;
 		}
-		console.log("currentChannelId: ", currentChannelId);
-	}, [currentChannelId]);
+		Request.getChannelUsers(currentChannel.id).then(res => {
+			if (res) {
+				setChannelUsers(res);
+			}
+		})
+	}, [currentChannel]);
 
 	return (
 		<div className="chat">
-			<Channels
-				user={user as IUser}
-				currentChannelId={currentChannelId}
-				channels={channels}
-				setChannels={setChannels}
-				setCurrentChannelId={setCurrentChannelId}
-			/>
-			<ChatWindow />
-			<UserList channelUsers={channelUsers} />
+			{
+				user &&
+				<div className="chat-sections">
+					<section className="chat-section-channels">
+						<Channels
+							user={user}
+							channels={channels}
+							setChannels={setChannels}
+							currentChannel={currentChannel}
+							setCurrentChannel={setCurrentChannel}
+						/>
+					</section>
+					<section className="chat-section-chat-window">
+						<ChatWindow
+							channel={currentChannel}
+							user={user}
+						/>
+					</section>
+					<section className="chat-section-user-list">
+						<UserList channelUsers={channelUsers} />
+					</section>
+				</div>
+			}
 		</div>
 	);
 }

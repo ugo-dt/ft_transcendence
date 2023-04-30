@@ -1,7 +1,6 @@
 .div-channels {
 	margin-left: 1%;
 	margin-right: 2%;
-	width: 20%;
 }
 
 .div-channels-list {
@@ -80,13 +79,6 @@
 	margin-bottom: 2%;
 	width: 100%;
 	overflow-x: scroll;
-}
-
-.user-avatar {
-	width: 40px;
-	height: 40px;
-	border-radius: 25px;
-	margin-right: 8%;
 }
 
 .p-username {

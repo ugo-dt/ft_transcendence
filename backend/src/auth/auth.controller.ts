@@ -32,12 +32,17 @@ export class AuthController {
   }
 
   @Post('genotp')
+  @UseGuards(AuthGuard)
   generateOtp(@Body() body: GenOtpAuthDto) {
     return this.authService.generateOtp(body.phoneNumber);
   }
 
+  // TODO: add login route
+  // @Post('loginotp')
+
   @Post('valotp')
-  validateOtp(@Body() body: ValOtpAuthDto) {
-    return this.authService.validateOtp(body.phoneNumber, body.code);
+  @UseGuards(AuthGuard)
+  validateOtp(@Body() body: ValOtpAuthDto, @Session() session: any) {
+    return this.authService.validateOtp(parseInt(session.userId), body.phoneNumber, body.code);
   }
 }

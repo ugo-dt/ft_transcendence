@@ -116,11 +116,13 @@ export class UsersService {
   public isOffline(id: number): Promise<boolean> { return this._isStatus(id, STATUS_OFFLINE); }
 
   public async getUsername(id: number) { return (await this._user(id)).username; }
+  public async getHas2fa(id: number) { return (await this._user(id)).has2fa; }
   public async getAvatar(id: number) { return (await this._user(id)).avatar;}
   public async getRating(id: number) { return (await this._user(id)).rating;}
   public async getPaddleColor(id: number) { return (await this._user(id)).paddleColor;}
   
   public async setUsername(id: number, username: string) { return this.update(id, { username: username }); }
+  public async setHas2fa(id: number, has2fa: boolean) { return this.update(id, {has2fa}); }
   public async setAvatar(id: number, avatar: string) { return this.update(id, { avatar: avatar }); }
   public async setOnline(id: number) { return this.update(id, { status: STATUS_ONLINE }); }
   public async setInGame(id: number) { return this.update(id, { status: STATUS_IN_GAME }); }

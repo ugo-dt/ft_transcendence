@@ -96,7 +96,7 @@ export class AuthService {
     return verification;
   }
 
-  async validateOtp(phoneNumber: string, code: string) {
+  async validateOtp(userId: number, phoneNumber: string, code: string) {
     let check;
     try {
       // set services to .env
@@ -106,6 +106,8 @@ export class AuthService {
       throw new ForbiddenException('generation code does not exist');
     }
     if (check.status != 'approved') throw new UnauthorizedException('wrong 2fa code');
+    const has2fa = await this.usersService.getHas2fa(userId);
+    if (!has2fa) this.usersService.update(userId, {has2fa: true, phoneNumber});
     return check;
   }
 }

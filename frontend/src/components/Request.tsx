@@ -26,6 +26,7 @@ namespace __url_ {
   export const __remove_friend_ = __users_base_ + '/remove-friend'
   export const __rankings_ = __users_base_ + '/get/rankings';
   export const __edit_paddle_ = __users_base_ + '/edit/paddle-color';
+  export const __disable_2fa_ = __users_base_ + '/disable2fa';
 
   // Game
   export const __rooms_ = __game_base_ + '/rooms';
@@ -174,6 +175,10 @@ class Request {
 
   public static async editUsername(newUsername: string): Promise<IUser | null> {
     return await Request.__make_post_request_(__url_.__edit_username_, { username: newUsername });
+  }
+
+  public static async disable2fa(): Promise<IUser | null> {
+    return await Request.__make_post_request_(__url_.__disable_2fa_);
   }
 
   public static async editAvatar(formData: FormData): Promise<IUser | null> {

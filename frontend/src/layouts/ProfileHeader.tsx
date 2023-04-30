@@ -49,7 +49,8 @@ function PaddleColorBox({ profileColor, color }: { profileColor: string, color: 
 function ProfileHeader({ profile }: { profile: IUser }) {
   const inQueue = useContext(QueueContext).inQueue;
   const context = useContext(UserContext);
-  const user = useContext(UserContext).user;
+  //const user = useContext(UserContext).user;
+  const {user, setUser} = useContext(UserContext);
   const navigate = useNavigate();
   const [isFriend, setIsFriend] = useState(false);
   const [isAvatarFormOpen, setIsAvatarFormOpen] = useState(false);
@@ -118,12 +119,18 @@ function ProfileHeader({ profile }: { profile: IUser }) {
       if (res !== null) {
         // set user 2fa to true with call to backend
         // display success message
+        if (user) setUser({...user, has2fa: true});
         setOtpMessageState(1);
       } else {
         setOtpMessageState(2);
       }
     }
     handle2faClose();
+  }
+
+  async function onClickDisable2fa() {
+    const res = await Request.disable2fa();
+    if (res && user) setUser({...user, has2fa: false});
   }
 
   function onChangeSMSCode(event: ChangeEvent<HTMLInputElement>) {
@@ -137,6 +144,9 @@ function ProfileHeader({ profile }: { profile: IUser }) {
       }
     }
   }, [context,]);
+
+  // delete after
+  console.log(user);
 
   return (
     <div className="profile-header-container">
@@ -186,11 +196,15 @@ function ProfileHeader({ profile }: { profile: IUser }) {
                   >
                     <EditIcon className="profile-header-actions-icon" /> Edit username
                   </div>
-                  <div role="button" className="profile-header-actions-btn edit-profile-btn"
-                    onClick={handle2faOpen}
-                  >
-                    <VpnKeyIcon className="profile-header-actions-icon" /> Enable 2FA
-                  </div>
+                  {user.has2fa ?
+                    <Button variant="contained" size="small" color="error" onClick={onClickDisable2fa}>Disable 2FA</Button>
+                  :
+                    <div role="button" className="profile-header-actions-btn edit-profile-btn"
+                      onClick={handle2faOpen}
+                    >
+                      <VpnKeyIcon className="profile-header-actions-icon" /> Enable 2FA
+                    </div>
+                  }
                   <Dialog open={open2fa} onClose={handle2faClose}>
                     <DialogTitle>Activate 2FA</DialogTitle>
                     <DialogContent>

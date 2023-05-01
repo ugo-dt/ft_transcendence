@@ -13,7 +13,11 @@ import { Channel } from 'src/chat/channel/entities/channel.entity';
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor, CurrentUserInterceptor)
 export class UsersController {
-  constructor(private usersService: UsersService, private envService: EnvService, private channelService: ChannelService) { }
+  constructor(
+    private usersService: UsersService,
+    private envService: EnvService,
+    private channelService: ChannelService
+  ) { }
 
   @Get("me")
   getMyInfo(@CurrentUser() user: User): User {
@@ -44,7 +48,7 @@ export class UsersController {
   getRankings(): Promise<User[]> {
     return this.usersService.rankings();
   }
-  
+
   @Get('get/user-ranking/:id')
   gerUserRanking(@Param("id") id: number): Promise<number> {
     return this.usersService.userRanking(id);
@@ -68,7 +72,7 @@ export class UsersController {
     writeStream.end();
     return this.usersService.setAvatar(user.id, `${this.envService.get('BACKEND_HOST')}/${fullpath}`);
   }
-  
+
   @Delete("edit/avatar")
   async deleteAvatar(@CurrentUser() user: User): Promise<User> {
     return this.usersService.setAvatar(user.id, this.envService.get('DEFAULT_AVATAR'));
@@ -88,13 +92,13 @@ export class UsersController {
   async removeFriend(@CurrentUser() user: User, @Param("friendId") friendId: number) {
     return await this.usersService.removeFriend(user.id, friendId);
   }
-	
+
   @Post("block-user/")
   async blockUser(@CurrentUser() user: User, @MessageBody() data: { id: number }) {
-	return await this.usersService.blockUser(user.id, data.id);
+    return await this.usersService.blockUser(user.id, data.id);
   }
 
-  @Delete("unblock/:id")
+  @Delete("unblock-user/:id")
   async unblockUser(@CurrentUser() user: User, @Param("id") id: number) {
     return await this.usersService.unblockUser(user.id, id);
   }
@@ -117,56 +121,37 @@ export class UsersController {
   /*---Chat---*/
 
   @Post('channels/create-channel')
-  async createChannel(@CurrentUser() user: User, @MessageBody() data: { name: string, password: string, isDm: boolean}): Promise<Channel> {
-	  return await this.channelService.create(data.name, data.password, data.isDm, user.id, this.usersService);
+  async createChannel(@CurrentUser() user: User, @MessageBody() data: { name: string, password: string, isDm: boolean, isPrivate: boolean }): Promise<Channel> {
+    return await this.channelService.create(data.name, data.password, data.isDm, user.id, data.isPrivate, this.usersService);
   }
 
   @Delete('channels/delete-channel/:id')
   async deleteChannel(@CurrentUser() user: User, @Param("id") id: number): Promise<Channel> {
-	  return await this.channelService.delete(id, user.id, this.usersService);
+    return await this.channelService.delete(id, user.id, this.usersService);
   }
 
-  @Post('channels/join-channel/:id')
-  async joinChannel(@CurrentUser() user: User, @Param("id") id: number) {
-	  return await this.channelService.addUser(id, user.id, this.usersService);
+  @Post('channels/join-channel/')
+  async joinChannel(@CurrentUser() user: User, @MessageBody() data: { id: number, password: string }) {
+    return await this.channelService.addUser(data.id, user.id, data.password, this.usersService);
   }
 
-  @Post('channels/leave-channel/:id')
+  @Delete('channels/leave-channel/:id')
   async leaveChannel(@CurrentUser() user: User, @Param("id") id: number) {
-	console.log('leave-channel: ', id);
-	  return await this.channelService.removeUser(id, user.id, this.usersService);
+    return await this.channelService.removeUser(id, user.id, this.usersService);
   }
 
   @Get('channels/user-channels')
   async getUserChannels(@CurrentUser() user: User): Promise<Channel[]> {
-	console.log('get-user-channels');
-	return await this.usersService.getUserChannels(user, this.channelService);
+    return await this.usersService.getUserChannels(user, this.channelService);
   }
 
   @Get('channels/channel-users/:id')
   async getChannelUsers(@CurrentUser() user: User, @Param("id") id: number): Promise<User[]> {
-	console.log('get-channel-users');
-	return await this.channelService.getChannelUsers(id, this.usersService);
+    return await this.channelService.getChannelUsers(id, this.usersService);
   }
 
   @Post('channels/edit-channel-password')
   async editChannelPassword(@CurrentUser() user: User, @MessageBody() data: { channelId: number, newPassword: string }): Promise<Channel> {
-	console.log('editChannelPassword', data.newPassword);
     return await this.channelService.editPassword(user.id, data.channelId, data.newPassword);
-  }
-
-  @Get('channels/all')
-  async getAllChannels(): Promise<Channel[]> {
-	return await this.channelService.findAll();
-  }
-
-  @Post('channels/check-password')
-  async checkPassword(@CurrentUser() user: User, @MessageBody() data: { id: number, password: string }): Promise<boolean> {
-	return await this.channelService.checkPassword(data.id, data.password);
-  }
-
-  @Post('channels/kick-user')
-  async kickUser(@CurrentUser() user: User, @MessageBody() data: { id: number, password: string }): Promise<boolean> {
-	return await this.channelService.checkPassword(data.id, data.password);
   }
 }

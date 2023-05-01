@@ -1,6 +1,6 @@
 import { createContext } from 'react';
 import { Socket } from 'socket.io-client'
-import { IUser } from './types';
+import { IChannel, IUser } from './types';
 import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 
 interface ContextValue {
@@ -8,6 +8,9 @@ interface ContextValue {
   pongSocket: React.MutableRefObject<Socket<DefaultEventsMap, DefaultEventsMap> | null>
   loading: boolean,
   setLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  currentChannel: IChannel | undefined,
+  setCurrentChannel: React.Dispatch<React.SetStateAction<IChannel | undefined>>
+
 }
 
 export const Context = createContext<ContextValue>({
@@ -15,6 +18,8 @@ export const Context = createContext<ContextValue>({
   pongSocket: {} as React.MutableRefObject<Socket<DefaultEventsMap, DefaultEventsMap> | null>,
   loading: false,
   setLoading: () => {},
+  currentChannel: undefined,
+  setCurrentChannel: () => {},
 });
 
 interface AuthContextValue {

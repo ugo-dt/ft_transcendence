@@ -1,11 +1,9 @@
 import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
 import { PongService } from "./pong/pong.service";
-import { Logger, NotFoundException } from "@nestjs/common";
+import { Logger } from "@nestjs/common";
 import Queue from "./pong/Matchmaking/Queue";
 import { ChatService } from "./chat/chat.service";
-import Client from "./Client/Client";
-import { UsersService } from "./users/users.service";
 import { MessageService } from "./chat/message/message.service";
 import { ChannelService } from "./chat/channel/channel.service";
 
@@ -21,8 +19,6 @@ export class AppGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   constructor(
     private readonly pongService: PongService,
-    private readonly messageService: MessageService,
-    private readonly channelService: ChannelService,
     private readonly chatService: ChatService,
   ) {
     this.logger = new Logger("AppGateway");
@@ -132,11 +128,92 @@ export class AppGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return this.pongService.cancelRematch(client);
   }
 
+  // chat
+  @SubscribeMessage('join-channel-room')
+  public async joinChannelRoom(@ConnectedSocket() clientSocket: Socket, @MessageBody() id: number) {
+    const channel = await this.chatService.joinChannelRoom(clientSocket, id);
+    if (channel) {
+      this.server.to(channel.room).emit('channel-join', channel.messages);
+    }
+  }
+
+  @SubscribeMessage('leave-channel-room')
+  public async leaveChannelRoom(@ConnectedSocket() clientSocket: Socket, @MessageBody() id: number) {
+    const channel = await this.chatService.leaveChannelRoom(clientSocket, id);
+    if (channel) {
+      this.server.to(channel.room).emit('channel-join', channel.messages);
+    }
+  }
+
   @SubscribeMessage('send-message')
   public async handlePushMessageToChannel(@ConnectedSocket() clientSocket: Socket, @MessageBody() data: any) {
-    this.logger.log(`send-message`);
-    console.log("message: ", data.message);
-    console.log("data.currentChannelId: ", data.currentChannelId);
-    return this.chatService.handlePushMessageToChannel(clientSocket, data.currentChannelId, data.message);
+    const channel = await this.chatService.handlePushMessageToChannel(clientSocket, data.currentChannelId, data.message);
+    if (channel) {
+      this.server.to(channel.room).emit('new-message', channel.messages);
+    }
+  }
+
+  @SubscribeMessage('invite-user')
+  public async handleInviteUser(@ConnectedSocket() clientSocket: Socket, @MessageBody() data: { channelId: number, inviteId: number }) {
+    const channel = await this.chatService.handleInviteUser(clientSocket, data.channelId, data.inviteId);
+    if (channel) {
+      this.server.to(channel.room).emit('channel-update', channel);
+    }
+  }
+
+  @SubscribeMessage('kick-user')
+  public async handleKickUser(@ConnectedSocket() clientSocket: Socket, @MessageBody() data: { channelId: number, kickedId: number }) {
+    const channel = await this.chatService.handleKickUser(clientSocket, data.channelId, data.kickedId);
+    if (channel) {
+      this.server.to(channel.room).emit('channel-update', channel);
+    }
+  }
+
+  @SubscribeMessage('mute-user')
+  public async handleMuteUser(@ConnectedSocket() clientSocket: Socket, @MessageBody() data: { channelId: number, mutedId: number }) {
+    const channel = await this.chatService.handleMuteUser(clientSocket, data.channelId, data.mutedId);
+    if (channel) {
+      this.server.to(channel.room).emit('channel-update', channel);
+    }
+  }
+
+  @SubscribeMessage('unmute-user')
+  public async handleUnmuteUser(@ConnectedSocket() clientSocket: Socket, @MessageBody() data: { channelId: number, mutedId: number }) {
+    const channel = await this.chatService.handleUnmuteUser(clientSocket, data.channelId, data.mutedId);
+    if (channel) {
+      this.server.to(channel.room).emit('channel-update', channel);
+    }
+  }
+
+  @SubscribeMessage('ban-user')
+  public async handleBanUser(@ConnectedSocket() clientSocket: Socket, @MessageBody() data: { channelId: number, bannedId: number }) {
+    const channel = await this.chatService.handleBanUser(clientSocket, data.channelId, data.bannedId);
+    if (channel) {
+      this.server.to(channel.room).emit('channel-update', channel);
+    }
+  }
+
+  @SubscribeMessage('unban-user')
+  public async handleUnbanUser(@ConnectedSocket() clientSocket: Socket, @MessageBody() data: { channelId: number, bannedId: number }) {
+    const channel = await this.chatService.handleUnbanUser(clientSocket, data.channelId, data.bannedId);
+    if (channel) {
+      this.server.to(channel.room).emit('channel-update', channel);
+    }
+  }
+
+  @SubscribeMessage('set-admin')
+  public async handleSetAdmin(@ConnectedSocket() clientSocket: Socket, @MessageBody() data: { channelId: number, newAdminId: number }) {
+    const channel = await this.chatService.handleSetAdmin(clientSocket, data.channelId, data.newAdminId);
+    if (channel) {
+      this.server.to(channel.room).emit('channel-update', channel);
+    }
+  }
+
+  @SubscribeMessage('unset-admin')
+  public async handleUnsetAdmin(@ConnectedSocket() clientSocket: Socket, @MessageBody() data: { channelId: number, unsetAdminId: number }) {
+    const channel = await this.chatService.handleUnsetAdmin(clientSocket, data.channelId, data.unsetAdminId);
+    if (channel) {
+      this.server.to(channel.room).emit('channel-update', channel);
+    }
   }
 }

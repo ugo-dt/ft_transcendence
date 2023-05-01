@@ -1,4 +1,4 @@
-.div-channels {
+/* .div-channels {
 	margin-left: 1%;
 	margin-right: 2%;
 }
@@ -90,4 +90,64 @@
 	flex-direction: row;
 	flex-wrap: wrap;
 	width: 100%;
+} */
+
+.Channels {
+  border: 1px solid darkred;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  overflow-y: scroll;
+}
+
+.chat-user-channels {
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+#channels-icon-btn {
+  border: 1px solid white;
+  margin: 10px;
+  cursor: pointer;
+}
+
+#channels-icon-btn:hover {
+  transition: .5s;
+  color: #FFF;
+}
+
+.chat-user-info {
+  margin-left: 10px;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  padding: 10px;
+  display: flex;
+  border-radius: 5px;
+  align-items: center;
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 1);
+}
+
+#chat-user-info-avatar {
+  margin-right: 10px;
+  border-radius: 50%;
+  display: block;
+  border: 1px solid var(--avatar-border-color);
+  margin-bottom: 5px;
+  cursor: pointer;
+}
+
+.chat-channels {
+  cursor: pointer;
+  border: .5px solid white;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  margin-bottom: 5px;
+}
+
+.selected-channel {
+  background-color: #333;
+}
+
+.chat-user-channel-options {
+  margin-top: auto;
 }

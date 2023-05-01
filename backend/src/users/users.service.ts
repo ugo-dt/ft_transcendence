@@ -100,10 +100,9 @@ export class UsersService {
       throw new NotFoundException("user not found");
     }
     const index = user.friends.findIndex(f => f === friend.id);
-    if (index === -1) {
-      throw new NotFoundException("no such friend");
+    if (index > -1) {
+      user.friends.splice(index, 1);
     }
-    user.friends.splice(index, 1);
     return this.repo.save(user);
   }
 
@@ -126,10 +125,9 @@ export class UsersService {
       throw new NotFoundException("user not found");
     }
     const index = user.blocked.findIndex(f => f === Number(blockedId));
-    if (index === -1) {
-      throw new NotFoundException("user not found");
+    if (index > -1) {
+      user.blocked.splice(index, 1);
     }
-    user.blocked.splice(index, 1);
     return this.repo.save(user);
   }
 
@@ -148,7 +146,7 @@ export class UsersService {
     return this.repo.save(user);
   }
 
-  public async removeChannel(userId: number, channelId: number) {
+  public async removeChannel(userId: number, channelId: number, channelRoom: string) {
     const user = await this.findOneId(userId);
     if (!user) {
       throw new NotFoundException("user not found");
@@ -160,6 +158,7 @@ export class UsersService {
     user.userChannels.splice(index, 1);
     const client = Client.at(userId);
     if (client) {
+      client.leaveChannelRoom(channelRoom);
       client.removeChannel(channelId);
     }
     return this.repo.save(user);

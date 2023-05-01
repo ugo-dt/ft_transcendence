@@ -31,4 +31,7 @@ export class Channel {
 
   @Column()
   room: string; // socket room
+
+  @Column()
+  isPrivate: boolean;
 }

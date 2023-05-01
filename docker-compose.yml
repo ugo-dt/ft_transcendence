@@ -23,6 +23,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    image: backend
     volumes:
       - ./backend/src:/app/src
       - ./backend/public:/app/public/
@@ -39,6 +40,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    image: frontend
     ports:
       - 5173:5173
     env_file:

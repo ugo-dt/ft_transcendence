@@ -1,5 +1,4 @@
-import { useNavigate } from "react-router";
-import Form, { FormText, FormType } from "../components/Form";
+import Form, { FormType } from "../components/Form";
 import { useState } from "react";
 import Request from "../components/Request";
 import { IChannel } from "../types";
@@ -10,7 +9,6 @@ interface CreateChannelFormProps {
 }
 
 function ChannelNewPasswordForm({ onClose, currentChannel }: CreateChannelFormProps) {
-	const navigate = useNavigate();
 	const [passwordValue, setPasswordValue] = useState("");
 	const [isValid, setIsValid] = useState(false);
 	const [error, setError] = useState("");
@@ -20,7 +18,7 @@ function ChannelNewPasswordForm({ onClose, currentChannel }: CreateChannelFormPr
 			label: 'Password',
 			placeholder: 'Enter a password',
 			isValid: isValid,
-			valid: 'Channel name is valid.',
+			valid: 'Password is valid.',
 			error: error,
 			type: 'password',
 			onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,8 +30,10 @@ function ChannelNewPasswordForm({ onClose, currentChannel }: CreateChannelFormPr
 				}
 				if (v.length > 2)
 					setIsValid(true)
-				if (v.length <= 2)
-					setIsValid(false)
+				if (v.length <= 2) {
+					setError("Password is too short.");
+					setIsValid(false);
+				}
 				setPasswordValue(v);
 			},
 		}, {
@@ -43,7 +43,6 @@ function ChannelNewPasswordForm({ onClose, currentChannel }: CreateChannelFormPr
 		}];
 
 	async function removePassword() {
-		console.log('remove Password');
 		if (!currentChannel) {
 			return ;
 		}

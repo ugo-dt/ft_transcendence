@@ -1,4 +1,4 @@
-.div-chat {
+/* .div-chat {
 	margin-left: 1%;
 	margin-right: 1%;
 }
@@ -10,23 +10,6 @@
 	height: 470px;
 	box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, .5);
 	overflow-y: scroll;
-}
-
-.input-bar {
-	margin-top: 2%;
-	width: 100%;
-	padding: 1%;
-	border-radius: 10px;
-	border-style: none;
-	outline: none;
-	background-color: rgb(92, 92, 92);
-	color: white;
-	box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, .5);
-}
-
-.input-bar::placeholder {
-	color: white;
-	opacity: 0.5;
 }
 
 .div-message {
@@ -46,6 +29,67 @@
 	margin-right: 3%;
 }
 
-.li-messages {
-	list-style: none;
+*/
+
+.ChatWindow {
+  margin-left: 10px;
+  margin-right: 10px;
+  border: 1px solid darkblue;
+  min-width: 50%;
+}
+
+.chat-window-messages-container {
+  background-color: rgb(50, 50, 50);
+  border-radius: 10px;
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, .5);
+  overflow-y: scroll;
+  padding: 20px;
+  margin-left: 10px;
+  margin-right: 10px;
+	height: 500px;
+}
+
+.chat-window-messages-container::-webkit-scrollbar {
+  background-color: #222;
+  width: 10px;
+  border-radius: 10%;
+}
+
+.chat-window-messages-container::-webkit-scrollbar-thumb {
+  background-color: #151515;
+  width: 10px;
+}
+
+.chat-window-message {
+  display: flex;
+  margin-top: 10px;
+}
+
+.message-info {
+  display: flex;
+}
+
+#sender-username {
+  margin-right: 5px;
+}
+
+#message-timestamp {
+  color: #888;
+}
+
+.input-bar {
+  margin: 5px;
+  width: 100%;
+  padding: 1%;
+  border-radius: 10px;
+  border-style: none;
+  outline: none;
+  background-color: rgb(92, 92, 92);
+  color: white;
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, .5);
+}
+
+.input-bar::placeholder {
+  color: white;
+  opacity: 0.5;
 }

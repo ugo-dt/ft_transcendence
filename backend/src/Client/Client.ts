@@ -122,9 +122,7 @@ class Client {
 
   public addChannel(id: number) {
     if (!this._userChannels.includes(id)) {
-		this._userChannels.push(id);
-		console.log('added channel to user');
-		console.log("this._userChannels: ", this._userChannels);
+		  this._userChannels.push(id);
     }
   }
 
@@ -132,6 +130,12 @@ class Client {
     const index = this._userChannels.indexOf(id);
     if (index > -1) {
       this._userChannels.splice(index, 1);
+    }
+  }
+
+  public leaveChannelRoom(room: string) {
+    for (const s of this._sockets.values()) {
+      s.leave(room);
     }
   }
 

@@ -1,59 +1,51 @@
 .browse-channels {
-	display: flex;
-	flex-direction: column;
-	position: absolute;
-    top: 50%;
-    left: 50%;
-    margin-top: -20%;
-    margin-left: -24%;
-    width: 50%;
-    height: 55%;
-	background-color: rgb(31, 31, 31);
-	box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, .5);
-	border-radius: 10px;
-	z-index: 1;
-	align-items: center;
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -20%;
+  margin-left: -24%;
+  width: 50%;
+  height: 55%;
+  background-color: rgb(31, 31, 31);
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, .5);
+  border-radius: 10px;
+  z-index: 1;
+  align-items: center;
+  user-select: none;
 }
 
 .browse-channels-list {
-	width: 100%;
-	height: 100%;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	overflow-y: scroll;
-	margin-top: 2%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: scroll;
+  margin: 20px;
+  width: 75%;
 }
 
-.btn-browse-channels {
-	cursor: pointer;
-	color: white;
-	font-weight: bolder;
-	font-size: large;
-	padding: 10px;
-	border-style: none;
-	background-color: rgb(55, 57, 59);
-	border-radius: 10px;
-	transition: .2s ease-in-out;
-	width: 45%;
-	box-shadow: 0 0.1rem 0.4rem rgba(0, 0, 0, .5);
-	margin-top: 1%;
-	margin-bottom: 1%;
+.browse-channels-btn {
+  cursor: pointer;
+  font-weight: bolder;
+  font-size: large;
+  color: white;
+  background-color: rgb(55, 57, 59);
+  box-shadow: 0 0.1rem 0.4rem rgba(0, 0, 0, .5);
+  transition: .2s ease-in-out;
+  border-radius: 10px;
+  width: 75%;
+  padding-left: 30px;
+  padding-right: 30px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  margin-bottom: 5px;
 }
 
-.btn-browse-channels:hover {
-	background-color: rgb(67, 67, 67);
+.browse-channels-btn:hover {
+  background-color: rgb(67, 67, 67);
 }
 
-.btn-browse-refresh {
-	cursor: pointer;
-	width: 40px;
-	height: 40px;
-	border-style: none;
-}
-
-.img-btn-refresh {
-	width: 40px;
-	height: 40px;
-	background-color: rgb(31, 31, 31);
+#browse-refresh-btn {
+  cursor: pointer;
 }

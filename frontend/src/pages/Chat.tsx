@@ -1,80 +1,112 @@
-import { useContext, useEffect, useState } from "react";
-import { Context, UserContext } from "../context";
-import { useLocation, useNavigate } from "react-router";
-import { IChannel } from "../types/IChannel";
-import Request from "../components/Request";
-import Channels from "../layouts/Channels";
-import { IUser } from "../types";
-import ChatWindow from "../layouts/ChatWindow";
-import UserList from "../layouts/UserList";
+import { useContext, useEffect, useState } from 'react';
+import { Context, UserContext } from '../context';
+import { IChannel, IUser } from '../types';
+import Request from '../components/Request';
+import Channels from '../layouts/Channels';
+import ChatWindow from '../layouts/ChatWindow';
+import UserList from '../layouts/UserList';
 import './style/Chat.css';
 
+/**
+ * test invite
+ * 
+ * update on user join
+ * 
+ * update on kick
+ */
+
 function Chat() {
-	const state = useLocation().state;
-	const navigate = useNavigate();
-	const user = useContext(UserContext).user;
-	const setUser = useContext(UserContext).setUser;
-	const [currentChannel, setCurrentChannel] = useState<IChannel | undefined>(undefined);
-	const [channelUsers, setChannelUsers] = useState<IUser[]>([]);
-	const [channels, setChannels] = useState<IChannel[]>([]);
+  const [loading, setLoading] = useState(true);
+  const socket = useContext(Context).pongSocket.current;
+  const user = useContext(UserContext).user;
+  const { currentChannel, setCurrentChannel } = useContext(Context);
+  const [userChannels, setUserChannels] = useState<IChannel[]>([]);
+  const [channelUsers, setChannelUsers] = useState<IUser[]>([]);
+  const [inRoom, setInRoom] = useState(false);
+  document.title = "ft_transcendence - Chat";
 
-	useEffect(() => {
-		if (!user) {
-			return;
-		}
-		console.log("state:", state);
-		if (state && state.id != undefined) {
-			navigate("/messages", { state: {} });
-		}
-		Request.getUserChannels().then(res => {
-			if (res)
-				setChannels(res);
-			console.log("res: ", res);
-		});
-		Request.getProfile(user.username).then(res => {
-			if (res)
-				setUser(res);
-		})
-	}, []);
+  function setChannel(channel: IChannel | undefined) {
+    if (channel && currentChannel && channel.id === currentChannel.id) {
+      return ;
+    }
+    if (currentChannel && socket && inRoom) {
+      console.log("leave room");
+      socket.emit('leave-channel-room', currentChannel.id);
+      setInRoom(false);
+    }
+    setCurrentChannel(channel);
+  }
 
-	useEffect(() => {
-		if (!currentChannel) {
-			return ;
-		}
-		Request.getChannelUsers(currentChannel.id).then(res => {
-			if (res) {
-				setChannelUsers(res);
-			}
-		})
-	}, [currentChannel]);
+  async function getChannelUsers() {
+    if (!currentChannel) {
+      return;
+    }
+    setChannelUsers(await Request.getChannelUsers(currentChannel.id));
+  }
 
-	return (
-		<div className="chat">
-			{
-				user &&
-				<div className="chat-sections">
-					<section className="chat-section-channels">
-						<Channels
-							user={user}
-							channels={channels}
-							setChannels={setChannels}
-							currentChannel={currentChannel}
-							setCurrentChannel={setCurrentChannel}
-						/>
-					</section>
-					<section className="chat-section-chat-window">
-						<ChatWindow
-							channel={currentChannel}
-							user={user}
-						/>
-					</section>
-					<section className="chat-section-user-list">
-						<UserList channelUsers={channelUsers} />
-					</section>
-				</div>
-			}
-		</div>
-	);
+  async function getUserChannels() {
+    setLoading(true);
+    Request.getUserChannels().then(res => {
+      if (res) {
+        setUserChannels(res);
+      }
+    });
+    setLoading(false);
+  }
+
+  function onChannelUpdate(data: IChannel) {
+    if (user && !data.users.includes(user.id)) {
+      console.log(data);
+      
+      setCurrentChannel(undefined);
+      return;
+    }
+    setCurrentChannel(data);
+  }
+
+  useEffect(() => {
+    if (!socket) {
+      return;
+    }
+    socket.on('channel-update', onChannelUpdate);
+    
+    if (currentChannel && !inRoom) {
+      console.log("join room");
+      socket.emit('join-channel-room', currentChannel.id);
+      setInRoom(true);
+    }
+    getUserChannels();
+    getChannelUsers();
+
+    return () => {
+      socket.off('channel-update', onChannelUpdate);
+    }
+  }, [currentChannel]);
+
+  return (
+    <div className="chat">
+      {
+        loading ? (<h2>Loading...</h2>) : (
+          <>
+            <Channels
+              getUserChannels={getUserChannels}
+              userChannels={userChannels}
+              setUserChannels={setUserChannels}
+              setChannel={setChannel}
+            />
+            <ChatWindow
+              channelUsers={channelUsers}
+              getChannelUsers={getChannelUsers}
+            />
+            <UserList
+              currentChannel={currentChannel}
+              channelUsers={channelUsers}
+            />
+          </>
+        )
+      }
+    </div>
+  );
 }
 
 export default Chat;

@@ -21,8 +21,9 @@ interface FormBaseType<T> extends FormTypeInfo {
 export type FormText = FormBaseType<string>;
 export type FormFile = FormBaseType<File>;
 export type FormButton = FormBaseType<null>;
+export type FormCheckbox = FormBaseType<boolean>;
 
-export type FormType = FormText | FormFile | FormButton;
+export type FormType = FormText | FormFile | FormButton | FormCheckbox;
 
 export interface FormProps<T = FormType> {
   values: T[],
@@ -68,7 +69,7 @@ function Form<T extends FormType>({
                   }
                 </section>
                 {
-                  value.type === 'text' &&
+                  (value.type === 'text' || value.type === 'password') &&
                   (
                     value.isValid
                     ? <h4 style={{ fontWeight: 'lighter', color: '#00e676' }}>{value.valid}&nbsp;</h4>

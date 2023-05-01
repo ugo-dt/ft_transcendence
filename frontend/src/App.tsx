@@ -3,13 +3,11 @@ import { NavLink, Outlet, useNavigate, useSearchParams } from 'react-router-dom'
 import { Context, QueueContext, UserContext } from './context'
 import { Socket, io } from 'socket.io-client'
 import { CssBaseline } from '@mui/material'
-import { IUser } from './types'
+import { IChannel, IUser } from './types'
 import Navbar from './layouts/Navbar'
 import { DefaultEventsMap } from '@socket.io/component-emitter'
 import Request from './components/Request'
 import './App.css'
-
-// todo: document.title = "ft_transcendence - Chat";
 
 function QueueTimer() {
   const socket = useContext(Context).pongSocket;
@@ -58,12 +56,15 @@ function App() {
   const isServerAvailableRef = useRef<boolean>(true);
   const [isServerAvailable, setIsServerAvailable] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(true);
+  const [currentChannel, setCurrentChannel] = useState<IChannel | undefined>(undefined);
 
   const contextValue = {
     serverUrl: serverUrl,
     pongSocket: socket,
     loading: loading,
     setLoading: setLoading,
+    currentChannel: currentChannel,
+    setCurrentChannel: setCurrentChannel,
   };
 
   const queueContextValue = {

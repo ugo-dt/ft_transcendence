@@ -33,7 +33,6 @@ function Profile() {
         if (!profileData) {
           return navigate("/home");
         };
-		console.log("profileData: ", profileData);
         setProfile(profileData);
         Request.getUserMatchHistory(profileData.id).then((historyData) => {
           setHistoryList(historyData);

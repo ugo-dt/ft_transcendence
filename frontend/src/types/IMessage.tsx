@@ -1,7 +1,7 @@
 export interface IMessage {
-	senderId: number;
-	senderName: string;
-	content: string;
-	timestamp: string;
-	toChannel: number;
+  id: number,
+  content: string;
+  timestamp: string;
+  senderId: number;
+  destination: number;
 }

@@ -80,7 +80,7 @@ class Request {
   })();
 
   private static async __make_get_request_<T>(url: string): Promise<T | null> {
-    return await Request.__axios_.get(url, {signal: this.controller.signal}).then(res => {
+    return await Request.__axios_.get(url, { signal: this.controller.signal }).then(res => {
       return res.data;
     }).catch(err => {
       if (axios.isAxiosError(err) && err.code === "ERR_CANCELED") {
@@ -205,28 +205,32 @@ class Request {
   }
 
   /*---Chat---*/
-  public static async blockUser(id: number) {
-    return await Request.__make_post_request_(__url_.__add_friend_, { id: id });
+  public static async blockUser(id: number): Promise<IUser | null> {
+    return await Request.__make_post_request_(__url_.__block_user_, { id: id });
   }
 
-  public static async unblockUser(id: number) {
-    return await Request.__make_delete_request_(__url_.__remove_friend_ + '/' + id);
+  public static async unblockUser(id: number): Promise<IUser | null> {
+    return await Request.__make_delete_request_(__url_.__unblock_user_ + '/' + id);
   }
 
-  public static async createChannel(name: string, password: string, isDm: boolean): Promise<IUser | null> {
-    return await Request.__make_post_request_(__url_.__create_channel_, { name: name, password: password, isDm: isDm });
+  public static async createChannel(name: string, password: string, isDm: boolean, isPrivate: boolean): Promise<IChannel | null> {
+    return await Request.__make_post_request_(__url_.__create_channel_, { name: name, password: password, isDm: isDm, isPrivate: isPrivate });
   }
 
   public static async getUserChannels(): Promise<IChannel[]> {
-	return await Request.__make_array_get_request_(__url_.__user_channels_);
+    return await Request.__make_array_get_request_(__url_.__user_channels_);
   }
 
   public static async getChannelUsers(id: number): Promise<IUser[]> {
-	return await Request.__make_array_get_request_(__url_.__channel_users_ + '/' + id);
+    return await Request.__make_array_get_request_(__url_.__channel_users_ + '/' + id);
+  }
+
+  public static async joinChannel(id: number, password: string) {
+    return await Request.__make_post_request_(__url_.__join_channel_, {id: id, password: password});
   }
 
   public static async leaveChannel(id: number) {
-	return await Request.__make_post_request_(__url_.__leave_channel_ + '/' + id, { id: id});
+    return await Request.__make_delete_request_(__url_.__leave_channel_ + '/' + id);
   }
 
   public static async editChannelPassword(channelId: number, newPassword: string): Promise<IChannel | null> {
@@ -234,19 +238,15 @@ class Request {
   }
 
   public static async getAllChannels(): Promise<IChannel[]> {
-	return await Request.__make_array_get_request_(__url_.__all_channels_);
-  }
-
-  public static async joinChannel(id: number) {
-	return await Request.__make_post_request_(__url_.__join_channel_ + '/' + id);
+    return await Request.__make_array_get_request_(__url_.__all_channels_);
   }
 
   public static async checkPassword(id: number, password: string): Promise<boolean | null> {
-	return await Request.__make_post_request_(__url_.__check_password_, { password: password });
+    return await Request.__make_post_request_(__url_.__check_password_, { password: password });
   }
 
   public static async getMessage(id: number): Promise<IMessage | null> {
-	return await Request.__make_get_request_(__url_.__message_ + '/' + id);
+    return await Request.__make_get_request_(__url_.__message_ + '/' + id);
   }
 }
 

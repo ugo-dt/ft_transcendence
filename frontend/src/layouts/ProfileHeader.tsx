@@ -5,7 +5,6 @@ import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
 import SportsTennisIcon from '@mui/icons-material/SportsTennis';
 import ChatIcon from '@mui/icons-material/Chat';
-import BlockIcon from '@mui/icons-material/Block';
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import EditIcon from '@mui/icons-material/Edit';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
@@ -83,7 +82,6 @@ function ProfileHeader({ profile }: { profile: IUser }) {
   }
   function onClickChallenge() { setIsChallengeOpen(!isChallengeOpen); }
   function onClickMessage() { console.log("message"); }
-  function onClickBlock() { console.log("block"); }
 
   useEffect(() => {
     Request.getUserRanking(profile.id).then(res => {
@@ -181,9 +179,6 @@ function ProfileHeader({ profile }: { profile: IUser }) {
                 }
                 <div role="button" className="profile-header-actions-btn message-btn" onClick={onClickMessage}>
                   <ChatIcon className="profile-header-actions-icon" /> Message
-                </div>
-                <div role="button" className="profile-header-actions-btn block-btn" onClick={onClickBlock}>
-                  <BlockIcon className="profile-header-actions-icon" /> Block
                 </div>
               </div>
             )

@@ -51,6 +51,10 @@ export class UsersService {
     return this.repo.findOneBy({ id42 });
   }
 
+  public findOnePhoneNumber(phoneNumber: string): Promise<User | null> {
+    return this.repo.findOneBy({phoneNumber});
+  }
+
   public findAll(): Promise<User[]> {
     return this.repo.find();
   }

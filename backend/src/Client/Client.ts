@@ -1,4 +1,5 @@
 import { Socket } from "socket.io";
+import { Channel } from "src/chat/channel/entities/channel.entity";
 import { GAMETYPE_CASUAL, GAMETYPE_RANKED, GameType } from "src/room/GameRoom";
 
 interface Challenge {
@@ -133,9 +134,10 @@ class Client {
     }
   }
 
-  public leaveChannelRoom(room: string) {
+  public leaveChannelRoom(channel: Channel) {
     for (const s of this._sockets.values()) {
-      s.leave(room);
+      s.emit('leave-channel', channel);
+      s.leave(channel.room);
     }
   }
 

@@ -1,6 +1,6 @@
 import React, { useContext, useState } from "react";
-import Form, { FormFile, FormType } from "../components/Form";
-import Request from "../components/Request";
+import Form, { FormType } from "./Form";
+import Request from "./Request";
 import { UserContext } from "../context";
 import { useNavigate } from "react-router";
 

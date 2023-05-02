@@ -1,6 +1,6 @@
-import Form, { FormType } from "../components/Form";
+import Form, { FormType } from "./Form";
 import { useState } from "react";
-import Request from "../components/Request";
+import Request from "./Request";
 import { IChannel } from "../types";
 
 interface CreateChannelFormProps {

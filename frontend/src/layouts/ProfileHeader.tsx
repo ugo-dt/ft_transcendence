@@ -4,15 +4,14 @@ import { QueueContext, UserContext } from "../context";
 import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
 import SportsTennisIcon from '@mui/icons-material/SportsTennis';
-import ChatIcon from '@mui/icons-material/Chat';
-import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
+import AddPhotoAlternateOutlinedIcon from '@mui/icons-material/AddPhotoAlternateOutlined';
 import EditIcon from '@mui/icons-material/Edit';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import Request from "../components/Request";
-import EditUsernameForm from "./EditUsernameForm";
-import EditAvatarForm from "./EditAvatarForm";
+import EditUsernameForm from "../components/EditUsernameForm";
+import EditAvatarForm from "../components/EditAvatarForm";
 import { useNavigate } from "react-router";
-import GameInvite from "./GameInvite";
+import GameInvite from "../components/GameInvite";
 import OndemandVideoIcon from '@mui/icons-material/OndemandVideo';
 import "./style/ProfileHeader.css"
 
@@ -39,37 +38,42 @@ function PaddleColorBox({ profileColor, color }: { profileColor: string, color: 
   );
 }
 
-function ProfileHeader({ profile }: { profile: IUser }) {
+function ProfileHeader({ user, profile }: { user: IUser | null, profile: IUser }) {
   const inQueue = useContext(QueueContext).inQueue;
-  const context = useContext(UserContext);
-  const user = useContext(UserContext).user;
   const navigate = useNavigate();
   const [isFriend, setIsFriend] = useState(false);
   const [isAvatarFormOpen, setIsAvatarFormOpen] = useState(false);
   const [isUsernameFormOpen, setIsUsernameFormOpen] = useState(false);
   const [isChallengeOpen, setIsChallengeOpen] = useState(false);
-  const [userRanking, setUserRanking] = useState(-1);
+  const [userRanking, setUserRanking] = useState(0);
+  const [info, setInfo] = useState('');
 
   function onClickEditUsername() { setIsUsernameFormOpen(!isUsernameFormOpen); }
   function onClickEditAvatar() { setIsAvatarFormOpen(!isAvatarFormOpen); }
   function onClick2FA() { console.log("2FA"); }
 
-  function onClickAddFriend() {
+  async function onClickAddFriend() {
     if (!user) {
       return;
     }
-    Request.addFriend(profile.id);
-    navigate("/profile/" + profile.username.toLowerCase(), { state: { info: 'Friend added successfully.' } });
-    window.location.reload();
+    await Request.addFriend(profile.id).then(res => {
+      if (res) {
+        setIsFriend(true);
+      }
+    });
+    setInfo('Friend added successfully.');
   }
 
-  function onClickRemoveFriend() {
+  async function onClickRemoveFriend() {
     if (!user) {
       return;
     }
-    Request.removeFriend(profile.id);
-    navigate("/profile/" + profile.username.toLowerCase(), { state: { info: 'Friend removed successfully.' } });
-    window.location.reload();
+    await Request.removeFriend(profile.id).then(res => {
+      if (res) {
+        setIsFriend(false);
+      }
+    });
+    setInfo('Friend removed successfully.');
   }
 
   async function onClickWatch() {
@@ -81,20 +85,19 @@ function ProfileHeader({ profile }: { profile: IUser }) {
     }
   }
   function onClickChallenge() { setIsChallengeOpen(!isChallengeOpen); }
-  function onClickMessage() { console.log("message"); }
 
-  useEffect(() => {
+  useEffect(() => {    
     Request.getUserRanking(profile.id).then(res => {
       if (res) {
         setUserRanking(res);
       }
     });
-    if (user && profile && user.friends && user.friends.length > 0) {
+    if (user) {
       if (user.friends.includes(profile.id)) {
         setIsFriend(true);
       }
     }
-  }, [context]);
+  }, []);
 
   return (
     <div className="profile-header-container">
@@ -110,7 +113,7 @@ function ProfileHeader({ profile }: { profile: IUser }) {
             {
               user && profile.username === user.username &&
               <div role="button" onClick={onClickEditAvatar} className="upload-icon-wrapper">
-                <AddPhotoAlternateIcon className="upload-icon" fontSize="large" />
+                <AddPhotoAlternateOutlinedIcon className="upload-icon" fontSize="large" />
               </div>
             }
           </div>
@@ -177,14 +180,12 @@ function ProfileHeader({ profile }: { profile: IUser }) {
                     )
                   )
                 }
-                <div role="button" className="profile-header-actions-btn message-btn" onClick={onClickMessage}>
-                  <ChatIcon className="profile-header-actions-icon" /> Message
-                </div>
               </div>
             )
           }
         </section> {/* className="profile-header-content" */}
       </div>
+      <h3 id="profile-state-info">{info}&nbsp;</h3>
       {isAvatarFormOpen && <EditAvatarForm onClose={onClickEditAvatar} />}
       {isUsernameFormOpen && <EditUsernameForm onClose={onClickEditUsername} />}
       {isChallengeOpen && <GameInvite title="Challenge" opponentId={profile.id} isRematch={false} onClose={onClickChallenge} />}

@@ -46,7 +46,7 @@
   padding: 20px;
   margin-left: 10px;
   margin-right: 10px;
-	height: 500px;
+  height: 75vh;
 }
 
 .chat-window-messages-container::-webkit-scrollbar {
@@ -78,8 +78,8 @@
 }
 
 .input-bar {
+  width: 98%;
   margin: 5px;
-  width: 100%;
   padding: 1%;
   border-radius: 10px;
   border-style: none;

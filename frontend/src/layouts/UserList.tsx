@@ -1,26 +1,34 @@
 import './style/UserList.css';
 import { IChannel, IUser } from "../types";
 
-// Clicking on a user should show add to dms block challenge add friend etc
-
 import "./style/UserList.css"
-import { useContext, useState } from 'react';
-import { Context, UserContext } from '../context';
+import { useContext, useEffect, useState } from 'react';
+import { Context, QueueContext, UserContext } from '../context';
 import Request from '../components/Request';
+import { IMessage } from '../types/IMessage';
+import GameInvite from '../components/GameInvite';
+import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 
 interface UserOptionsProps {
   selectedUser: IUser,
   onClose: () => void,
+  currentChannel: IChannel | undefined,
 }
 
 function UserOptions({
   selectedUser,
   onClose,
+  currentChannel,
 }: UserOptionsProps) {
   const user = useContext(UserContext).user;
-  const { currentChannel, setCurrentChannel } = useContext(Context);
   const setUser = useContext(UserContext).setUser;
   const socket = useContext(Context).pongSocket.current;
+  const inQueue = useContext(QueueContext).inQueue;
+  const [isChallengeOpen, setIsChallengeOpen] = useState(false);
+
+  function onClickChallenge() {
+    setIsChallengeOpen(!isChallengeOpen);
+  }
 
   function onBlock() {
     if (!user || !socket || !currentChannel) {
@@ -58,11 +66,9 @@ function UserOptions({
 
   function onMute() {
     if (!user || !socket || !currentChannel
-      // || currentChannel.admins.includes(user.id) || currentChannel.muted.includes(selectedUser.id)
-      ) {
+      || !currentChannel.admins.includes(user.id) || currentChannel.muted.includes(selectedUser.id)) {
       return;
     }
-    console.log("mute user");
     socket.emit('mute-user', { channelId: currentChannel.id, mutedId: selectedUser.id });
     onClose();
   }
@@ -72,7 +78,6 @@ function UserOptions({
       || !currentChannel.admins.includes(user.id) || !currentChannel.muted.includes(selectedUser.id)) {
       return;
     }
-    console.log("unmute user");
     socket.emit('unmute-user', { channelId: currentChannel.id, mutedId: selectedUser.id });
     onClose();
   }
@@ -81,7 +86,6 @@ function UserOptions({
     if (!user || !socket || !currentChannel || !currentChannel.admins.includes(user.id)) {
       return;
     }
-    console.log("ban user");
     socket.emit('ban-user', { channelId: currentChannel.id, bannedId: selectedUser.id });
     onClose();
   }
@@ -90,7 +94,6 @@ function UserOptions({
     if (!user || !socket || !currentChannel || !currentChannel.admins.includes(user.id)) {
       return;
     }
-    console.log("unban user");
     socket.emit('unban-user', { channelId: currentChannel.id, bannedId: selectedUser.id });
     onClose();
   }
@@ -99,8 +102,6 @@ function UserOptions({
     if (!user || !socket || !currentChannel || !currentChannel.admins.includes(user.id)) {
       return;
     }
-    console.log("set admin");
-
     socket.emit('set-admin', { channelId: currentChannel.id, newAdminId: selectedUser.id });
     onClose();
   }
@@ -110,7 +111,6 @@ function UserOptions({
       return;
     }
     if (currentChannel.admins.indexOf(user.id) === 0) {
-      console.log("unset admin");
       socket.emit('unset-admin', { channelId: currentChannel.id, unsetAdminId: selectedUser.id });
     }
     onClose();
@@ -122,7 +122,14 @@ function UserOptions({
         <div className="modal-content">
           <div className="modal-close" role="button" onClick={onClose}>&times;</div>
           <div className="modal-title">{selectedUser.username}</div>
+          <div style={{fontWeight: 'lighter'}} className="modal-title">{selectedUser.status.charAt(0).toLocaleUpperCase() + selectedUser.status.slice(1)}</div>
           <section>
+            <button
+              className="form-button"
+              disabled={inQueue || !(selectedUser.status === 'online')}
+              onClick={onClickChallenge}
+            > Challenge
+            </button>
             <button
               className="form-button"
               onClick={() => (user && user.blocked.includes(selectedUser.id)) ? onUnblock() : onBlock()}
@@ -162,16 +169,29 @@ function UserOptions({
           }
         </div>
       </div>
+      {isChallengeOpen && <GameInvite title="Challenge" opponentId={selectedUser.id} isRematch={false} onClose={onClickChallenge} />}
     </div>
   )
 }
 interface UserListProps {
-  currentChannel: IChannel | undefined
-  channelUsers: IUser[];
+  chat: {
+    userChannels: IChannel[],
+    getUserChannels: () => Promise<void>,
+    currentChannel: IChannel | undefined,
+    setCurrentChannel: React.Dispatch<React.SetStateAction<IChannel | undefined>>,
+    setChannel: (channel: IChannel | undefined) => void,
+    channelUsers: IUser[],
+    getChannelUsers: () => void,
+    channelMessages: IMessage[],
+    getChannelMessages: (messageIds: number[]) => void,
+    channelSenders: Map<number, IUser>,
+  }
 }
 
-function UserList({ currentChannel, channelUsers }: UserListProps) {
+function UserList({chat}: UserListProps) {
+  const socket = useContext(Context).pongSocket;
   const user = useContext(UserContext).user;
+  const {getUserChannels, currentChannel, setCurrentChannel, channelUsers } = chat;
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
 
   function handleUserClick(clickedUser: IUser) {
@@ -184,6 +204,24 @@ function UserList({ currentChannel, channelUsers }: UserListProps) {
   function closeSettings() {
     setSelectedUser(null);
   }
+
+  function kickedFromChannel() {
+    setCurrentChannel(undefined);
+    getUserChannels();
+  }
+
+  useEffect(() => {
+    if (!socket.current) {
+      return ;
+    }
+    socket.current.on('leave-channel', kickedFromChannel);
+
+    return () => {
+      if (socket.current) {
+        socket.current.off('leave-channel', kickedFromChannel);
+      }
+    }
+  }, []);
 
   return (
     <div className="UserList">
@@ -206,7 +244,7 @@ function UserList({ currentChannel, channelUsers }: UserListProps) {
               <h4>{user.username}</h4>
               {
                 currentChannel && currentChannel.admins.includes(user.id) &&
-                <h5>admin</h5>
+                <WorkspacePremiumIcon color={currentChannel.admins.indexOf(user.id) === 0 ? 'primary' : 'secondary'} />
               }
             </div>
           ))
@@ -216,6 +254,7 @@ function UserList({ currentChannel, channelUsers }: UserListProps) {
         <UserOptions
           selectedUser={selectedUser}
           onClose={closeSettings}
+          currentChannel={currentChannel}
         />
       )}
     </div>

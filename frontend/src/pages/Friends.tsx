@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router";
 import { Context, QueueContext, UserContext } from "../context";
 import Request from "../components/Request";
 import { IUser } from "../types";
-import GameInvite from "../layouts/GameInvite";
+import GameInvite from "../components/GameInvite";
 import "./style/Friends.css"
 
 function InviteRow({ friendId: friendId }: { friendId: number }) {

@@ -1,9 +1,8 @@
-import { ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { ChannelService } from './channel/channel.service';
 import { UsersService } from 'src/users/users.service';
 import Client from 'src/Client/Client';
-import { MessageService } from './message/message.service';
 import { Channel } from './channel/entities/channel.entity';
 
 @Injectable()
@@ -15,6 +14,11 @@ export class ChatService {
   ) {
     this.logger = new Logger("ChatService");
   }
+
+  public isChannelUser(channel: Channel, userId: number): boolean { return channel.users.includes(userId); }
+  public isUserAdmin(channel: Channel, userId: number): boolean { return channel.admins.includes(userId); }
+  public isUserMuted(channel: Channel, userId: number): boolean { return channel.muted.includes(userId); }
+  public isUserBanned(channel: Channel, userId: number): boolean { return channel.banned.includes(userId); }
 
   public async handlePushMessageToChannel(clientSocket: Socket, channelId: number, content: string): Promise<Channel | null> {
     const client = Client.at(clientSocket);
@@ -29,7 +33,20 @@ export class ChatService {
     if (!client) {
       return null;
     }
-    return await this.channelService.inviteUser(channelId, client.id, inviteId, this.usersService);
+    const channel = await this.channelService.findOneId(channelId);
+    if (!channel) {
+      return null;
+    }
+    if (!channel.users.includes(client.id)) {
+      return null;
+    }
+    if (!channel.users.includes(inviteId)) {
+      channel.users.push(inviteId);
+      await this.usersService.addChannel(inviteId, channel.id);
+      if (!channel.admins.includes(inviteId) && channel.admins.length === 0)
+        channel.admins.push(inviteId);
+    }
+    return await this.channelService.update(channel.id, channel);
   }
 
   public async handleKickUser(clientSocket: Socket, channelId: number, kickedId: number): Promise<Channel | null> {
@@ -37,7 +54,19 @@ export class ChatService {
     if (!client) {
       return null;
     }
-    return await this.channelService.kickUser(channelId, client.id, kickedId, this.usersService);
+    const channel = await this.channelService.findOneId(channelId);
+    if (!channel) {
+      return null;
+    }
+    if (!channel.users.includes(client.id) || !channel.users.includes(kickedId)) {
+      return null;
+    }
+    if (channel.admins.indexOf(client.id) !== 0) {
+      if (!channel.admins.includes(client.id) || channel.admins.includes(kickedId)) {
+        return null;
+      }
+    }
+    return await this.channelService.removeUser(channelId, kickedId, this.usersService);
   }
 
   public async handleMuteUser(clientSocket: Socket, channelId: number, mutedId: number): Promise<Channel | null> {
@@ -45,7 +74,22 @@ export class ChatService {
     if (!client) {
       return null;
     }
-    return await this.channelService.muteUser(channelId, client.id, mutedId);
+    const channel = await this.channelService.findOneId(channelId);
+    if (!channel) {
+      return null;
+    }
+    if (!channel.users.includes(client.id) || !channel.users.includes(mutedId)) {
+      return null;
+    }
+    if (channel.admins.indexOf(client.id) !== 0) {
+      if (!channel.admins.includes(client.id) || channel.admins.includes(mutedId)) {
+        return null;
+      }
+    }
+    if (!channel.muted.includes(mutedId)) {
+      channel.muted.push(mutedId);
+    }
+    return await this.channelService.update(channel.id, channel);
   }
 
   public async handleUnmuteUser(clientSocket: Socket, channelId: number, mutedId: number): Promise<Channel | null> {
@@ -53,7 +97,25 @@ export class ChatService {
     if (!client) {
       return null;
     }
-    return await this.channelService.unmuteUser(channelId, client.id, mutedId);
+    const channel = await this.channelService.findOneId(channelId);
+    if (!channel) {
+      return null;
+    }
+    if (!channel.users.includes(client.id) || !channel.users.includes(mutedId)) {
+      return null;
+    }
+    if (channel.admins.indexOf(client.id) !== 0) {
+      if (!channel.admins.includes(client.id) || channel.admins.includes(mutedId)) {
+        return null;
+      }
+    }
+    if (channel.muted.includes(mutedId)) {
+      const index = channel.muted.indexOf(mutedId);
+      if (index > -1) {
+        channel.muted.splice(index, 1);
+      }
+    }
+    return await this.channelService.update(channel.id, channel);
   }
 
   public async handleBanUser(clientSocket: Socket, channelId: number, bannedId: number): Promise<Channel | null> {
@@ -61,7 +123,23 @@ export class ChatService {
     if (!client) {
       return null;
     }
-    return await this.channelService.banUser(channelId, client.id, bannedId, this.usersService);
+    const channel = await this.channelService.findOneId(channelId);
+    if (!channel) {
+      return null;
+    }
+    if (!channel.users.includes(client.id) || !channel.users.includes(bannedId)) {
+      return null;
+    }
+    if (channel.admins.indexOf(client.id) !== 0) {
+      if (!channel.admins.includes(client.id) || channel.admins.includes(bannedId)) {
+        return null;
+      }
+    }
+    if (!channel.banned.includes(bannedId)) {
+      await this.channelService.removeUser(channelId, bannedId, this.usersService);
+      return await this.channelService.banUser(channelId, bannedId);
+    }
+    return null;
   }
 
   public async handleUnbanUser(clientSocket: Socket, channelId: number, bannedId: number): Promise<Channel | null> {
@@ -69,7 +147,25 @@ export class ChatService {
     if (!client) {
       return null;
     }
-    return await this.channelService.unbanUser(channelId, client.id, bannedId);
+    const channel = await this.channelService.findOneId(channelId);
+    if (!channel) {
+      return null;
+    }
+    if (!channel.users.includes(client.id) || !channel.users.includes(bannedId)) {
+      return null;
+    }
+    if (channel.admins.indexOf(client.id) !== 0) {
+      if (!channel.admins.includes(client.id) || channel.admins.includes(bannedId)) {
+        return null;
+      }
+    }
+    if (channel.banned.includes(bannedId)) {
+      const index = channel.banned.indexOf(bannedId);
+      if (index > -1) {
+        channel.banned.splice(index, 1);
+      }
+    }
+    return await this.channelService.update(channel.id, channel);
   }
 
   public async handleSetAdmin(clientSocket: Socket, channelId: number, newAdminId: number): Promise<Channel | null> {
@@ -77,7 +173,22 @@ export class ChatService {
     if (!client) {
       return null;
     }
-    return await this.channelService.setAdmin(channelId, client.id, newAdminId);
+    const channel = await this.channelService.findOneId(channelId);
+    if (!channel) {
+      return null;
+    }
+    if (!channel.users.includes(client.id) || !channel.users.includes(newAdminId)) {
+      return null;
+    }
+    if (channel.admins.indexOf(client.id) !== 0) {
+      if (!channel.admins.includes(client.id)) {
+        return null;
+      }
+    }
+    if (!channel.admins.includes(newAdminId)) {
+      channel.admins.push(newAdminId);
+    }
+    return await this.channelService.update(channel.id, channel);
   }
 
   public async handleUnsetAdmin(clientSocket: Socket, channelId: number, unsetAdminId: number): Promise<Channel | null> {
@@ -85,85 +196,26 @@ export class ChatService {
     if (!client) {
       return null;
     }
-    return await this.channelService.unsetAdmin(channelId, client.id, unsetAdminId);
+    const channel = await this.channelService.findOneId(channelId);
+    if (!channel) {
+      return null;
+    }
+    if (!channel.users.includes(client.id) || !channel.users.includes(unsetAdminId)) {
+      return null;
+    }
+
+    // is owner?
+    if (channel.admins.indexOf(client.id) !== 0) {
+      return null;
+    }
+    if (channel.admins.includes(unsetAdminId)) {
+      const index = channel.admins.indexOf(unsetAdminId);
+      if (index > -1) {
+        channel.admins.splice(index, 1);
+      }
+    }
+    return await this.channelService.update(channel.id, channel);
   }
-
-  //public async handleSendMessage(userSocket: Socket, data: any, server: Server): Promise<Message | null> {
-  //	const channel = await this.channelService.findOneId(data.destination);
-  //	if (!channel) {
-  //		throw new NotFoundException('channel not found');
-  //	}
-  //	const client = Client.at(userSocket);
-  //	if (!client) {
-  //		throw new NotFoundException('user not found');
-  //	}
-  //	const message = await this.messageService.create(data.content, this._timestamp_mmddyy(), client.id, data.destination);
-  //	this.channelService.newMessage(channel.id, message);
-  //	server.to(channel.room).emit('update');
-  //	return message;
-  //}
-
-  //public handleInviteUser(userSocket: Socket, data: any, server: Server) {
-  //	const channel: Channel | null = Channel.at(data.currentChannelId);
-  //	const user: User | null = User.at(data.ChanneSettingslInputValue);
-  //	if (!user)
-  //		return { data: null };
-  //	if (channel) {
-  //		channel.addUser(user);
-  //		"Channel.list(): ", Channel.list());
-  //		server.emit('update');
-  //	}
-  //	return (user?.IUser());
-  //}
-
-  //public handleKickUser(userSocket: Socket, data: any, server: Server) {
-  //	const channel: Channel | null = Channel.at(data.currentChannelId);
-  //	const user: User | null = User.at(data.ChanneSettingslInputValue);
-  //	if (!user)
-  //		return { data: null };
-  //	if (channel) {
-  //		channel.removeUser(user);
-  //		"Channel.list(): ", Channel.list());
-  //		server.emit('update');
-  //	}
-  //	return (user?.IUser());
-  //}
-
-  //public async handleLeaveChannel(userSocket: Socket, id: number, server: Server) {
-  //	const channel = await this.channelService.findOneId(id);
-  //	if (!channel) {
-  //		throw new NotFoundException('channel not found');
-  //	}
-  //	const client = Client.at(userSocket);
-  //	if (!client) {
-  //		throw new NotFoundException('user not found');
-  //	}
-  //	this.channelService.removeUser(channel.id, client.id);
-  //	server.to(channel.room).emit('update');
-  //	return channel;
-  //}
-
-  //public async handleJoinChannel(userSocket: Socket, id: number, password: string, server: Server) {
-  //	const channel = await this.channelService.findOneId(id);
-  //	if (!channel) {
-  //		throw new NotFoundException('channel not found');
-  //	}
-  //	const client = Client.at(userSocket);
-  //	if (!client) {
-  //		throw new NotFoundException('user not found');
-  //	}
-  //	this.channelService.addUser(channel.id, client.id, password);
-  //	server.to(channel.room).emit('update');
-  //	return channel;
-
-  //if (channel.password !== undefined && channel.password !== crypto.createHash('sha256').update(data.channelPasswordInputValue).digest('hex')) {
-  //	return { data: null };
-  //}
-  //channel.addUser(user);
-  //"Channel.list(): ", Channel.list());
-  //server.emit('update');
-  //return channel?.IChannel();
-  //}
 
   public async joinChannelRoom(clientSocket: Socket, id: number) {
     const client = Client.at(clientSocket);

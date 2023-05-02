@@ -1,7 +1,7 @@
 import { useState } from "react";
-import Form, { FormText } from "../components/Form";
+import Form, { FormText } from "./Form";
 import { IChannel } from "../types";
-import Request from "../components/Request";
+import Request from "./Request";
 
 interface BrowseChannelsProps {
   onClose: () => void,

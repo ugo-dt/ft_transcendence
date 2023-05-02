@@ -125,11 +125,6 @@ export class UsersController {
     return await this.channelService.create(data.name, data.password, data.isDm, user.id, data.isPrivate, this.usersService);
   }
 
-  @Delete('channels/delete-channel/:id')
-  async deleteChannel(@CurrentUser() user: User, @Param("id") id: number): Promise<Channel> {
-    return await this.channelService.delete(id, user.id, this.usersService);
-  }
-
   @Post('channels/join-channel/')
   async joinChannel(@CurrentUser() user: User, @MessageBody() data: { id: number, password: string }) {
     return await this.channelService.addUser(data.id, user.id, data.password, this.usersService);

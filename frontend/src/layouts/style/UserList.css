@@ -49,18 +49,19 @@
 } */
 
 .UserList {
+  padding: 10px;
   display: flex;
   text-align: center;
   flex-direction: column;
-  margin-left: 10px;
-  margin-right: 10px;
-  border: 1px solid darkgreen;
+  border-radius: 10px;
+  background-color: rgb(31, 31, 31);
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, .5);
+  overflow-y: scroll;
 }
 
 .user-list-user-info {
   margin: 10px;
   padding: 10px;
-  border: 1px solid grey;
   cursor: pointer;
   align-items: center;
   display: flex;

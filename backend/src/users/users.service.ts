@@ -146,20 +146,20 @@ export class UsersService {
     return this.repo.save(user);
   }
 
-  public async removeChannel(userId: number, channelId: number, channelRoom: string) {
+  public async removeChannel(userId: number, channel: Channel) {
     const user = await this.findOneId(userId);
     if (!user) {
       throw new NotFoundException("user not found");
     }
-    const index = user.userChannels.findIndex(c => c === channelId);
+    const index = user.userChannels.findIndex(c => c === channel.id);
     if (index === -1) {
-      throw new NotFoundException("user not found");
+      throw new NotFoundException("channel not found");
     }
     user.userChannels.splice(index, 1);
     const client = Client.at(userId);
     if (client) {
-      client.leaveChannelRoom(channelRoom);
-      client.removeChannel(channelId);
+      client.leaveChannelRoom(channel);
+      client.removeChannel(channel.id);
     }
     return this.repo.save(user);
   }

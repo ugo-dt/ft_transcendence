@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import Form, { FormText } from "../components/Form";
-import Request from "../components/Request";
+import Form, { FormText } from "./Form";
+import Request from "./Request";
 import { IUser } from "../types";
 
 interface EditUsernameProps {

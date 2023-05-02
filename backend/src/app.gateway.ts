@@ -128,12 +128,12 @@ export class AppGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return this.pongService.cancelRematch(client);
   }
 
-  // chat
+  // -- chat -- //
   @SubscribeMessage('join-channel-room')
   public async joinChannelRoom(@ConnectedSocket() clientSocket: Socket, @MessageBody() id: number) {
     const channel = await this.chatService.joinChannelRoom(clientSocket, id);
     if (channel) {
-      this.server.to(channel.room).emit('channel-join', channel.messages);
+      this.server.to(channel.room).emit('channel-update', channel);
     }
   }
 
@@ -141,7 +141,7 @@ export class AppGateway implements OnGatewayConnection, OnGatewayDisconnect {
   public async leaveChannelRoom(@ConnectedSocket() clientSocket: Socket, @MessageBody() id: number) {
     const channel = await this.chatService.leaveChannelRoom(clientSocket, id);
     if (channel) {
-      this.server.to(channel.room).emit('channel-join', channel.messages);
+      this.server.to(channel.room).emit('channel-update', channel);
     }
   }
 
@@ -149,7 +149,7 @@ export class AppGateway implements OnGatewayConnection, OnGatewayDisconnect {
   public async handlePushMessageToChannel(@ConnectedSocket() clientSocket: Socket, @MessageBody() data: any) {
     const channel = await this.chatService.handlePushMessageToChannel(clientSocket, data.currentChannelId, data.message);
     if (channel) {
-      this.server.to(channel.room).emit('new-message', channel.messages);
+      this.server.to(channel.room).emit('new-message', channel);
     }
   }
 

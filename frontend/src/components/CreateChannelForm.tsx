@@ -1,17 +1,19 @@
 import { useState } from "react";
-import Request from "../components/Request";
-import Form, { FormText, FormType } from "../components/Form";
+import Request from "./Request";
+import Form, { FormText, FormType } from "./Form";
 import { useNavigate } from "react-router";
 import { IChannel } from "../types";
 
 interface CreateChannelFormProps {
   setChannel: (channel: IChannel | undefined) => void,
   onClose: () => void,
+  getUserChannels: () => void,
 }
 
 function CreateChannelForm({
   setChannel,
   onClose,
+  getUserChannels,
 }: CreateChannelFormProps) {
   const navigate = useNavigate();
   const [channelNameValue, setChannelNameValue] = useState("");
@@ -77,6 +79,7 @@ function CreateChannelForm({
       if (!res)
         return;
       setChannel(res);
+      getUserChannels();
       onClose();
     });
   }

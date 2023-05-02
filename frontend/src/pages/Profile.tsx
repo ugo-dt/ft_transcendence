@@ -1,35 +1,31 @@
 import { useContext, useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router";
+import {  useNavigate } from "react-router";
 import ProfileHistory from "../layouts/ProfileHistory";
 import ProfileHeader from "../layouts/ProfileHeader";
 import { IUser, IGameRoom } from "../types";
 import Request from "../components/Request";
+import { UserContext } from "../context";
 import "./style/Profile.css"
 import "../layouts/style/RoomList.css"
-import { Context } from "../context";
 
 function Profile() {
-  const state = useLocation().state;
-  const context = useContext(Context);
-  const [info, setInfo] = useState("");
+  const user = useContext(UserContext).user;
+  const setUser = useContext(UserContext).setUser;
   const [profile, setProfile] = useState<IUser | null>(null);
   const [historyList, setHistoryList] = useState<IGameRoom[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const url = window.location.pathname;
-  const profileName = url.split("/").pop()!;
+  const pathname = window.location.pathname;
+  const profileName = pathname.split("/").pop()!;
   document.title = "ft_transcendence - " + profileName;
 
   useEffect(() => {
-    if (url === '/profile' || url === '/profile/') {
+    if (pathname === '/profile' || pathname === '/profile/') {
       return navigate("/home");
-    }
-    if (state) {
-      setInfo(state.info);
     }
     async function getProfile() {
       setLoading(true);
-      Request.getProfile(profileName).then((profileData) => {
+      await Request.getProfile(profileName).then((profileData) => {
         if (!profileData) {
           return navigate("/home");
         };
@@ -41,10 +37,15 @@ function Profile() {
         console.error(err);
         navigate("/home");
       });
+      await Request.me().then(res => {
+        if (res) {
+          setUser(res);
+        }
+      });
       setLoading(false);
     }
     getProfile();
-  }, [context, url]);
+  }, [pathname]);
 
   return (
     <div className="Profile">
@@ -52,8 +53,7 @@ function Profile() {
         loading ? (<h2>Loading...</h2>) : (
           profile != null && (
             <>
-              <ProfileHeader profile={profile} />
-              <h3 id="profile-state-info">{info}&nbsp;</h3>
+              <ProfileHeader user={user} profile={profile} />
               <ProfileHistory history={historyList} profileId={profile.id} />
             </>
           )

@@ -3,7 +3,7 @@ import { NavLink, Outlet, useNavigate, useSearchParams } from 'react-router-dom'
 import { Context, QueueContext, UserContext } from './context'
 import { Socket, io } from 'socket.io-client'
 import { CssBaseline } from '@mui/material'
-import { IChannel, IUser } from './types'
+import { IUser } from './types'
 import Navbar from './layouts/Navbar'
 import { DefaultEventsMap } from '@socket.io/component-emitter'
 import Request from './components/Request'
@@ -44,6 +44,7 @@ function QueueTimer() {
   );
 }
 
+
 function App() {
   const serverUrl: string = import.meta.env.VITE_BACKEND_HOST;
   const socket = useRef<Socket<DefaultEventsMap, DefaultEventsMap> | null>(null);
@@ -56,15 +57,12 @@ function App() {
   const isServerAvailableRef = useRef<boolean>(true);
   const [isServerAvailable, setIsServerAvailable] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(true);
-  const [currentChannel, setCurrentChannel] = useState<IChannel | undefined>(undefined);
 
   const contextValue = {
     serverUrl: serverUrl,
     pongSocket: socket,
     loading: loading,
     setLoading: setLoading,
-    currentChannel: currentChannel,
-    setCurrentChannel: setCurrentChannel,
   };
 
   const queueContextValue = {
@@ -85,10 +83,10 @@ function App() {
       query: data,
     });
     if (socket.current) {
-		socket.current.connect();
-		socket.current.on('disconnect', onDisconnect);
-		socket.current.on('client-connected', (res: IUser) => {
-			setUser(res);
+      socket.current.connect();
+      socket.current.on('disconnect', onDisconnect);
+      socket.current.on('client-connected', (res: IUser) => {
+        setUser(res);
         setLoading(false);
       });
     }
@@ -123,7 +121,7 @@ function App() {
           }
         });
       }
-      else {        
+      else {
         setLoading(false);
       }
     }
@@ -147,26 +145,26 @@ function App() {
             <Navbar />
             <Context.Provider value={contextValue}>
               <QueueContext.Provider value={queueContextValue}>
-                {
-                  !isServerAvailable &&
-                  <div className="alert-disconnected">
-                    <h3>
-                      You are disconnected. Please refresh the page.
-                    </h3>
-                  </div>
-                }
-                {
-                  user ? <Outlet /> :
-                    <div style={{ textAlign: 'center' }}>
-                      <h1>ft_transcendence</h1>
-                      <NavLink className="NavLink" to={import.meta.env.VITE_API_REDIRECT_URI}>
-                        <button style={{ padding: '10px', fontWeight: 'bold', cursor: 'pointer' }}>
-                          Sign in with 42
-                        </button>
-                      </NavLink>
+                  {
+                    !isServerAvailable &&
+                    <div className="alert-disconnected">
+                      <h3>
+                        You are disconnected. Please refresh the page.
+                      </h3>
                     </div>
-                }
-                <QueueTimer />
+                  }
+                  {
+                    user ? <Outlet /> :
+                      <div style={{ textAlign: 'center' }}>
+                        <h1>ft_transcendence</h1>
+                        <NavLink className="NavLink" to={import.meta.env.VITE_API_REDIRECT_URI}>
+                          <button style={{ padding: '10px', fontWeight: 'bold', cursor: 'pointer' }}>
+                            Sign in with 42
+                          </button>
+                        </NavLink>
+                      </div>
+                  }
+                  <QueueTimer />
               </QueueContext.Provider>
             </Context.Provider>
           </>

@@ -93,14 +93,18 @@
 } */
 
 .Channels {
-  border: 1px solid darkred;
+  padding: 10px;
   text-align: center;
   display: flex;
   flex-direction: column;
+  border-radius: 10px;
+  background-color: rgb(31, 31, 31);
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, .5);
   overflow-y: scroll;
 }
 
 .chat-user-channels {
+  overflow-y: scroll;
   margin-left: 10px;
   margin-right: 10px;
 }
@@ -138,13 +142,23 @@
 
 .chat-channels {
   cursor: pointer;
-  border: .5px solid white;
+  border: .5px solid grey;
+  border-radius: 20px;
   padding-top: 10px;
   padding-bottom: 10px;
   margin-bottom: 5px;
 }
 
+.chat-channels:hover {
+  background-color: #252525;
+}
+
 .selected-channel {
+  border: 1px solid grey;
+  background-color: #333;
+}
+
+.selected-channel:hover {
   background-color: #333;
 }
 

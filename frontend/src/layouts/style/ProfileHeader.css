@@ -4,10 +4,6 @@
   border-radius: 50%;
 }
 
-.profile-header-container {
-  margin: 20px;
-}
-
 .profile-header-info {
   padding: 10px;
   padding-left: 20px;
@@ -29,10 +25,17 @@
   position: absolute;
   bottom: 0;
   right: 0;
-  background-color: black;
   color: white;
-  border-radius: 50%;
+  background-color: #222222;
+  border-radius: 20%;
+  padding: 2px;
+  box-shadow: 0 0rem 2rem rgba(0, 0, 0, 1);
   cursor: pointer;
+}
+
+.upload-icon:hover {
+  color: #DDD;
+  transition: .2s;
 }
 
 .profile-header-content {
@@ -114,4 +117,11 @@
 
 .selected {
   border: 2px solid black;
+}
+
+#profile-state-info {
+  margin-top: 10px;
+  font-weight: lighter;
+  color: rgb(12, 228, 12);
+  text-align: center;
 }

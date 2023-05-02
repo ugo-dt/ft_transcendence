@@ -225,8 +225,8 @@ class Request {
     return await Request.__make_array_get_request_(__url_.__channel_users_ + '/' + id);
   }
 
-  public static async joinChannel(id: number, password: string) {
-    return await Request.__make_post_request_(__url_.__join_channel_, {id: id, password: password});
+  public static async joinChannel(id: number, password: string): Promise<IChannel | null> {
+    return await Request.__make_post_request_(__url_.__join_channel_, { id: id, password: password });
   }
 
   public static async leaveChannel(id: number) {

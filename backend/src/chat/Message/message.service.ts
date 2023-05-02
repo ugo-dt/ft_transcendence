@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Message } from './entity/message.entity';
@@ -36,8 +36,16 @@ export class MessageService {
     );
     return await this.repo.save(message);;
   }
-
+  
   public findOneId(id: number): Promise<Message | null> {
     return this.repo.findOneBy({ id });
+  }
+  
+  async remove(id: number) {
+    const message = await this.findOneId(id);
+    if (!message) {
+      throw new NotFoundException('message not found');
+    }
+    return await this.repo.remove(message);
   }
 }

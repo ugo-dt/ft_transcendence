@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, Logger, NotFoundException, UnauthorizedException } from "@nestjs/common";
+import { Injectable, Logger, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { Channel } from "./entities/channel.entity";
@@ -42,20 +42,6 @@ export class ChannelService {
     return promise;
   }
 
-  async delete(channelId: number, userId: number, usersService: UsersService) {
-    const channel = await this.findOneId(channelId);
-    if (!channel) {
-      throw new NotFoundException('channel not found');
-    }
-    if (!channel.admins.includes(userId)) {
-      throw new ForbiddenException('forbidden');
-    }
-    for (const user of channel.users.values()) {
-      await usersService.removeChannel(user, channel.id, channel.room);
-    }
-    return this.repo.remove(channel);
-  }
-
   findOneId(id: number): Promise<Channel | null> {
     return this.repo.findOneBy({ id });
   }
@@ -69,8 +55,11 @@ export class ChannelService {
     if (!channel) {
       throw new NotFoundException('channel not found');
     }
+    if (channel.isPrivate) {
+      throw new UnauthorizedException('channel is private');
+    }
     if (channel.banned.includes(userId)) {
-      throw new ForbiddenException('user is banned');
+      throw new UnauthorizedException('user is banned');
     }
     if (!channel.users.includes(userId)) {
       if (channel.password.length && crypto.createHash('sha256').update(password).digest('hex') !== channel.password) {
@@ -101,22 +90,32 @@ export class ChannelService {
           }
         }
       }
-      await usersService.removeChannel(userId, channel.id, channel.room);
+      usersService.findOneId(userId).then(async user => {
+        if (user && user.userChannels.includes(channel.id)) {
+          await usersService.removeChannel(userId, channel);
+        }
+      });
+    }
+    if (channel.users.length === 0) {
+      return this.remove(channel.id);
     }
     return await this.repo.save(channel);
   }
 
-  public async newMessage(channelId: number, clientId: number, content: string) {
+  public async newMessage(channelId: number, clientId: number, content: string): Promise<Channel | null> {
     const channel = await this.findOneId(channelId);
     if (!channel) {
-      throw new NotFoundException('channel not found');
+      return null;
+    }
+    if (channel.banned.includes(clientId) || channel.muted.includes(clientId)) {
+      return null;
     }
     const message = await this.messageService.create(content, clientId, channelId);
     channel.messages.push(message.id);
     return await this.repo.save(channel);
   }
 
-  public async deleteMessage(id: number, message: Message) {
+  public async deleteMessage(id: number, message: Message): Promise<Channel | null> {
     const channel = await this.findOneId(id);
     if (!channel) {
       throw new NotFoundException('channel not found');
@@ -128,7 +127,7 @@ export class ChannelService {
     return await this.repo.save(channel);
   }
 
-  public async getChannelUsers(id: number, usersService: UsersService) {
+  public async getChannelUsers(id: number, usersService: UsersService): Promise<User[]> {
     const channel = await this.findOneId(id);
     if (!channel) {
       throw new NotFoundException('channel not found');
@@ -143,13 +142,13 @@ export class ChannelService {
     return users;
   }
 
-  public async editPassword(userId: number, channelId: number, newPassword: string) {
+  public async editPassword(userId: number, channelId: number, newPassword: string): Promise<Channel> {
     const channel = await this.findOneId(channelId);
     if (!channel) {
       throw new NotFoundException('channel not found');
     }
     if (!channel.admins.includes(userId)) {
-      throw new ForbiddenException('not an admin');
+      throw new UnauthorizedException('not an admin');
     }
     if (newPassword.length) {
       channel.password = crypto.createHash('sha256').update(newPassword).digest('hex');
@@ -160,151 +159,57 @@ export class ChannelService {
     return await this.repo.save(channel);
   }
 
-  public async inviteUser(channelId: number, adminId: number, inviteId: number, usersService: UsersService) {
-    const channel = await this.findOneId(channelId);
+  public async update(id: number, attrs: Partial<User>): Promise<Channel> {
+    const channel = await this.findOneId(id);
     if (!channel) {
-      return null;
+      throw new NotFoundException("channel not found");
     }
-    if (!channel.users.includes(adminId)) {
-      return null;
-    }
-    if (!channel.users.includes(inviteId)) {
-      channel.users.push(inviteId);
-      await usersService.addChannel(inviteId, channel.id);
-      if (!channel.admins.includes(inviteId) && channel.admins.length === 0)
-        channel.admins.push(inviteId);
-    }
-    return await this.repo.save(channel);
+    Object.assign(channel, attrs);
+    return this.repo.save(channel);
   }
 
-  public async kickUser(channelId: number, adminId: number, kickedId: number, usersService: UsersService) {
-    const channel = await this.findOneId(channelId);
+  public async remove(id: number): Promise<Channel> {
+    const channel = await this.findOneId(id);
     if (!channel) {
-      return null;
+      throw new NotFoundException("channel not found");
     }
-    if (!channel.users.includes(adminId) || !channel.users.includes(kickedId)) {
-      return null;
+    for (const msg of channel.messages.values()) {
+      this.messageService.remove(msg);
     }
-    if (!channel.admins.includes(adminId) || channel.admins.includes(kickedId)) {
-      return null;
-    }
-    this.removeUser(channelId, kickedId, usersService);
-    return await this.repo.save(channel);
+    return this.repo.remove(channel);
   }
 
-  public async muteUser(channelId: number, adminId: number, mutedId: number) {
+  public async isUserAdmin(channelId: number, userId: number): Promise<boolean> {
     const channel = await this.findOneId(channelId);
     if (!channel) {
-      return null;
+      throw new NotFoundException("channel not found");
     }
-    if (!channel.users.includes(adminId) || !channel.users.includes(mutedId)) {
-      return null;
-    }
-    if (!channel.admins.includes(adminId) || channel.admins.includes(mutedId)) {
-      return null;
-    }
-    if (!channel.muted.includes(mutedId)) {
-      channel.muted.push(mutedId);
-    }
-    return await this.repo.save(channel);
+    return channel.admins.includes(userId);
   }
 
-  public async unmuteUser(channelId: number, adminId: number, mutedId: number) {
+  public async isUserBanned(channelId: number, userId: number): Promise<boolean> {
     const channel = await this.findOneId(channelId);
     if (!channel) {
-      return null;
+      throw new NotFoundException("channel not found");
     }
-    if (!channel.users.includes(adminId) || !channel.users.includes(mutedId)) {
-      return null;
-    }
-    if (!channel.admins.includes(adminId) || channel.admins.includes(mutedId)) {
-      return null;
-    }
-    if (channel.muted.includes(mutedId)) {
-      const index = channel.muted.indexOf(mutedId);
-      if (index > -1) {
-        channel.muted.splice(index, 1);
-      }
-    }
-    return await this.repo.save(channel);
+    return channel.banned.includes(userId);
   }
 
-  public async banUser(channelId: number, adminId: number, bannedId: number, usersService: UsersService) {
+  public async isUserMuted(channelId: number, userId: number): Promise<boolean> {
     const channel = await this.findOneId(channelId);
     if (!channel) {
-      return null;
+      throw new NotFoundException("channel not found");
     }
-    if (!channel.users.includes(adminId) || !channel.users.includes(bannedId)) {
-      return null;
-    }
-    if (!channel.admins.includes(adminId) || channel.admins.includes(bannedId)) {
-      return null;
-    }
-    if (!channel.banned.includes(bannedId)) {
-      this.removeUser(channelId, bannedId, usersService);
-      channel.banned.push(bannedId);
-    }
-    return await this.repo.save(channel);
+    return channel.muted.includes(userId);
   }
 
-  public async unbanUser(channelId: number, adminId: number, bannedId: number) {
+  public async banUser(channelId: number, userId: number) {
     const channel = await this.findOneId(channelId);
     if (!channel) {
-      return null;
+      throw new NotFoundException("channel not found");
     }
-    if (!channel.users.includes(adminId) || !channel.users.includes(bannedId)) {
-      return null;
-    }
-    if (!channel.admins.includes(adminId) || channel.admins.includes(bannedId)) {
-      return null;
-    }
-    if (channel.banned.includes(bannedId)) {
-      const index = channel.banned.indexOf(bannedId);
-      if (index > -1) {
-        channel.banned.splice(index, 1);
-      }
-    }
-    return await this.repo.save(channel);
-  }
-  
-  public async setAdmin(channelId: number, adminId: number, newAdminId: number) {
-    const channel = await this.findOneId(channelId);
-    if (!channel) {
-      return null;
-    }
-    if (!channel.users.includes(adminId) || !channel.users.includes(newAdminId)) {
-      return null;
-    }
-    if (!channel.admins.includes(adminId)) {
-      return null;
-    }
-    if (!channel.admins.includes(newAdminId)) {
-      channel.admins.push(newAdminId);
-    }
-    return await this.repo.save(channel);
-  }
-
-  public async unsetAdmin(channelId: number, adminId: number, unsetAdminId: number) {
-    const channel = await this.findOneId(channelId);
-    if (!channel) {
-      return null;
-    }
-    if (!channel.users.includes(adminId) || !channel.users.includes(unsetAdminId)) {
-      return null;
-    }
-    if (!channel.admins.includes(adminId)) {
-      return null;
-    }
-    
-    // owner?
-    if (channel.admins.indexOf(adminId) !== 0) { 
-      return null;
-    }
-    if (channel.admins.includes(unsetAdminId)) {
-      const index = channel.admins.indexOf(unsetAdminId);
-      if (index > -1) {
-        channel.admins.splice(index, 1);
-      }
+    if (!channel.banned.includes(userId)) {
+      channel.banned.push(userId);
     }
     return await this.repo.save(channel);
   }

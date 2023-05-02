@@ -1,22 +1,19 @@
 import { useContext, useEffect, useState } from "react";
-import Request from "../components/Request";
+import Request from "./Request";
 import { Context, UserContext } from "../context";
 import { useNavigate } from "react-router";
-import { IUser } from "../types";
+import { IChannel, IUser } from "../types";
 
-function FriendRow({ friendId }: { friendId: number }) {
+function FriendRow({ currentChannel, friendId }: { currentChannel: IChannel | undefined, friendId: number }) {
   const navigate = useNavigate();
   const [friend, setFriend] = useState<IUser | null>(null);
   const socket = useContext(Context).pongSocket.current;
-  const currentChannel = useContext(Context).currentChannel;
 
   function handleClick() {
     if (!socket || !currentChannel || !friend) {
       return ;
     }
     socket.emit('invite-user', {channelId: currentChannel.id, inviteId: friend.id});
-    console.log("invite");
-    
   }
 
   useEffect(() => {
@@ -36,9 +33,6 @@ function FriendRow({ friendId }: { friendId: number }) {
             {friend.username}
           </td>
           <td className="room-list-cell">
-            {friend.rating}
-          </td>
-          <td className="room-list-cell">
             {friend.status.charAt(0).toLocaleUpperCase() + friend.status.slice(1)}
           </td>
           <td className="room-list-cell">
@@ -53,10 +47,12 @@ function FriendRow({ friendId }: { friendId: number }) {
 }
 
 interface InviteToChannelProps {
+  currentChannel: IChannel | undefined,
   onClose: () => void,
 }
 
 function InviteToChannel({
+  currentChannel,
   onClose,
 }: InviteToChannelProps) {
   const [friendList, setFriendList] = useState<number[]>([]);
@@ -70,7 +66,7 @@ function InviteToChannel({
     if (user) {
       Request.getProfile(user.username).then(res => {
         if (res) {
-          setFriendList(res.friends);
+          setFriendList(res.friends.filter(f => currentChannel && !currentChannel.users.includes(f)));
         }
       }).catch(err => {
         console.error(err);
@@ -119,32 +115,16 @@ function InviteToChannel({
                     value={friendInputValue}
                   />
                   <table className="room-list-table">
-                    <tbody>
-                      <tr title="Room info" className="room-list-row">
-                        <td className="room-list-cell">
-                          Username
-                        </td>
-                        <td className="room-list-cell">
-                          Rating
-                        </td>
-                        <td className="room-list-cell">
-                          Status
-                        </td>
-                        <td className="room-list-cell">
-                          Challenge
-                        </td>
-                      </tr>
-                    </tbody>
                     <tbody id="friends-table">
                       {
                         friendList.map((friendId, index) => (
-                          <FriendRow key={index} friendId={friendId} />
+                          <FriendRow currentChannel={currentChannel} key={index} friendId={friendId} />
                         ))
                       }
                     </tbody>
                   </table>
                 </div>
-                : <h3>Friend list is empty.</h3>
+                : <h3>No friends to invite.</h3>
               }
             </div>
           </div>

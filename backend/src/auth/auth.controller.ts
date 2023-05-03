@@ -66,4 +66,10 @@ export class AuthController {
     session.userId = user.id;
     session.waitingFor2fa = null;
   }
+
+  @Post('cancelloginotp')
+  @UseGuards(Wait2fa)
+  cancelLogin(@Session() session: any) {
+    session.waitingFor2fa = null;
+  }
 }

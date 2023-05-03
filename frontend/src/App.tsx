@@ -103,17 +103,25 @@ function App() {
     setIsServerAvailable(isServerAvailableRef.current);
   }
 
-  function onModalClose() {
+  async function onModalClose() {
     setOpenModalLogin(false);
+    await Request.cancelLoginOtp();
+    setOtp('');
   }
 
   function onChangeOtp(event: ChangeEvent<HTMLInputElement>) {
     setOtp(event.target.value);
   }
 
-  function onClickValidateOtp() {
-    // call backend validate otp
-    console.log('temporary'); // temp
+  async function onClickValidateOtp() {
+    const res = await Request.validateLoginOtp(otp);
+    if (res !== null) {
+      navigate("/home");
+      window.location.reload();
+    } else {
+      // temp?
+    }
+    onModalClose();
   }
 
   useEffect(() => {
@@ -127,9 +135,10 @@ function App() {
               navigate("/home");
               window.location.reload();
             } else {
-              setOpenModalLogin(true);
-              // const res = await Request.generateLoginOtp();
-              // if (!res) console.log('Request was invalid!');
+              Request.generateLoginOtp().then(res => {
+                if (!res) console.log('Request was invalid!');
+                else setOpenModalLogin(true);
+              });
             }
           });
         }

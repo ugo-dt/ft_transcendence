@@ -21,7 +21,6 @@ class Client {
 
   // Chat
   private _userChannels: number[]; // channel ids
-  private _blockedUsers: number[]; // user ids
 
   private constructor(id: number, socket: Socket | null) {
     this._id = id;
@@ -33,7 +32,6 @@ class Client {
     this._invitations = [];
     this._wantsRematch = false;
     this._userChannels = [];
-    this._blockedUsers = [];
   }
 
   public get id(): number { return this._id; }

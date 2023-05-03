@@ -67,6 +67,9 @@
   display: flex;
 }
 
-.admin-buttons {
+.member-modal-buttons {
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center2;
 }

@@ -19,33 +19,26 @@ function Profile() {
   const profileName = pathname.split("/").pop()!;
   document.title = "ft_transcendence - " + profileName;
 
+  async function getProfile() {
+    setLoading(true);
+    await Request.getProfile(profileName).then((profileData) => {
+      if (!profileData) {
+        return navigate("/home");
+      };
+      setProfile(profileData);
+      Request.getUserMatchHistory(profileData.id).then((historyData) => {
+        setHistoryList(historyData);
+      });
+    });
+    setLoading(false);
+  }
+
   useEffect(() => {
     if (pathname === '/profile' || pathname === '/profile/') {
       return navigate("/home");
     }
-    async function getProfile() {
-      setLoading(true);
-      await Request.getProfile(profileName).then((profileData) => {
-        if (!profileData) {
-          return navigate("/home");
-        };
-        setProfile(profileData);
-        Request.getUserMatchHistory(profileData.id).then((historyData) => {
-          setHistoryList(historyData);
-        });
-      }).catch(err => {
-        console.error(err);
-        navigate("/home");
-      });
-      await Request.me().then(res => {
-        if (res) {
-          setUser(res);
-        }
-      });
-      setLoading(false);
-    }
     getProfile();
-  }, [pathname]);
+  }, [pathname, user]);
 
   return (
     <div className="Profile">

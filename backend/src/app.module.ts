@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PongModule } from './pong/pong.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './users/users.module';
@@ -16,23 +16,33 @@ import { AppGateway } from './app.gateway';
 import { ChannelModule } from './chat/channel/channel.module';
 import { MessageModule } from './chat/message/message.module';
 import { AppController } from './app.controller';
+import { EnvService } from './config/env.service';
+import { EnvModule } from './config/env.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, envFilePath: '../.env' }),
+    EnvModule,
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (envService: EnvService) => ({
+        type: 'postgres',
+        host: envService.get('POSTGRES_HOST'),
+        port: envService.get('POSTGRES_PORT'),
+        username: envService.get('POSTGRES_USER'),
+        password: envService.get('POSTGRES_PASSWORD'),
+        database: envService.get('POSTGRES_DB'),
+        autoLoadEntities: true,
+        entities: [User, Room, Channel, Message],
+        synchronize: envService.get('SYNCHRONIZE'),
+      }),
+    }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
       serveRoot: '/public',
-    }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'postgres',
-      port: 5432,
-      username: 'postgres',
-      password: 'postgres',
-      database: 'postgres',
-      entities: [User, Room, Channel, Message],
-      synchronize: true,
+      serveStaticOptions: {
+        index: false
+      },
     }),
     PongModule,
     ChatModule,
@@ -41,6 +51,7 @@ import { AppController } from './app.controller';
     MessageModule,
     RoomModule,
     AuthModule,
+    ConfigModule,
   ],
   controllers: [AppController],
   providers: [AppGateway],

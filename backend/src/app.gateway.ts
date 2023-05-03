@@ -4,8 +4,6 @@ import { PongService } from "./pong/pong.service";
 import { Logger } from "@nestjs/common";
 import Queue from "./pong/Matchmaking/Queue";
 import { ChatService } from "./chat/chat.service";
-import { MessageService } from "./chat/message/message.service";
-import { ChannelService } from "./chat/channel/channel.service";
 
 @WebSocketGateway({
   namespace: 'app',
@@ -128,7 +126,7 @@ export class AppGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return this.pongService.cancelRematch(client);
   }
 
-  // -- chat -- //
+  // chat
   @SubscribeMessage('join-channel-room')
   public async joinChannelRoom(@ConnectedSocket() clientSocket: Socket, @MessageBody() id: number) {
     const channel = await this.chatService.joinChannelRoom(clientSocket, id);

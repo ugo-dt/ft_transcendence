@@ -1,5 +1,4 @@
 import { Exclude } from "class-transformer";
-import { Channel } from "src/chat/channel/entities/channel.entity";
 import {Column, Entity, PrimaryGeneratedColumn} from "typeorm";
 
 @Entity()

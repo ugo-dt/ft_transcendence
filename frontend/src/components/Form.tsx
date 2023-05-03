@@ -69,7 +69,7 @@ function Form<T extends FormType>({
                   }
                 </section>
                 {
-                  (value.type === 'text' || value.type === 'password') &&
+                  (value.type === 'text' || value.type === 'password' || value.type === 'file') &&
                   (
                     value.isValid
                     ? <h4 style={{ fontWeight: 'lighter', color: '#00e676' }}>{value.valid}&nbsp;</h4>

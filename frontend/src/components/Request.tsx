@@ -2,6 +2,7 @@ import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 import { IUser, IGameRoom } from "../types";
 import { IChannel } from "../types/IChannel";
 import { IMessage } from "../types/IMessage";
+import { PADDLE_COLORS } from "../constants";
 
 namespace __url_ {
   export const __api_base_url_ = `${import.meta.env.VITE_BACKEND_HOST}/api`;
@@ -200,7 +201,7 @@ class Request {
     return await Request.__make_delete_request_(__url_.__edit_avatar_);
   }
 
-  public static async editPaddleColor(color: string): Promise<IUser | null> {
+  public static async editPaddleColor(color: PADDLE_COLORS): Promise<IUser | null> {
     return await Request.__make_post_request_(__url_.__edit_paddle_, { color: color });
   }
 

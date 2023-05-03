@@ -1,13 +1,12 @@
 import './style/UserList.css';
 import { IChannel, IUser } from "../types";
-
-import "./style/UserList.css"
 import { useContext, useEffect, useState } from 'react';
 import { Context, QueueContext, UserContext } from '../context';
 import Request from '../components/Request';
 import { IMessage } from '../types/IMessage';
 import GameInvite from '../components/GameInvite';
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
+import { useNavigate } from 'react-router';
 
 interface UserOptionsProps {
   selectedUser: IUser,
@@ -20,6 +19,7 @@ function UserOptions({
   onClose,
   currentChannel,
 }: UserOptionsProps) {
+  const navigate = useNavigate();
   const user = useContext(UserContext).user;
   const setUser = useContext(UserContext).setUser;
   const socket = useContext(Context).pongSocket.current;
@@ -122,8 +122,14 @@ function UserOptions({
         <div className="modal-content">
           <div className="modal-close" role="button" onClick={onClose}>&times;</div>
           <div className="modal-title">{selectedUser.username}</div>
-          <div style={{fontWeight: 'lighter'}} className="modal-title">{selectedUser.status.charAt(0).toLocaleUpperCase() + selectedUser.status.slice(1)}</div>
+          <div style={{ fontWeight: 'lighter' }} className="modal-title">{selectedUser.status.charAt(0).toLocaleUpperCase() + selectedUser.status.slice(1)}</div>
+          <section className='member-modal-buttons'>
           <section>
+            <button
+              className="form-button"
+              onClick={() => navigate('/profile/' + selectedUser.username.toLowerCase())}
+            > See profile
+            </button>
             <button
               className="form-button"
               disabled={inQueue || !(selectedUser.status === 'online')}
@@ -156,8 +162,8 @@ function UserOptions({
                 </button>
                 {
                   (!currentChannel.admins.includes(selectedUser.id) || (user && currentChannel.admins.indexOf(user.id) === 0))
-                    && currentChannel.admins.indexOf(selectedUser.id) != 0
-                    &&
+                  && currentChannel.admins.indexOf(selectedUser.id) != 0
+                  &&
                   <button
                     className="form-button"
                     onClick={() => (currentChannel.admins.includes(selectedUser.id)) ? onUnsetAdmin() : onSetAdmin()}
@@ -167,6 +173,7 @@ function UserOptions({
               </section>
               : <></>
           }
+          </section>
         </div>
       </div>
       {isChallengeOpen && <GameInvite title="Challenge" opponentId={selectedUser.id} isRematch={false} onClose={onClickChallenge} />}
@@ -188,16 +195,16 @@ interface UserListProps {
   }
 }
 
-function UserList({chat}: UserListProps) {
+function UserList({ chat }: UserListProps) {
   const socket = useContext(Context).pongSocket;
   const user = useContext(UserContext).user;
-  const {getUserChannels, currentChannel, setCurrentChannel, channelUsers } = chat;
+  const { getUserChannels, currentChannel, setCurrentChannel, channelUsers } = chat;
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
 
   function handleUserClick(clickedUser: IUser) {
-    if (!user || user.id === clickedUser.id) {
-      return;
-    }
+    // if (!user || user.id === clickedUser.id) {
+    //   return;
+    // }
     setSelectedUser(clickedUser);
   }
 
@@ -212,7 +219,7 @@ function UserList({chat}: UserListProps) {
 
   useEffect(() => {
     if (!socket.current) {
-      return ;
+      return;
     }
     socket.current.on('leave-channel', kickedFromChannel);
 

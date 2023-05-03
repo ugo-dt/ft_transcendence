@@ -10,29 +10,38 @@ import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import Request from "../components/Request";
 import EditUsernameForm from "../components/EditUsernameForm";
 import EditAvatarForm from "../components/EditAvatarForm";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import GameInvite from "../components/GameInvite";
 import OndemandVideoIcon from '@mui/icons-material/OndemandVideo';
 import "./style/ProfileHeader.css"
+import { PADDLE_COLORS } from "../constants";
 
-function PaddleColorBox({ profileColor, color }: { profileColor: string, color: string }) {
+function PaddleColorBox({ color }: { color: string }) {
+  const user = useContext(UserContext).user;
   const setUser = useContext(UserContext).setUser;
 
-  function setPaddleColor(color: string) {
-    if (profileColor === color) {
+  function isValidColor(color: string) {
+    return (color === "white" || color === "yellow"
+      || color === "#fd761b" || color === "#ff0000"
+      || color === "#ff14b8" || color === "#9114ff"
+      || color === "blue" || color === "#14ebff"
+      || color === "green" || color === "#92ff0c");
+  }
+
+  async function setPaddleColor(color: string) {
+    if (!user || user.paddleColor === color || !isValidColor(color)) {
       return;
     }
-    Request.editPaddleColor(color).then(res => {
-      if (res) {
-        setUser(res);
-      }
-    });
+    const res = await Request.editPaddleColor(color as PADDLE_COLORS);
+    if (res) {
+      setUser(res);
+    };
   }
 
   return (
     <div
       style={{ backgroundColor: `${color}` }}
-      className={`box ${profileColor === `${color}` ? 'selected' : ''}`}
+      className={`box ${user && user.paddleColor === color ? 'selected' : ''}`}
       onClick={() => setPaddleColor(`${color}`)}
     />
   );
@@ -46,6 +55,7 @@ function ProfileHeader({ user, profile }: { user: IUser | null, profile: IUser }
   const [isUsernameFormOpen, setIsUsernameFormOpen] = useState(false);
   const [isChallengeOpen, setIsChallengeOpen] = useState(false);
   const [userRanking, setUserRanking] = useState(0);
+  const state = useLocation().state;
   const [info, setInfo] = useState('');
 
   function onClickEditUsername() { setIsUsernameFormOpen(!isUsernameFormOpen); }
@@ -86,7 +96,10 @@ function ProfileHeader({ user, profile }: { user: IUser | null, profile: IUser }
   }
   function onClickChallenge() { setIsChallengeOpen(!isChallengeOpen); }
 
-  useEffect(() => {    
+  useEffect(() => {
+    if (state && state.info) {
+      setInfo(state.info);
+    }
     Request.getUserRanking(profile.id).then(res => {
       if (res) {
         setUserRanking(res);
@@ -97,7 +110,7 @@ function ProfileHeader({ user, profile }: { user: IUser | null, profile: IUser }
         setIsFriend(true);
       }
     }
-  }, []);
+  }, [user]);
 
   return (
     <div className="profile-header-container">
@@ -130,16 +143,16 @@ function ProfileHeader({ user, profile }: { user: IUser | null, profile: IUser }
             user && profile.username === user.username ? (
               <div className="profile-header-actions">
                 <section className="profile-colors-container">
-                  <PaddleColorBox profileColor={profile.paddleColor} color="white" />
-                  <PaddleColorBox profileColor={profile.paddleColor} color="yellow" />
-                  <PaddleColorBox profileColor={profile.paddleColor} color="#fd761b" />
-                  <PaddleColorBox profileColor={profile.paddleColor} color="#ff0000" />
-                  <PaddleColorBox profileColor={profile.paddleColor} color="#ff14b8" />
-                  <PaddleColorBox profileColor={profile.paddleColor} color="#9114ff" />
-                  <PaddleColorBox profileColor={profile.paddleColor} color="blue" />
-                  <PaddleColorBox profileColor={profile.paddleColor} color="#14ebff" />
-                  <PaddleColorBox profileColor={profile.paddleColor} color="green" />
-                  <PaddleColorBox profileColor={profile.paddleColor} color="#92ff0c" />
+                  <PaddleColorBox color="white" />
+                  <PaddleColorBox color="yellow" />
+                  <PaddleColorBox color="#fd761b" />
+                  <PaddleColorBox color="#ff0000" />
+                  <PaddleColorBox color="#ff14b8" />
+                  <PaddleColorBox color="#9114ff" />
+                  <PaddleColorBox color="blue" />
+                  <PaddleColorBox color="#14ebff" />
+                  <PaddleColorBox color="green" />
+                  <PaddleColorBox color="#92ff0c" />
                 </section>
                 <section className="profile-buttons-container">
                   <div role="button" className="profile-header-actions-btn edit-profile-btn" onClick={onClickEditUsername}>

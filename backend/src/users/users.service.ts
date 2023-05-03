@@ -35,7 +35,7 @@ export class UsersService {
       paddleColor,
       friends: [],
       blocked: [],
-	  userChannels: [],
+      userChannels: [],
     });
     return this.repo.save(user);
   }
@@ -198,15 +198,15 @@ export class UsersService {
   public async getRating(id: number) { return (await this._user(id)).rating; }
   public async getPaddleColor(id: number) { return (await this._user(id)).paddleColor; }
   public async getUserChannels(user: User, channelService: ChannelService) {
-	const channels: Channel[] = [];
-	for (const id of user.userChannels.values()) {
-		const channel = await channelService.findOneId(id);
-		if (channel) {
-			channels.push(channel);
-		}
-	}
-	return channels;
-}
+    const channels: Channel[] = [];
+    for (const id of user.userChannels.values()) {
+      const channel = await channelService.findOneId(id);
+      if (channel) {
+        channels.push(channel);
+      }
+    }
+    return channels;
+  }
 
   public async setUsername(id: number, username: string) { return this.update(id, { username: username }); }
   public async setAvatar(id: number, avatar: string) { return this.update(id, { avatar: avatar }); }
@@ -214,5 +214,11 @@ export class UsersService {
   public async setInGame(id: number) { return this.update(id, { status: STATUS_IN_GAME }); }
   public async setOffline(id: number) { return this.update(id, { status: STATUS_OFFLINE }); }
   public async setRating(id: number, rating: number) { return this.update(id, { rating: rating }); }
-  public async setPaddleColor(id: number, paddleColor: string) { return this.update(id, { paddleColor: paddleColor }); }
+
+  public async setPaddleColor(
+    id: number,
+    paddleColor: "white"| "yellow" | "#fd761b" | "#ff0000" | "#ff14b8" | "#9114ff" | "blue" | "#14ebff" | "green" | "#92ff0c",
+  ) {
+    return this.update(id, { paddleColor: paddleColor });
+  }
 }

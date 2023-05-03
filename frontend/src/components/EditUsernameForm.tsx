@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { useNavigate } from "react-router";
 import Form, { FormText } from "./Form";
 import Request from "./Request";
-import { IUser } from "../types";
+import { UserContext } from "../context";
 
 interface EditUsernameProps {
-  onClose?: () => void,
+  onClose: () => void,
 }
 
 function EditUsernameForm({
@@ -15,6 +15,7 @@ function EditUsernameForm({
   const [editUsernameValue, setEditUsernameValue] = useState("");
   const [isValid, setIsValid] = useState(false);
   const [error, setError] = useState("");
+  const setUser = useContext(UserContext).setUser;
   const formValues: FormText[] = [
     {
       value: editUsernameValue,
@@ -55,14 +56,12 @@ function EditUsernameForm({
     if (!isValid) {
       return;
     }
-    Request.editUsername(editUsernameValue).then((res: IUser | null) => {
-      if (res) {
-        navigate("/profile/" + res.username.toLowerCase(), {state: {info: 'Username updated successfully.'}})
-        window.location.reload();
-      }
-    }).catch(err => {
-      console.error(err);
-    });
+    const res = await Request.editUsername(editUsernameValue);
+    if (res) {
+      setUser(res);
+      navigate("/profile/" + res.username.toLowerCase(), {state: {info: 'Username updated successfully.'}})
+      onClose();
+    }
     setEditUsernameValue("");
   }
 

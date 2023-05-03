@@ -38,7 +38,6 @@ export class ChannelService {
     const promise = await this.repo.save(channel);
     channel.room = 'channel-room-' + channel.id;
     await usersService.addChannel(userId, channel.id);
-    this.logger.log(`Saved channel ${promise.id}`);
     return promise;
   }
 

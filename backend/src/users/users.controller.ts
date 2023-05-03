@@ -1,4 +1,4 @@
-import { ClassSerializerInterceptor, Controller, Delete, Get, Param, Post, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, ClassSerializerInterceptor, Controller, Delete, FileTypeValidator, Get, MaxFileSizeValidator, Param, ParseFilePipe, Post, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { User } from './entities/user.entity';
@@ -59,11 +59,32 @@ export class UsersController {
     return this.usersService.setUsername(user.id, data.username);
   }
 
-  // todo: add file validation
   // https://docs.nestjs.com/techniques/file-upload#basic-example
   @Post("edit/avatar")
   @UseInterceptors(FileInterceptor('image'))
-  async editAvatar(@CurrentUser() user: User, @UploadedFile() file: Express.Multer.File): Promise<User> {
+  async editAvatar(
+    @CurrentUser() user: User,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 2000000 }), // 2 MB
+          new FileTypeValidator({
+            fileType: new RegExp(/\/(jpg|jpeg|png|gif|svg)$/i),
+          }),
+        ],
+      }),
+    )
+    file: Express.Multer.File
+  ): Promise<User> {
+    if (!file) {
+      throw new BadRequestException('no file uploaded');
+    }
+    if (!file.mimetype.startsWith('image')) {
+      throw new BadRequestException('invalid file type');
+    }
+
+    console.log(file.size);
+    console.log(file.mimetype);
     const dirname = this.envService.get('AVATARS_DIR');
     const filename = user.id + '.' + Date.now() + '.' + file.mimetype.split("/").pop();
     const fullpath = dirname + '/' + filename;
@@ -80,7 +101,12 @@ export class UsersController {
 
   @Post("edit/paddle-color")
   async editPaddleColor(@CurrentUser() user: User, @MessageBody() data: { color: string }) {
-    return await this.usersService.setPaddleColor(user.id, data.color);
+    const __color = data.color;
+    if (__color != "white" && __color != "yellow" && __color != "#fd761b" && __color != "#ff0000" && __color != "#ff14b8"
+      && __color != "#9114ff" && __color != "blue" && __color != "#14ebff" && __color != "green" && __color != "#92ff0c") {
+      throw new BadRequestException('invalid color');
+    }
+    return await this.usersService.setPaddleColor(user.id, __color);
   }
 
   @Post("add-friend/")

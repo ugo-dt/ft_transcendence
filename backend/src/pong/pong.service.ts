@@ -48,7 +48,6 @@ export class PongService {
     else {
       client.addSocket(clientSocket);
     }
-    this.logger.log(`Client connected: ${user.username} (id: ${user.id})`);
     clientSocket.emit('client-connected', user);
   }
 
@@ -61,7 +60,6 @@ export class PongService {
     client.removeSocket(clientSocket);
     this.usersService.setOffline(client.id);
     this.removeClientFromQueue(clientSocket);
-    this.logger.log(`Client disconnected: ${client.id}`);
   }
 
   public addClientToQueue(clientSocket: Socket) {

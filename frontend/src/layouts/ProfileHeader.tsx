@@ -135,7 +135,6 @@ function ProfileHeader({ profile }: { profile: IUser }) {
   async function onClickConfirmSMS() {
     if (phoneNumber) { // avoid undefined syntax error on the line below
       const res = await Request.validateOtp(phoneNumber.toString(), otp);
-      console.log(res);
       if (res !== null) {
         // set user 2fa to true with call to backend
         // display success message

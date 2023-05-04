@@ -117,8 +117,6 @@ function App() {
     if (res !== null) {
       navigate("/home");
       window.location.reload();
-    } else {
-      // temp?
     }
     onModalClose();
   }
@@ -129,19 +127,24 @@ function App() {
       setIsServerAvailable(isServerAvailableRef.current);
       if (isServerAvailableRef.current) {
         if (parameters.get("code")) {
-          Request.signIn(parameters.get("code")).then(res => {
+          await Request.signIn(parameters.get("code")).then(res => {
             if (res) {
               navigate("/home");
               window.location.reload();
-            } else {
+            }
+            else {
               Request.generateLoginOtp().then(res => {
-                if (!res) console.log('Request was invalid!');
-                else setOpenModalLogin(true);
+                if (!res) {
+                  console.warn('Request was invalid!');
+                }
+                else {
+                  setOpenModalLogin(true);
+                }
               });
             }
           });
         }
-        Request.me().then(res => {
+        await Request.me().then(res => {
           if (res) {
             connect(res);
           }

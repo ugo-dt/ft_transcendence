@@ -37,7 +37,6 @@ function UserOptions({
     Request.blockUser(selectedUser.id).then(res => {
       if (res) {
         setUser(res);
-        console.log(res);
       }
     });
     onClose();
@@ -49,7 +48,6 @@ function UserOptions({
     }
     Request.unblockUser(selectedUser.id).then(res => {
       if (res) {
-        console.log(res);
         setUser(res);
       }
     });

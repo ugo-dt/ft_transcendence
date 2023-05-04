@@ -37,7 +37,7 @@ function NavBarConnected({ user, signOut }: NavBarProps) {
       <NavLink className="NavLink" to="/watch">Watch</NavLink>
       <NavLink className="NavLink" to="/leaderboard">Leaderboard</NavLink>
       <NavLink className="NavLink" to="/friends">Friends</NavLink>
-      <NavLink className="NavLink" to="/messages">Messages</NavLink>
+      <NavLink className="NavLink" to={"/messages"}>Messages</NavLink>
       <NavLink className="NavLink" to="" onClick={signOut}>Sign out</NavLink>
     </nav>
   );

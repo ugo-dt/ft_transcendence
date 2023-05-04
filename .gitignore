@@ -1,6 +1,7 @@
 */.env
 db.sqlite
 requests.http
+*/.DS_Store
 
 dist
 node_modules

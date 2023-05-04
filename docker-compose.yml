@@ -1,15 +1,6 @@
 version: '3'
 
 services:
-  postgres:
-    container_name: postgres
-    image: 'postgres:latest'
-    ports:
-      - 5432:5432
-    env_file:
-      - ./backend/.env
-    restart: unless-stopped
-  
   redis:
     container_name: redis
     image: redis
@@ -18,11 +9,21 @@ services:
     volumes:
       - redis:/data
 
+  postgres:
+    container_name: postgres
+    image: 'postgres:latest'
+    ports:
+      - 5432:5432
+    env_file:
+      - ./backend/.env
+    restart: unless-stopped
+
   backend:
     container_name: backend
     build:
       context: ./backend
       dockerfile: Dockerfile
+    image: backend
     volumes:
       - ./backend/src:/app/src
       - ./backend/public:/app/public/
@@ -32,6 +33,7 @@ services:
       - ./backend/.env
     depends_on:
       - postgres
+      - redis
     restart: unless-stopped
 
   frontend:
@@ -39,6 +41,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    image: frontend
     ports:
       - 5173:5173
     env_file:

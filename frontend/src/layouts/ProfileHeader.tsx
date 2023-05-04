@@ -4,18 +4,17 @@ import { QueueContext, UserContext } from "../context";
 import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
 import SportsTennisIcon from '@mui/icons-material/SportsTennis';
-import ChatIcon from '@mui/icons-material/Chat';
-import BlockIcon from '@mui/icons-material/Block';
-import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
+import AddPhotoAlternateOutlinedIcon from '@mui/icons-material/AddPhotoAlternateOutlined';
 import EditIcon from '@mui/icons-material/Edit';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import Request from "../components/Request";
-import EditUsernameForm from "./EditUsernameForm";
-import EditAvatarForm from "./EditAvatarForm";
-import { useNavigate } from "react-router";
-import GameInvite from "./GameInvite";
+import EditUsernameForm from "../components/EditUsernameForm";
+import EditAvatarForm from "../components/EditAvatarForm";
+import { useLocation, useNavigate } from "react-router";
+import GameInvite from "../components/GameInvite";
 import OndemandVideoIcon from '@mui/icons-material/OndemandVideo';
 import "./style/ProfileHeader.css"
+import { PADDLE_COLORS } from "../constants";
 import { Alert, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from "@mui/material";
 import 'react-phone-number-input/style.css';
 import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
@@ -23,24 +22,32 @@ import { E164Number } from "libphonenumber-js/types";
 import Grid from "@mui/material/Unstable_Grid2";
 import SendIcon from "@mui/icons-material/Send";
 
-function PaddleColorBox({ profileColor, color }: { profileColor: string, color: string }) {
+function PaddleColorBox({ color }: { color: string }) {
+  const user = useContext(UserContext).user;
   const setUser = useContext(UserContext).setUser;
 
-  function setPaddleColor(color: string) {
-    if (profileColor === color) {
+  function isValidColor(color: string) {
+    return (color === "white" || color === "yellow"
+      || color === "#fd761b" || color === "#ff0000"
+      || color === "#ff14b8" || color === "#9114ff"
+      || color === "blue" || color === "#14ebff"
+      || color === "green" || color === "#92ff0c");
+  }
+
+  async function setPaddleColor(color: string) {
+    if (!user || user.paddleColor === color || !isValidColor(color)) {
       return;
     }
-    Request.editPaddleColor(color).then(res => {
-      if (res) {
-        setUser(res);
-      }
-    });
+    const res = await Request.editPaddleColor(color as PADDLE_COLORS);
+    if (res) {
+      setUser(res);
+    };
   }
 
   return (
     <div
       style={{ backgroundColor: `${color}` }}
-      className={`box ${profileColor === `${color}` ? 'selected' : ''}`}
+      className={`box ${user && user.paddleColor === color ? 'selected' : ''}`}
       onClick={() => setPaddleColor(`${color}`)}
     />
   );
@@ -48,15 +55,15 @@ function PaddleColorBox({ profileColor, color }: { profileColor: string, color: 
 
 function ProfileHeader({ profile }: { profile: IUser }) {
   const inQueue = useContext(QueueContext).inQueue;
-  const context = useContext(UserContext);
-  //const user = useContext(UserContext).user;
   const {user, setUser} = useContext(UserContext);
   const navigate = useNavigate();
   const [isFriend, setIsFriend] = useState(false);
   const [isAvatarFormOpen, setIsAvatarFormOpen] = useState(false);
   const [isUsernameFormOpen, setIsUsernameFormOpen] = useState(false);
   const [isChallengeOpen, setIsChallengeOpen] = useState(false);
-  const [userRanking, setUserRanking] = useState(-1);
+  const [userRanking, setUserRanking] = useState(0);
+  const state = useLocation().state;
+  const [info, setInfo] = useState('');
   const [open2fa, setOpen2fa] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState<E164Number | undefined>(undefined);
   const [otp, setOtp] = useState('');
@@ -80,22 +87,28 @@ function ProfileHeader({ profile }: { profile: IUser }) {
   function onClickEditUsername() { setIsUsernameFormOpen(!isUsernameFormOpen); }
   function onClickEditAvatar() { setIsAvatarFormOpen(!isAvatarFormOpen); }
 
-  function onClickAddFriend() {
+  async function onClickAddFriend() {
     if (!user) {
       return;
     }
-    Request.addFriend(profile.id);
-    navigate("/profile/" + profile.username.toLowerCase(), { state: { info: 'Friend added successfully.' } });
-    window.location.reload();
+    await Request.addFriend(profile.id).then(res => {
+      if (res) {
+        setIsFriend(true);
+      }
+    });
+    setInfo('Friend added successfully.');
   }
 
-  function onClickRemoveFriend() {
+  async function onClickRemoveFriend() {
     if (!user) {
       return;
     }
-    Request.removeFriend(profile.id);
-    navigate("/profile/" + profile.username.toLowerCase(), { state: { info: 'Friend removed successfully.' } });
-    window.location.reload();
+    await Request.removeFriend(profile.id).then(res => {
+      if (res) {
+        setIsFriend(false);
+      }
+    });
+    setInfo('Friend removed successfully.');
   }
 
   async function onClickWatch() {
@@ -107,8 +120,6 @@ function ProfileHeader({ profile }: { profile: IUser }) {
     }
   }
   function onClickChallenge() { setIsChallengeOpen(!isChallengeOpen); }
-  function onClickMessage() { console.log("message"); }
-  function onClickBlock() { console.log("block"); }
 
   function onClickSendSMS() {
     if (phoneNumber) { // avoid undefined syntax error on the line below
@@ -124,7 +135,6 @@ function ProfileHeader({ profile }: { profile: IUser }) {
   async function onClickConfirmSMS() {
     if (phoneNumber) { // avoid undefined syntax error on the line below
       const res = await Request.validateOtp(phoneNumber.toString(), otp);
-      console.log(res);
       if (res !== null) {
         // set user 2fa to true with call to backend
         // display success message
@@ -147,17 +157,20 @@ function ProfileHeader({ profile }: { profile: IUser }) {
   }
 
   useEffect(() => {
+    if (state && state.info) {
+      setInfo(state.info);
+    }
     Request.getUserRanking(profile.id).then(res => {
       if (res) {
         setUserRanking(res);
       }
     });
-    if (user && profile && user.friends && user.friends.length > 0) {
+    if (user) {
       if (user.friends.includes(profile.id)) {
         setIsFriend(true);
       }
     }
-  }, [context]);
+  }, [user]);
 
   return (
     <div className="profile-header-container">
@@ -173,7 +186,7 @@ function ProfileHeader({ profile }: { profile: IUser }) {
             {
               user && profile.username === user.username &&
               <div role="button" onClick={onClickEditAvatar} className="upload-icon-wrapper">
-                <AddPhotoAlternateIcon className="upload-icon" fontSize="large" />
+                <AddPhotoAlternateOutlinedIcon className="upload-icon" fontSize="large" />
               </div>
             }
           </div>
@@ -190,16 +203,16 @@ function ProfileHeader({ profile }: { profile: IUser }) {
             user && profile.username === user.username ? (
               <div className="profile-header-actions">
                 <section className="profile-colors-container">
-                  <PaddleColorBox profileColor={profile.paddleColor} color="white" />
-                  <PaddleColorBox profileColor={profile.paddleColor} color="yellow" />
-                  <PaddleColorBox profileColor={profile.paddleColor} color="#fd761b" />
-                  <PaddleColorBox profileColor={profile.paddleColor} color="#ff0000" />
-                  <PaddleColorBox profileColor={profile.paddleColor} color="#ff14b8" />
-                  <PaddleColorBox profileColor={profile.paddleColor} color="#9114ff" />
-                  <PaddleColorBox profileColor={profile.paddleColor} color="blue" />
-                  <PaddleColorBox profileColor={profile.paddleColor} color="#14ebff" />
-                  <PaddleColorBox profileColor={profile.paddleColor} color="green" />
-                  <PaddleColorBox profileColor={profile.paddleColor} color="#92ff0c" />
+                  <PaddleColorBox color="white" />
+                  <PaddleColorBox color="yellow" />
+                  <PaddleColorBox color="#fd761b" />
+                  <PaddleColorBox color="#ff0000" />
+                  <PaddleColorBox color="#ff14b8" />
+                  <PaddleColorBox color="#9114ff" />
+                  <PaddleColorBox color="blue" />
+                  <PaddleColorBox color="#14ebff" />
+                  <PaddleColorBox color="green" />
+                  <PaddleColorBox color="#92ff0c" />
                 </section>
                 <section className="profile-buttons-container">
                   <div role="button" className="profile-header-actions-btn edit-profile-btn" onClick={onClickEditUsername}>
@@ -274,17 +287,12 @@ function ProfileHeader({ profile }: { profile: IUser }) {
                     )
                   )
                 }
-                <div role="button" className="profile-header-actions-btn message-btn" onClick={onClickMessage}>
-                  <ChatIcon className="profile-header-actions-icon" /> Message
-                </div>
-                <div role="button" className="profile-header-actions-btn block-btn" onClick={onClickBlock}>
-                  <BlockIcon className="profile-header-actions-icon" /> Block
-                </div>
               </div>
             )
           }
         </section> {/* className="profile-header-content" */}
       </div>
+      <h3 id="profile-state-info">{info}&nbsp;</h3>
       {isAvatarFormOpen && <EditAvatarForm onClose={onClickEditAvatar} />}
       {isUsernameFormOpen && <EditUsernameForm onClose={onClickEditUsername} />}
       {isChallengeOpen && <GameInvite title="Challenge" opponentId={profile.id} isRematch={false} onClose={onClickChallenge} />}

@@ -5,7 +5,6 @@ import { useNavigate } from "react-router";
 import "../layouts/style/RoomList.css"
 import "./style/Rankings.css"
 
-// todo: see current ranking
 function Rankings() {
   document.title = "ft_transcendence - Leaderboard";
   const navigate = useNavigate();

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router";
 import { IUser } from "../types";
 import { useContext, useEffect, useState } from "react";
 import { Context, UserContext } from "../context";
-import GameInvite from "./GameInvite";
+import GameInvite from "../components/GameInvite";
 
 interface GameOverProps {
   left: IUser,

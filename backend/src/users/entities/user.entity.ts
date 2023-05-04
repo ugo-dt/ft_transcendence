@@ -43,4 +43,7 @@ export class User {
 
   @Column("int", {array: true, nullable: true}) 
   blocked: number[];
+
+  @Column("int", {array: true, nullable: true}) 
+  userChannels: number[]; // channel ids
 }

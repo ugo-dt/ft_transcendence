@@ -1,20 +1,20 @@
 import { ValidationPipe } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as session from 'express-session';
 import { createClient } from 'redis';
 import RedisStore from 'connect-redis';
+import { EnvService } from './config/env.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const configService = app.get(ConfigService);
-  const port = configService.get('BACKEND_PORT');
+  const envService = app.get(EnvService);
+  const port = envService.get('BACKEND_PORT');
 
   const redisClient = createClient({
     socket: {
-      host: 'redis',
-      port: 6379,
+      host: envService.get('REDIS_HOST'),
+      port: envService.get('REDIS_PORT'),
     }
   });
   redisClient.connect().catch(console.error);
@@ -25,7 +25,7 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   app.enableCors({
     origin: [
-      `${configService.get('FRONTEND_HOST')}`,
+      `${envService.get('FRONTEND_HOST')}`,
     ],
     credentials: true,
   });

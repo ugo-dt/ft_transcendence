@@ -1,0 +1,53 @@
+.browse-channels {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -20%;
+  margin-left: -24%;
+  width: 50%;
+  height: 55%;
+  background-color: rgb(31, 31, 31);
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, .5);
+  border-radius: 10px;
+  z-index: 10;
+  align-items: center;
+  user-select: none;
+}
+
+.browse-channels-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: scroll;
+  margin: 20px;
+  width: 75%;
+}
+
+.browse-channels-btn {
+  cursor: pointer;
+  font-weight: bolder;
+  font-size: large;
+  color: white;
+  background-color: rgb(55, 57, 59);
+  box-shadow: 0 0.1rem 0.4rem rgba(0, 0, 0, .5);
+  transition: .2s ease-in-out;
+  border-radius: 10px;
+  width: 75%;
+  padding-left: 30px;
+  padding-right: 30px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  margin-bottom: 5px;
+  display: flex;
+  justify-content: center;
+}
+
+.browse-channels-btn:hover {
+  background-color: rgb(67, 67, 67);
+}
+
+#browse-refresh-btn {
+  cursor: pointer;
+}

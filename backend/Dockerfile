@@ -6,7 +6,9 @@ RUN apt-get -y update
 
 COPY ["package.json", "package-lock.json*", "./"]
 RUN npm install
+COPY . ./
 
-COPY . .
-EXPOSE 5173
-CMD [ "npm", "run", "start:dev" ]
+EXPOSE 3000
+
+RUN chmod +x ./entrypoint.sh
+ENTRYPOINT [ "/bin/sh", "./entrypoint.sh" ]

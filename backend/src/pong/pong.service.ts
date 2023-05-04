@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
-import Client from './Client/Client';
+import Client from '../Client/Client';
 import Queue from './Matchmaking/Queue';
 import GameRoom, { GAMETYPE_CASUAL, GAMETYPE_RANKED, GameType, IGameRoom } from '../room/GameRoom';
 import { UsersService } from 'src/users/users.service';
@@ -48,7 +48,6 @@ export class PongService {
     else {
       client.addSocket(clientSocket);
     }
-    this.logger.log(`Client connected: ${user.username} (id: ${user.id})`);
     clientSocket.emit('client-connected', user);
   }
 
@@ -61,7 +60,6 @@ export class PongService {
     client.removeSocket(clientSocket);
     this.usersService.setOffline(client.id);
     this.removeClientFromQueue(clientSocket);
-    this.logger.log(`Client disconnected: ${client.id}`);
   }
 
   public addClientToQueue(clientSocket: Socket) {
@@ -70,7 +68,6 @@ export class PongService {
       return;
     }
     Queue.add(client);
-    this.logger.log(`Added client ${client.id} to queue.`);
   }
 
   public removeClientFromQueue(clientSocket: Socket) {
@@ -79,7 +76,6 @@ export class PongService {
       return;
     }
     Queue.remove(client);
-    this.logger.log(`Removed client ${client.id} from queue.`);
   }
 
   public async startGame(server: Server, left: Client, right: Client, type: GameType) {
@@ -103,7 +99,6 @@ export class PongService {
     const room = GameRoom.at(roomId);
     if (room) {
       room.addSpectator(client);
-      this.logger.log(`New spectator in room ${room.id}: ${client.id}`);
     }
   }
 
@@ -115,7 +110,6 @@ export class PongService {
     const room = GameRoom.at(roomId);
     if (room) {
       room.removeSpectator(client);
-      this.logger.log(`New spectator in room ${room.id}: ${client.id}`);
     }
   }
 
@@ -185,7 +179,6 @@ export class PongService {
     }
     client.createChallenge(clientSocket.id, opponent.id, false);
     opponent.addInvitation(client.id)
-    this.logger.log(`New challenge: ${client.id} invited ${opponent.id}`);
     return 'sent';
   }
 
@@ -204,7 +197,6 @@ export class PongService {
     }
     client.cancelChallenge(clientSocket.id);
     opponent.removeInvitation(client.id);
-    this.logger.log(`Challenge cancelled: ${client.id} VS ${opponent.id}`);
   }
 
   public challengeList(clientSocket: Socket): number[] {
@@ -227,7 +219,6 @@ export class PongService {
     if (right.hasInvitation(left.id)) {
       left.cancelChallenge(clientSocket.id);
       right.removeInvitation(left.id);
-      this.logger.log(`Challenge accepted: ${left.id} VS ${right.id}`);
       this.startGame(server, left, right, GAMETYPE_CASUAL);
       return true;
     }

@@ -1,5 +1,8 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 import { IUser, IGameRoom } from "../types";
+import { IChannel } from "../types/IChannel";
+import { IMessage } from "../types/IMessage";
+import { PADDLE_COLORS } from "../constants";
 
 namespace __url_ {
   export const __api_base_url_ = `${import.meta.env.VITE_BACKEND_HOST}/api`;
@@ -7,6 +10,7 @@ namespace __url_ {
   export const __users_base_ = '/users';
   export const __game_base_ = '/pong';
   export const __chat_base_ = '/chat';
+  export const __channels_base_ = '/channels';
   export const __auth_base_ = '/auth';
 
   // Auth
@@ -27,6 +31,8 @@ namespace __url_ {
   export const __valid_username_ = __users_base_ + '/edit/is-valid-username';
   export const __add_friend_ = __users_base_ + '/add-friend'
   export const __remove_friend_ = __users_base_ + '/remove-friend'
+  export const __block_user_ = __users_base_ + '/block-user'
+  export const __unblock_user_ = __users_base_ + '/unblock-user'
   export const __rankings_ = __users_base_ + '/get/rankings';
   export const __user_ranking_ = __users_base_ + '/get/user-ranking';
   export const __edit_paddle_ = __users_base_ + '/edit/paddle-color';
@@ -37,8 +43,16 @@ namespace __url_ {
   export const __history_ = __game_base_ + '/history';
 
   // Chat
-  export const __channels_ = __chat_base_ + '/channels';
-  export const __channel_ = __chat_base_ + '/channel';
+  export const __all_channels_ = __channels_base_ + '/all';
+  export const __edit_channel_password_ = __users_base_ + '/channels/edit-channel-password';
+  export const __remove_password_ = __users_base_ + '/channels/remove-password';
+  export const __user_channels_ = __users_base_ + '/channels/user-channels';
+  export const __channel_users_ = __users_base_ + '/channels/channel-users';
+  export const __create_channel_ = __users_base_ + '/channels/create-channel';
+  export const __join_channel_ = __users_base_ + '/channels/join-channel';
+  export const __leave_channel_ = __users_base_ + '/channels/leave-channel';
+  export const __check_password_ = __users_base_ + '/channels/check-password';
+  export const __message_ = __chat_base_ + '/message';
 }
 
 class Request {
@@ -73,7 +87,7 @@ class Request {
   })();
 
   private static async __make_get_request_<T>(url: string): Promise<T | null> {
-    return await Request.__axios_.get(url, {signal: this.controller.signal}).then(res => {
+    return await Request.__axios_.get(url, { signal: this.controller.signal }).then(res => {
       return res.data;
     }).catch(err => {
       if (axios.isAxiosError(err) && err.code === "ERR_CANCELED") {
@@ -166,11 +180,11 @@ class Request {
   }
 
   public static async getUserMatchHistory(id: number): Promise<IGameRoom[]> {
-    return this.__make_array_get_request_(__url_.__history_ + '/' + id);
+    return Request.__make_array_get_request_(__url_.__history_ + '/' + id);
   }
 
   public static async getRankings(): Promise<IUser[]> {
-    return this.__make_array_get_request_(__url_.__rankings_);
+    return Request.__make_array_get_request_(__url_.__rankings_);
   }
 
   public static async getUserRanking(id: number): Promise<number | null> {
@@ -178,7 +192,7 @@ class Request {
   }
 
   public static async getRoomList(): Promise<IGameRoom[]> {
-    return this.__make_array_get_request_(__url_.__rooms_);
+    return Request.__make_array_get_request_(__url_.__rooms_);
   }
 
   public static async addFriend(friendId: number) {
@@ -217,8 +231,53 @@ class Request {
     return await Request.__make_delete_request_(__url_.__edit_avatar_);
   }
 
-  public static async editPaddleColor(color: string): Promise<IUser | null> {
+  public static async editPaddleColor(color: PADDLE_COLORS): Promise<IUser | null> {
     return await Request.__make_post_request_(__url_.__edit_paddle_, { color: color });
+  }
+
+  /*---Chat---*/
+  public static async blockUser(id: number): Promise<IUser | null> {
+    return await Request.__make_post_request_(__url_.__block_user_, { id: id });
+  }
+
+  public static async unblockUser(id: number): Promise<IUser | null> {
+    return await Request.__make_delete_request_(__url_.__unblock_user_ + '/' + id);
+  }
+
+  public static async createChannel(name: string, password: string, isPrivate: boolean): Promise<IChannel | null> {
+    return await Request.__make_post_request_(__url_.__create_channel_, { name: name, password: password, isPrivate: isPrivate });
+  }
+
+  public static async getUserChannels(): Promise<IChannel[]> {
+    return await Request.__make_array_get_request_(__url_.__user_channels_);
+  }
+
+  public static async getChannelUsers(id: number): Promise<IUser[]> {
+    return await Request.__make_array_get_request_(__url_.__channel_users_ + '/' + id);
+  }
+
+  public static async joinChannel(id: number, password: string): Promise<IChannel | null> {
+    return await Request.__make_post_request_(__url_.__join_channel_, { id: id, password: password });
+  }
+
+  public static async leaveChannel(id: number) {
+    return await Request.__make_delete_request_(__url_.__leave_channel_ + '/' + id);
+  }
+
+  public static async editChannelPassword(channelId: number, newPassword: string): Promise<IChannel | null> {
+    return await Request.__make_post_request_(__url_.__edit_channel_password_, { channelId: channelId, newPassword: newPassword });
+  }
+
+  public static async getAllChannels(): Promise<IChannel[]> {
+    return await Request.__make_array_get_request_(__url_.__all_channels_);
+  }
+
+  public static async checkPassword(id: number, password: string): Promise<boolean | null> {
+    return await Request.__make_post_request_(__url_.__check_password_, { password: password });
+  }
+
+  public static async getMessage(id: number): Promise<IMessage | null> {
+    return await Request.__make_get_request_(__url_.__message_ + '/' + id);
   }
 }
 

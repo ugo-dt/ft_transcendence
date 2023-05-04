@@ -28,3 +28,12 @@ export const PADDLE_DEFAULT_X_RIGHT: number = 615;
 export const PADDLE_DEFAULT_WIDTH: number = 15;
 export const PADDLE_DEFAULT_HEIGHT: number = 80;
 export const PADDLE_DEFAULT_VELOCITY: number = 10;
+export type PADDLE_COLORS = "white" | "yellow" | "#fd761b" | "#ff0000" | "#ff14b8" | "#9114ff" | "blue" | "#14ebff" | "green" | "#92ff0c";
+
+/* Chat */
+export const CHAT_DEFAULT_AVATAR: string = "../../assets/images/noavatar.png";
+export const CHAT_GEAR_ICON: string = "../../../assets/images/gear_icon9.png";
+export const CHAT_LEAVE_CHANNEL_ICON: string = "../../../assets/images/leaving.png";
+export const CHAT_BROWSE_CHANNEL_ICON: string = "../../../assets/images/browse_channel_icon.png";
+export const CHAT_LOCK_ICON: string = "../../../assets/images/lock.png";
+export const CHAT_REFRESH_ICON: string = "../../../assets/images/refresh_icon.png";

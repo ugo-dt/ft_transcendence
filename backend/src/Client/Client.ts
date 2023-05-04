@@ -1,4 +1,5 @@
 import { Socket } from "socket.io";
+import { Channel } from "src/chat/channel/entities/channel.entity";
 import { GAMETYPE_CASUAL, GAMETYPE_RANKED, GameType } from "src/room/GameRoom";
 
 interface Challenge {
@@ -12,9 +13,14 @@ class Client {
 
   private readonly _id: number;
   private _sockets: Socket[];
+
+  // Pong
   private _challenges: Challenge[]; // challenger socket id, opponent user id
   private _invitations: number[];
   private _wantsRematch: boolean;
+
+  // Chat
+  private _userChannels: number[]; // channel ids
 
   private constructor(id: number, socket: Socket | null) {
     this._id = id;
@@ -25,6 +31,7 @@ class Client {
     this._challenges = [];
     this._invitations = [];
     this._wantsRematch = false;
+    this._userChannels = [];
   }
 
   public get id(): number { return this._id; }
@@ -109,6 +116,26 @@ class Client {
     const index = this._invitations.indexOf(id);
     if (index > -1) {
       this._invitations.splice(index, 1);
+    }
+  }
+
+  public addChannel(id: number) {
+    if (!this._userChannels.includes(id)) {
+		  this._userChannels.push(id);
+    }
+  }
+
+  public removeChannel(id: number) {
+    const index = this._userChannels.indexOf(id);
+    if (index > -1) {
+      this._userChannels.splice(index, 1);
+    }
+  }
+
+  public leaveChannelRoom(channel: Channel) {
+    for (const s of this._sockets.values()) {
+      s.emit('leave-channel', channel);
+      s.leave(channel.room);
     }
   }
 

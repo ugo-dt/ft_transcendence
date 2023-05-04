@@ -9,8 +9,11 @@ import * as Twilio from 'twilio';
 @Injectable()
 export class AuthService {
   // SET IN .ENV
-  private twilioClient = Twilio('AC28535c1f359bc8eb8d1afe4e6eaa7c17', '28bd6dbe60d71bfae39dc6fe2a1237ea');
-  constructor(private usersService: UsersService, private httpService: HttpService, private envService: EnvService) { }
+  private twilioClient;
+
+  constructor(private usersService: UsersService, private httpService: HttpService, private envService: EnvService) {
+    this.twilioClient = Twilio(envService.get('TWILIO_ACCOUNT_SID'), envService.get('TWILIO_AUTHTOKEN'));
+  }
 
   async getResourceOwnerAccessToken(authCode: string) {
     const options = {

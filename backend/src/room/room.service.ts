@@ -21,9 +21,7 @@ export class RoomService {
         gameState: gameState,
       }
     );
-    const promise = await this.repo.save(room);
-    this.logger.log(`Saved game ${promise.id} (${promise.left} VS ${promise.right})`);
-    return promise;
+    return await this.repo.save(room);
   }
 
   IGameRoom(room: Room, leftUser: User, rightUser: User): IGameRoom {

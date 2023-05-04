@@ -1,3 +1,5 @@
+import { IChannel } from "./IChannel";
+
 export interface IUser {
   id: number,
   id42: number,
@@ -10,4 +12,5 @@ export interface IUser {
   paddleColor: string,
   friends: number[],
   blocked: number[],
+  userChannels: IChannel[],
 }

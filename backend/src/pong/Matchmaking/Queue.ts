@@ -1,5 +1,5 @@
 import { Server } from "socket.io";
-import Client from "../Client/Client";
+import Client from "../../Client/Client";
 import { PongService } from "../pong.service";
 import Elo from "./Elo";
 import { UsersService } from "src/users/users.service";

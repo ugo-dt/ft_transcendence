@@ -5,7 +5,7 @@ import { User } from "src/users/entities/user.entity";
 import { RoomService } from "./room.service";
 import { GameState, IGameState } from "../pong/Game";
 import { Player } from "../pong/Game";
-import Client from "../pong/Client/Client";
+import Client from "../Client/Client";
 import Elo from "../pong/Matchmaking/Elo";
 
 export const GAMETYPE_RANKED = 'ranked';
@@ -93,7 +93,7 @@ class GameRoom {
     GameRoom.delete(this);
   }
 
-  private async _updateRatings(usersService: UsersService, roomService: RoomService) {
+  private async _updateRatings(usersService: UsersService) {
     const [newLeftRating, newRightRating] = Elo.updateRatings(
       await usersService.getRating(this._left.id),
       await usersService.getRating(this._right.id),
@@ -102,14 +102,7 @@ class GameRoom {
 
     usersService.setRating(this._left.id, newLeftRating);
     usersService.setRating(this._right.id, newRightRating);
-    roomService.update(
-      this._id,
-      {
-        left: this._left.id,
-        right: this._right.id,
-        gameState: this._gameState.IGameState(),
-      });
-      this.logger.log(`Ratings updated (left: ${newLeftRating}, right: ${newRightRating})`);
+    this.logger.log(`Ratings updated (left: ${newLeftRating}, right: ${newRightRating})`);
   }
 
   public async endGame(server: Server, usersService: UsersService, roomService: RoomService) {
@@ -135,8 +128,15 @@ class GameRoom {
       clearInterval(this._gameState.interval);
     }
     if (this._type === GAMETYPE_RANKED) {
-      this._updateRatings(usersService, roomService);
+      this._updateRatings(usersService);
     }
+    roomService.update(
+      this._id,
+      {
+        left: this._left.id,
+        right: this._right.id,
+        gameState: this._gameState.IGameState(),
+      });
     GameRoom.delete(this);
   }
 
@@ -152,15 +152,15 @@ class GameRoom {
 
   public async startGame(server: Server, usersService: UsersService, roomService: RoomService) {
     if (!this._left || !this._right) {
-      return ;
+      return;
     }
     const leftUser = await usersService.findOneId(this._left.id);
     if (!leftUser) {
-      return ;
+      return;
     }
     const rightUser = await usersService.findOneId(this._right.id);
     if (!rightUser) {
-      return ;
+      return;
     }
     const leftClient: Client = this._left;
     const rightClient: Client = this._right;

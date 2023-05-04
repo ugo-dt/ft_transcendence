@@ -2,6 +2,9 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
+import Client from 'src/Client/Client';
+import { ChannelService } from 'src/chat/channel/channel.service';
+import { Channel } from 'src/chat/channel/entities/channel.entity';
 
 const STATUS_ONLINE = 'online';
 const STATUS_IN_GAME = 'in game';
@@ -36,6 +39,7 @@ export class UsersService {
       paddleColor,
       friends: [],
       blocked: [],
+      userChannels: [],
     });
     return this.repo.save(user);
   }
@@ -104,10 +108,67 @@ export class UsersService {
       throw new NotFoundException("user not found");
     }
     const index = user.friends.findIndex(f => f === friend.id);
-    if (index === -1) {
-      throw new NotFoundException("no such friend");
+    if (index > -1) {
+      user.friends.splice(index, 1);
     }
-    user.friends.splice(index, 1);
+    return this.repo.save(user);
+  }
+
+  public async blockUser(id: number, blockedId: number): Promise<User> {
+    const user = await this.findOneId(id);
+    const userToBlock = await this.findOneId(blockedId);
+    if (!user || !userToBlock) {
+      throw new NotFoundException("user not found");
+    }
+    if (!user.blocked.includes(blockedId)) {
+      user.blocked.push(blockedId);
+    }
+    return this.repo.save(user);
+  }
+
+  public async unblockUser(id: number, blockedId: number): Promise<User> {
+    const user = await this.findOneId(id);
+    const userToUnblock = await this.findOneId(blockedId);
+    if (!user || !userToUnblock) {
+      throw new NotFoundException("user not found");
+    }
+    const index = user.blocked.findIndex(f => f === Number(blockedId));
+    if (index > -1) {
+      user.blocked.splice(index, 1);
+    }
+    return this.repo.save(user);
+  }
+
+  public async addChannel(userId: number, channelId: number) {
+    const user = await this.findOneId(userId);
+    if (!user) {
+      throw new NotFoundException("user not found");
+    }
+    if (!user.userChannels.includes(channelId)) {
+      user.userChannels.push(channelId);
+    }
+    const client = Client.at(userId);
+    if (client) {
+      client.addChannel(channelId);
+    }
+    return this.repo.save(user);
+  }
+
+  public async removeChannel(userId: number, channel: Channel) {
+    const user = await this.findOneId(userId);
+    if (!user) {
+      throw new NotFoundException("user not found");
+    }
+    const index = user.userChannels.findIndex(c => c === channel.id);
+    if (index === -1) {
+      throw new NotFoundException("channel not found");
+    }
+    user.userChannels.splice(index, 1);
+    const client = Client.at(userId);
+    if (client) {
+      client.leaveChannelRoom(channel);
+      client.removeChannel(channel.id);
+    }
     return this.repo.save(user);
   }
 
@@ -142,10 +203,20 @@ export class UsersService {
 
   public async getUsername(id: number) { return (await this._user(id)).username; }
   public async getHas2fa(id: number) { return (await this._user(id)).has2fa; }
-  public async getAvatar(id: number) { return (await this._user(id)).avatar;}
-  public async getRating(id: number) { return (await this._user(id)).rating;}
-  public async getPaddleColor(id: number) { return (await this._user(id)).paddleColor;}
-  
+  public async getAvatar(id: number) { return (await this._user(id)).avatar; }
+  public async getRating(id: number) { return (await this._user(id)).rating; }
+  public async getPaddleColor(id: number) { return (await this._user(id)).paddleColor; }
+  public async getUserChannels(user: User, channelService: ChannelService) {
+    const channels: Channel[] = [];
+    for (const id of user.userChannels.values()) {
+      const channel = await channelService.findOneId(id);
+      if (channel) {
+        channels.push(channel);
+      }
+    }
+    return channels;
+  }
+
   public async setUsername(id: number, username: string) { return this.update(id, { username: username }); }
   public async setHas2fa(id: number, has2fa: boolean) { return this.update(id, {has2fa}); }
   public async setAvatar(id: number, avatar: string) { return this.update(id, { avatar: avatar }); }
@@ -153,5 +224,7 @@ export class UsersService {
   public async setInGame(id: number) { return this.update(id, { status: STATUS_IN_GAME }); }
   public async setOffline(id: number) { return this.update(id, { status: STATUS_OFFLINE }); }
   public async setRating(id: number, rating: number) { return this.update(id, { rating: rating }); }
-  public async setPaddleColor(id: number, paddleColor: string) { return this.update(id, { paddleColor: paddleColor }); }
+  public async setPaddleColor(id: number, paddleColor: string) {
+    return this.update(id, { paddleColor: paddleColor });
+  }
 }

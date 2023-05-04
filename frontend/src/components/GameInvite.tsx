@@ -57,7 +57,7 @@ function GameInvite({
   }, []);
 
   return (
-    <div className="GameInvite modal-overlay">
+    <div className="GameInvite modal-overlay" style={{zIndex: '2000'}}>
       <div className="modal">
         <div className="modal-content">
         <div className="modal-close" role="button" onClick={onClose}>&times;</div>

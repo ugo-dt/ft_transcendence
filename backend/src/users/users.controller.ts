@@ -82,6 +82,11 @@ export class UsersController {
     return await this.usersService.addFriend(user.id, data.friendId);
   }
 
+  @Post('disable2fa')
+  disable2fa(@CurrentUser() user: User) {
+    return this.usersService.setHas2fa(user.id, false);
+  }
+
   @Delete("remove-friend/:friendId")
   async removeFriend(@CurrentUser() user: User, @Param("friendId") friendId: number) {
     return await this.usersService.removeFriend(user.id, friendId);

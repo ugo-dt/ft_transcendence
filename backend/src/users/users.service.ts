@@ -19,6 +19,8 @@ export class UsersService {
     refreshToken: string,
     id42: number,
     username: string,
+    has2fa: boolean,
+    phoneNumber: string,
     avatar: string,
     status: string,
     rating: number,
@@ -28,6 +30,8 @@ export class UsersService {
       accessToken: accessToken,
       refreshToken: refreshToken,
       id42: id42,
+      has2fa: has2fa,
+      phoneNumber: phoneNumber,
       username: username,
       avatar: avatar,
       status: status,
@@ -61,6 +65,10 @@ export class UsersService {
 
   public findOneId42(id42: number): Promise<User | null> {
     return this.repo.findOneBy({ id42 });
+  }
+
+  public findOnePhoneNumber(phoneNumber: string): Promise<User | null> {
+    return this.repo.findOneBy({phoneNumber});
   }
 
   public findAll(): Promise<User[]> {
@@ -194,6 +202,7 @@ export class UsersService {
   public isOffline(id: number): Promise<boolean> { return this._isStatus(id, STATUS_OFFLINE); }
 
   public async getUsername(id: number) { return (await this._user(id)).username; }
+  public async getHas2fa(id: number) { return (await this._user(id)).has2fa; }
   public async getAvatar(id: number) { return (await this._user(id)).avatar; }
   public async getRating(id: number) { return (await this._user(id)).rating; }
   public async getPaddleColor(id: number) { return (await this._user(id)).paddleColor; }
@@ -209,16 +218,13 @@ export class UsersService {
   }
 
   public async setUsername(id: number, username: string) { return this.update(id, { username: username }); }
+  public async setHas2fa(id: number, has2fa: boolean) { return this.update(id, {has2fa}); }
   public async setAvatar(id: number, avatar: string) { return this.update(id, { avatar: avatar }); }
   public async setOnline(id: number) { return this.update(id, { status: STATUS_ONLINE }); }
   public async setInGame(id: number) { return this.update(id, { status: STATUS_IN_GAME }); }
   public async setOffline(id: number) { return this.update(id, { status: STATUS_OFFLINE }); }
   public async setRating(id: number, rating: number) { return this.update(id, { rating: rating }); }
-
-  public async setPaddleColor(
-    id: number,
-    paddleColor: "white"| "yellow" | "#fd761b" | "#ff0000" | "#ff14b8" | "#9114ff" | "blue" | "#14ebff" | "green" | "#92ff0c",
-  ) {
+  public async setPaddleColor(id: number, paddleColor: string) {
     return this.update(id, { paddleColor: paddleColor });
   }
 }

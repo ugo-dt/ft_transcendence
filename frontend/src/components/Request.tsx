@@ -17,6 +17,11 @@ namespace __url_ {
   export const __sign_in_ = __auth_base_ + '/signin';
   export const __sign_out_ = __auth_base_ + '/signout';
   export const __refresh_token_ = __auth_base_ + '/refresh';
+  export const __generate_otp__ = __auth_base_ + '/genotp';
+  export const __validate_otp__ = __auth_base_ + '/valotp';
+  export const __generate_login_otp__ = __auth_base_ + '/genloginotp';
+  export const __validate_login_otp__ = __auth_base_ + '/valloginotp';
+  export const __cancel_login_otp__ = __auth_base_ + '/cancelloginotp';
 
   // Users
   export const __users_me_ = __users_base_ + '/me';
@@ -31,6 +36,7 @@ namespace __url_ {
   export const __rankings_ = __users_base_ + '/get/rankings';
   export const __user_ranking_ = __users_base_ + '/get/user-ranking';
   export const __edit_paddle_ = __users_base_ + '/edit/paddle-color';
+  export const __disable_2fa_ = __users_base_ + '/disable2fa';
 
   // Game
   export const __rooms_ = __game_base_ + '/rooms';
@@ -141,6 +147,26 @@ class Request {
     return await Request.__make_get_request_(__url_.__refresh_token_);
   }
 
+  public static async generateOtp(phoneNumber: string): Promise<any | null> {
+    return await Request.__make_post_request_(__url_.__generate_otp__, {phoneNumber});
+  }
+
+  public static async validateOtp(phoneNumber: string, code: string): Promise<any | null> {
+    return await Request.__make_post_request_(__url_.__validate_otp__, {phoneNumber, code});
+  }
+
+  public static async generateLoginOtp(): Promise<any | null> {
+    return await Request.__make_post_request_(__url_.__generate_login_otp__);
+  }
+
+  public static async validateLoginOtp(code: string): Promise<any | null> {
+    return await Request.__make_post_request_(__url_.__validate_login_otp__, {code});
+  }
+
+  public static async cancelLoginOtp(): Promise<any | null> {
+    return await Request.__make_post_request_(__url_.__cancel_login_otp__);
+  }
+
   public static async me(): Promise<IUser | null> {
     return await Request.__make_get_request_(__url_.__users_me_);
   }
@@ -183,6 +209,10 @@ class Request {
 
   public static async editUsername(newUsername: string): Promise<IUser | null> {
     return await Request.__make_post_request_(__url_.__edit_username_, { username: newUsername });
+  }
+
+  public static async disable2fa(): Promise<IUser | null> {
+    return await Request.__make_post_request_(__url_.__disable_2fa_);
   }
 
   public static async editAvatar(formData: FormData): Promise<IUser | null> {

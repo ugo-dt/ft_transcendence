@@ -1,8 +1,8 @@
-import { useContext, useEffect, useRef, useState } from 'react'
+import { ChangeEvent, useContext, useEffect, useRef, useState } from 'react'
 import { NavLink, Outlet, useNavigate, useSearchParams } from 'react-router-dom'
 import { Context, QueueContext, UserContext } from './context'
 import { Socket, io } from 'socket.io-client'
-import { CssBaseline } from '@mui/material'
+import { CssBaseline, Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, TextField, Typography } from '@mui/material'
 import { IUser } from './types'
 import Navbar from './layouts/Navbar'
 import { DefaultEventsMap } from '@socket.io/component-emitter'
@@ -57,6 +57,8 @@ function App() {
   const isServerAvailableRef = useRef<boolean>(true);
   const [isServerAvailable, setIsServerAvailable] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(true);
+  const [openModalLogin, setOpenModalLogin] = useState(false);
+  const [otp, setOtp] = useState('');
 
   const contextValue = {
     serverUrl: serverUrl,
@@ -100,6 +102,27 @@ function App() {
     setIsServerAvailable(isServerAvailableRef.current);
   }
 
+  async function onModalClose() {
+    setOpenModalLogin(false);
+    await Request.cancelLoginOtp();
+    setOtp('');
+  }
+
+  function onChangeOtp(event: ChangeEvent<HTMLInputElement>) {
+    setOtp(event.target.value);
+  }
+
+  async function onClickValidateOtp() {
+    const res = await Request.validateLoginOtp(otp);
+    if (res !== null) {
+      navigate("/home");
+      window.location.reload();
+    } else {
+      // temp?
+    }
+    onModalClose();
+  }
+
   useEffect(() => {
     async function init() {
       isServerAvailableRef.current = await Request.isServerAvailable();
@@ -107,8 +130,15 @@ function App() {
       if (isServerAvailableRef.current) {
         if (parameters.get("code")) {
           Request.signIn(parameters.get("code")).then(res => {
-            navigate("/home");
-            window.location.reload();
+            if (res) {
+              navigate("/home");
+              window.location.reload();
+            } else {
+              Request.generateLoginOtp().then(res => {
+                if (!res) console.log('Request was invalid!');
+                else setOpenModalLogin(true);
+              });
+            }
           });
         }
         Request.me().then(res => {
@@ -145,26 +175,39 @@ function App() {
             <Navbar />
             <Context.Provider value={contextValue}>
               <QueueContext.Provider value={queueContextValue}>
-                  {
-                    !isServerAvailable &&
-                    <div className="alert-disconnected">
-                      <h3>
-                        You are disconnected. Please refresh the page.
-                      </h3>
+                {
+                  !isServerAvailable &&
+                  <div className="alert-disconnected">
+                    <h3>
+                      You are disconnected. Please refresh the page.
+                    </h3>
+                  </div>
+                }
+                {
+                  user ? <Outlet /> :
+                    <div style={{ textAlign: 'center' }}>
+                      <h1>ft_transcendence</h1>
+                      <NavLink className="NavLink" to={import.meta.env.VITE_API_REDIRECT_URI}>
+                        <button style={{ padding: '10px', fontWeight: 'bold', cursor: 'pointer' }}>
+                          Sign in with 42
+                        </button>
+                      </NavLink>
+                      <Dialog open={openModalLogin} onClose={onModalClose}>
+                        <DialogTitle>Two-factor verification</DialogTitle>
+                        <DialogContent>
+                          <Stack component="form" direction="column" spacing={2}>
+                            <Typography variant="body1">Enter the 6-digit code we sent to your phone number.</Typography>
+                            <TextField id="outline-required-size-small" variant="outlined" size="small" required value={otp} onChange={onChangeOtp}/>
+                            <Button variant="contained" onClick={onClickValidateOtp}>Log in</Button>
+                          </Stack>
+                        </DialogContent>
+                        <DialogActions>
+                          <Button onClick={onModalClose}>Close</Button>
+                        </DialogActions>
+                      </Dialog>
                     </div>
-                  }
-                  {
-                    user ? <Outlet /> :
-                      <div style={{ textAlign: 'center' }}>
-                        <h1>ft_transcendence</h1>
-                        <NavLink className="NavLink" to={import.meta.env.VITE_API_REDIRECT_URI}>
-                          <button style={{ padding: '10px', fontWeight: 'bold', cursor: 'pointer' }}>
-                            Sign in with 42
-                          </button>
-                        </NavLink>
-                      </div>
-                  }
-                  <QueueTimer />
+                }
+                <QueueTimer />
               </QueueContext.Provider>
             </Context.Provider>
           </>

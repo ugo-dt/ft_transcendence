@@ -126,7 +126,8 @@ export class AppGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return this.pongService.cancelRematch(client);
   }
 
-  // chat
+  // -- Chat --
+
   @SubscribeMessage('join-channel-room')
   public async joinChannelRoom(@ConnectedSocket() clientSocket: Socket, @MessageBody() id: number) {
     const channel = await this.chatService.joinChannelRoom(clientSocket, id);

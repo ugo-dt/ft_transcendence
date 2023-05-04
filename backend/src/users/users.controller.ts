@@ -82,9 +82,6 @@ export class UsersController {
     if (!file.mimetype.startsWith('image')) {
       throw new BadRequestException('invalid file type');
     }
-
-    console.log(file.size);
-    console.log(file.mimetype);
     const dirname = this.envService.get('AVATARS_DIR');
     const filename = user.id + '.' + Date.now() + '.' + file.mimetype.split("/").pop();
     const fullpath = dirname + '/' + filename;
@@ -144,11 +141,11 @@ export class UsersController {
     return 'already in use';
   }
 
-  /*---Chat---*/
+  // -- Chat --
 
   @Post('channels/create-channel')
-  async createChannel(@CurrentUser() user: User, @MessageBody() data: { name: string, password: string, isDm: boolean, isPrivate: boolean }): Promise<Channel> {
-    return await this.channelService.create(data.name, data.password, data.isDm, user.id, data.isPrivate, this.usersService);
+  async createChannel(@CurrentUser() user: User, @MessageBody() data: { name: string, password: string, isPrivate: boolean }): Promise<Channel> {
+    return await this.channelService.create(data.name, data.password, user.id, data.isPrivate, this.usersService);
   }
 
   @Post('channels/join-channel/')

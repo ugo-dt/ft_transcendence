@@ -214,8 +214,8 @@ class Request {
     return await Request.__make_delete_request_(__url_.__unblock_user_ + '/' + id);
   }
 
-  public static async createChannel(name: string, password: string, isDm: boolean, isPrivate: boolean): Promise<IChannel | null> {
-    return await Request.__make_post_request_(__url_.__create_channel_, { name: name, password: password, isDm: isDm, isPrivate: isPrivate });
+  public static async createChannel(name: string, password: string, isPrivate: boolean): Promise<IChannel | null> {
+    return await Request.__make_post_request_(__url_.__create_channel_, { name: name, password: password, isPrivate: isPrivate });
   }
 
   public static async getUserChannels(): Promise<IChannel[]> {

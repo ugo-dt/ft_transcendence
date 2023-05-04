@@ -7,7 +7,6 @@ import { Message } from "../message/entity/message.entity";
 import { User } from "src/users/entities/user.entity";
 import * as crypto from 'crypto';
 import { MessageService } from "../message/message.service";
-import Client from "src/Client/Client";
 
 @Injectable()
 export class ChannelService {
@@ -19,13 +18,12 @@ export class ChannelService {
     this.logger = new Logger("ChannelService");
   }
 
-  async create(name: string, password: string, isDm: boolean, userId: number, isPrivate: boolean, usersService: UsersService): Promise<Channel> {
+  async create(name: string, password: string, userId: number, isPrivate: boolean, usersService: UsersService): Promise<Channel> {
     const pwd = crypto.createHash('sha256').update(password).digest('hex');
     const channel = this.repo.create(
       {
         name: name,
         password: password === "" ? "" : pwd,
-        isDm: isDm,
         messages: [],
         users: [userId],
         admins: [userId],

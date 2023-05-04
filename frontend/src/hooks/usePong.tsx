@@ -1,8 +1,3 @@
-// customization ideas:
-// 
-// ball slowly gets smaller over time
-// different map color (maybe one for each player? maybe player gets to choose their color?)
-
 import { Dispatch, SetStateAction, useState } from "react";
 import { CANVAS_DEFAULT_FOREGROUND_COLOR, CANVAS_DEFAULT_NET_COLOR, CANVAS_DEFAULT_NET_GAP, DEMO_MODE } from "../constants";
 import { IGameState, IPlayer } from "../types";

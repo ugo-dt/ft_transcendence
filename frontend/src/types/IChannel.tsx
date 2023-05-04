@@ -3,7 +3,6 @@ export interface IChannel {
   name: string;
   messages: number[];
   password: string;
-  isDm: boolean;
   users: number[];
   admins: number[];
   muted: number[];

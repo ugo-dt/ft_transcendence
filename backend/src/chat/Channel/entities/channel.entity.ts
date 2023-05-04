@@ -11,9 +11,6 @@ export class Channel {
   @Column({nullable: true})
   password: string;
 
-  @Column()
-  isDm: boolean;
-
   @Column("int", {array: true, nullable: true}) 
   messages: number[];
 

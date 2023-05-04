@@ -21,6 +21,12 @@ export class User {
   username: string;
 
   @Column()
+  has2fa: boolean;
+
+  @Column()
+  phoneNumber: string;
+
+  @Column()
   avatar: string;
 
   @Column()

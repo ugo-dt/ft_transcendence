@@ -1,4 +1,5 @@
 import { Socket } from "socket.io";
+import { EventNames } from "socket.io/dist/typed-events";
 import { Channel } from "src/chat/channel/entities/channel.entity";
 import { GAMETYPE_CASUAL, GAMETYPE_RANKED, GameType } from "src/room/GameRoom";
 
@@ -119,12 +120,18 @@ class Client {
     }
   }
 
+  public emit(ev: string, ...args: any[]) {
+    for (const s of this._sockets.values()) {
+      s.emit(ev, args);
+    }
+  }
+
   public addChannel(channel: Channel) {
     if (!this._userChannels.includes(channel.id)) {
 		  this._userChannels.push(channel.id);
     }
     for (const s of this._sockets.values()) {
-      s.emit('chat-update', channel);
+      s.emit('new-channel', channel);
     }
   }
 

@@ -8,6 +8,14 @@ import UserList from '../layouts/UserList';
 import './style/Chat.css';
 import { IMessage } from '../types/IMessage';
 
+/**
+ * todo
+ * 
+ * fix create channel -> no update
+ * leave room after kick
+ * join room when click on channel 
+ */
+
 export function useChat(): {
   userChannels: IChannel[],
   getUserChannels: () => Promise<void>,
@@ -50,11 +58,11 @@ export function useChat(): {
       return;
     }
     if (currentChannel && socket.current && inRoom) {
+      console.log("leave");
       socket.current.emit('leave-channel-room', currentChannel.id);
       setInRoom(false);
     }
     setCurrentChannel(channel);
-    getChannelUsers();
   }
 
   async function getChannelMessages(messageIds: number[]) {
@@ -89,24 +97,47 @@ export function useChat(): {
   }
 
   function onLeaveChannel() {
+    if (!currentChannel) {
+      return;
+    }
+    const currentIndex = userChannels.findIndex((channel) => channel.id === currentChannel.id);
+    const previousChannel = userChannels[currentIndex - 1];
+    const subsequentChannel = userChannels[currentIndex + 1];
+    if (previousChannel) {
+      setChannel(previousChannel);
+    }
+    else if (subsequentChannel) {
+      setChannel(subsequentChannel);
+    }
+    else {
+      setChannel(undefined);
+    }
+    getUserChannels();
+  }
+  
+  function onNewChannel(channel: IChannel) {
+    console.log("new chaneneenenen");
+    
+    getUserChannels();
     if (currentChannel && socket.current && inRoom) {
-      socket.current.emit('leave-channel-room', currentChannel.id);
-      setInRoom(false);
+      getChannelMessages(currentChannel.messages);
+      getChannelUsers();
     }
   }
 
   useEffect(() => {
-    getUserChannels();
-    getChannelUsers();
-    if (currentChannel) {
-      getChannelMessages(currentChannel.messages);
-    }
-    else {
+    if (!currentChannel) {
+      setChannelUsers([]);
       setChannelMessages([]);
       setChannelSenders(new Map());
+      return ;
     }
+    getChannelUsers();
+    getChannelMessages(currentChannel.messages);
 
-    if (currentChannel && socket.current && !inRoom) {
+    if (socket.current && !inRoom) {
+      console.log("join");
+      
       socket.current.emit('join-channel-room', currentChannel.id);
       setInRoom(true);
     }
@@ -120,14 +151,14 @@ export function useChat(): {
     socket.current.on('new-message', onNewMessage);
     socket.current.on('leave-channel', onLeaveChannel);
     socket.current.on('channel-update', onChannelUpdate);
-    socket.current.on('chat-update', getUserChannels);
+    socket.current.on('new-channel', onNewChannel);
 
     return () => {
       if (socket.current) {
         socket.current.off('new-message', onNewMessage);
         socket.current.off('leave-channel', onLeaveChannel);
         socket.current.off('channel-update', onChannelUpdate);
-        socket.current.off('chat-update', getUserChannels);
+        socket.current.off('new-channel', onNewChannel);
       }
     }
   }, []);

@@ -7,6 +7,7 @@ import { Message } from "../message/entity/message.entity";
 import { User } from "src/users/entities/user.entity";
 import * as crypto from 'crypto';
 import { MessageService } from "../message/message.service";
+import Client from "src/Client/Client";
 
 @Injectable()
 export class ChannelService {
@@ -35,7 +36,7 @@ export class ChannelService {
     );
     const promise = await this.repo.save(channel);
     channel.room = 'channel-room-' + channel.id;
-    await usersService.addChannel(userId, channel.id);
+    await usersService.addChannel(userId, channel);
     return promise;
   }
 
@@ -63,11 +64,17 @@ export class ChannelService {
         throw new UnauthorizedException('wrong password');
       }
       channel.users.push(userId);
-      await usersService.addChannel(userId, channel.id);
+      await usersService.addChannel(userId, channel);
       if (!channel.admins.includes(userId) && channel.admins.length === 0)
         channel.admins.push(userId);
     }
-    return await this.repo.save(channel);
+    const promise = await this.repo.save(channel);
+    const client = Client.at(userId);
+    if (client) {
+      client.addChannel(channel);
+      client.emit('new-channel', channel);
+    }
+    return promise;
   }
 
   async removeUser(channelId: number, userId: number, usersService: UsersService) {

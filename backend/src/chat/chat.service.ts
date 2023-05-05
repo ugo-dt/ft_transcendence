@@ -42,7 +42,7 @@ export class ChatService {
     }
     if (!channel.users.includes(inviteId)) {
       channel.users.push(inviteId);
-      await this.usersService.addChannel(inviteId, channel.id);
+      await this.usersService.addChannel(inviteId, channel);
       if (!channel.admins.includes(inviteId) && channel.admins.length === 0)
         channel.admins.push(inviteId);
       if (channel.banned.includes(inviteId)) {
@@ -51,8 +51,15 @@ export class ChatService {
           channel.banned.splice(index, 1);
         }
       }
+      const promise = await this.channelService.update(channel.id, channel);
+      const client = Client.at(inviteId);
+      if (client) {
+        client.addChannel(channel);
+        client.emit('new-channel', channel);
+      }
+      return promise;
     }
-    return await this.channelService.update(channel.id, channel);
+    return null;
   }
 
   public async handleKickUser(clientSocket: Socket, channelId: number, kickedId: number): Promise<Channel | null> {

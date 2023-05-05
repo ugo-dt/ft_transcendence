@@ -98,7 +98,7 @@ export class UsersService {
     if (!user.friends.includes(friendId)) {
       user.friends.push(friendId);
     }
-    return this.repo.save(user);
+    return await this.repo.save(user);
   }
 
   public async removeFriend(id: number, friendId: number): Promise<User> {
@@ -111,7 +111,7 @@ export class UsersService {
     if (index > -1) {
       user.friends.splice(index, 1);
     }
-    return this.repo.save(user);
+    return await this.repo.save(user);
   }
 
   public async blockUser(id: number, blockedId: number): Promise<User> {
@@ -123,7 +123,7 @@ export class UsersService {
     if (!user.blocked.includes(blockedId)) {
       user.blocked.push(blockedId);
     }
-    return this.repo.save(user);
+    return await this.repo.save(user);
   }
 
   public async unblockUser(id: number, blockedId: number): Promise<User> {
@@ -136,7 +136,7 @@ export class UsersService {
     if (index > -1) {
       user.blocked.splice(index, 1);
     }
-    return this.repo.save(user);
+    return await this.repo.save(user);
   }
 
   public async addChannel(userId: number, channel: Channel) {
@@ -147,11 +147,7 @@ export class UsersService {
     if (!user.userChannels.includes(channel.id)) {
       user.userChannels.push(channel.id);
     }
-    const client = Client.at(userId);
-    if (client) {
-      client.addChannel(channel);
-    }
-    return this.repo.save(user);
+    return await this.repo.save(user);
   }
 
   public async removeChannel(userId: number, channel: Channel) {
@@ -169,7 +165,7 @@ export class UsersService {
       client.leaveChannelRoom(channel);
       client.removeChannel(channel.id);
     }
-    return this.repo.save(user);
+    return await this.repo.save(user);
   }
 
   public async update(id: number, attrs: Partial<User>): Promise<User> {
@@ -178,7 +174,7 @@ export class UsersService {
       throw new NotFoundException("user not found");
     }
     Object.assign(user, attrs);
-    return this.repo.save(user);
+    return await this.repo.save(user);
   }
 
   public async remove(id: number): Promise<User> {
@@ -186,7 +182,7 @@ export class UsersService {
     if (!user) {
       throw new NotFoundException("user not found");
     }
-    return this.repo.remove(user);
+    return await this.repo.remove(user);
   }
 
   private async _isStatus(id: number, status: typeof STATUS_ONLINE | typeof STATUS_IN_GAME | typeof STATUS_OFFLINE): Promise<boolean> {

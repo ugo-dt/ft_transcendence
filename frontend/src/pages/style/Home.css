@@ -1,22 +1,11 @@
 :root {
   --home-main-content-background: radial-gradient(200% 44% at top center, var(--home-content-radial-gradient-color) 30%,transparent 0);
   --home-content-background-color: rgba(240, 240, 240, 0.5);
-  --home-content-border-color: rgba(0, 0, 0, 0.1);
-  --home-content-radial-gradient-color: rgba(177, 177, 177, 0.2);
+  --home-content-border-color: rgba(255, 255, 255, 0.1);
+  --home-content-radial-gradient-color: rgba(144, 142, 142, 0.2);
 
-  --title-linear-gradient: 315deg,#646464 25%,#000000;
+  --title-linear-gradient: 315deg,#54AFFF 25%,#42d392;
 }
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --home-content-background-color: rgba(240, 240, 240, 0.5);
-    --home-content-border-color: rgba(255, 255, 255, 0.1);
-    --home-content-radial-gradient-color: rgba(144, 142, 142, 0.2);
-
-    --title-linear-gradient: 315deg,#54AFFF 25%,#42d392;
-  }
-}
-
 
 @media (min-width:750px) {
   :root {

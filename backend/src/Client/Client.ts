@@ -119,9 +119,12 @@ class Client {
     }
   }
 
-  public addChannel(id: number) {
-    if (!this._userChannels.includes(id)) {
-		  this._userChannels.push(id);
+  public addChannel(channel: Channel) {
+    if (!this._userChannels.includes(channel.id)) {
+		  this._userChannels.push(channel.id);
+    }
+    for (const s of this._sockets.values()) {
+      s.emit('chat-update', channel);
     }
   }
 

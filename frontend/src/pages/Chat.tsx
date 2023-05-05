@@ -60,9 +60,6 @@ export function useChat(): {
   async function getChannelMessages(messageIds: number[]) {
     const messagesData: IMessage[] = [];
     for (const id of messageIds.values()) {
-      if (channelMessages.find(m => m.id === id)) {
-        continue ;
-      }
       const message = await Request.getMessage(id);
       if (message) {
         messagesData.push(message);
@@ -71,9 +68,6 @@ export function useChat(): {
     setChannelMessages(messagesData);
     const senders: Map<number, IUser> = new Map();
     for (const message of messagesData.values()) {
-      if (senders.has(message.senderId)) {
-        continue;
-      }
       const sender = await Request.getProfileFromId(message.senderId);
       if (sender) {
         senders.set(message.senderId, sender);
@@ -94,18 +88,25 @@ export function useChat(): {
     setCurrentChannel(data);
   }
 
-  useEffect(() => {
-    if (!socket.current || !currentChannel) {
-      setChannelMessages([]);
-      setChannelUsers([]);
-      setChannelSenders(new Map());
-      return ;
+  function onLeaveChannel() {
+    if (currentChannel && socket.current && inRoom) {
+      socket.current.emit('leave-channel-room', currentChannel.id);
+      setInRoom(false);
     }
-    getChannelUsers();
-    getChannelMessages(currentChannel.messages);
-    getUserChannels();
+  }
 
-    if (currentChannel && !inRoom) {
+  useEffect(() => {
+    getUserChannels();
+    getChannelUsers();
+    if (currentChannel) {
+      getChannelMessages(currentChannel.messages);
+    }
+    else {
+      setChannelMessages([]);
+      setChannelSenders(new Map());
+    }
+
+    if (currentChannel && socket.current && !inRoom) {
       socket.current.emit('join-channel-room', currentChannel.id);
       setInRoom(true);
     }
@@ -117,11 +118,16 @@ export function useChat(): {
     }
     getUserChannels();
     socket.current.on('new-message', onNewMessage);
+    socket.current.on('leave-channel', onLeaveChannel);
     socket.current.on('channel-update', onChannelUpdate);
+    socket.current.on('chat-update', getUserChannels);
 
     return () => {
       if (socket.current) {
         socket.current.off('new-message', onNewMessage);
+        socket.current.off('leave-channel', onLeaveChannel);
+        socket.current.off('channel-update', onChannelUpdate);
+        socket.current.off('chat-update', getUserChannels);
       }
     }
   }, []);

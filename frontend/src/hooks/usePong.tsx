@@ -76,10 +76,7 @@ function usePong(
       if (!__demoMode_()) {
         _scorePoint();
       }
-      setTimeout(() => {
         resetBall();
-
-      }, 450);
     }
   }
 

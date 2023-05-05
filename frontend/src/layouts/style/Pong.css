@@ -1,13 +1,6 @@
 :root {
-  --canvas-border-color: rgb(255, 255, 255, 0.85);
-  --avatar-border-color: black;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --canvas-border-color: white;
-    --avatar-border-color: white;
-  }
+  --canvas-border-color: white;
+  --avatar-border-color: white;
 }
 
 .Game {

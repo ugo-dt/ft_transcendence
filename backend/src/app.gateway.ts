@@ -192,14 +192,6 @@ export class AppGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  @SubscribeMessage('unban-user')
-  public async handleUnbanUser(@ConnectedSocket() clientSocket: Socket, @MessageBody() data: { channelId: number, bannedId: number }) {
-    const channel = await this.chatService.handleUnbanUser(clientSocket, data.channelId, data.bannedId);
-    if (channel) {
-      this.server.to(channel.room).emit('channel-update', channel);
-    }
-  }
-
   @SubscribeMessage('set-admin')
   public async handleSetAdmin(@ConnectedSocket() clientSocket: Socket, @MessageBody() data: { channelId: number, newAdminId: number }) {
     const channel = await this.chatService.handleSetAdmin(clientSocket, data.channelId, data.newAdminId);

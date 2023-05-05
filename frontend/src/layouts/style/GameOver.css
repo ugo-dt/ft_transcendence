@@ -2,12 +2,6 @@
   --game-over-text-color: black;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --game-over-text-color: black;
-  }
-}
-
 .game-over-container {
   background: radial-gradient(170% 90% at top center, #666564 39%, #fff 40%);
   position: absolute;
@@ -20,7 +14,6 @@
 }
 
 .game-over-header {
-  /* border: 1px solid black; */
   color: white;
   font-size: 2rem;
   font-family: Arial, Helvetica, sans-serif;

@@ -11,13 +11,9 @@
   width: 14px;
   height: 14px;
   fill: currentColor;
-  /* transform: translateY(3px); */
 }
 
 .basic-menu > MuiMenu-list {
   border: 1px solid black;
   background: red;
-}
-
-@media (prefers-color-scheme: dark) {
 }

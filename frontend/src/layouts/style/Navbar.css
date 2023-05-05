@@ -1,17 +1,10 @@
 :root {
-  --nav-text-color: inherit;
+  --nav-text-color: rgb(255, 255, 255, 0.87);
   --nav-text-color-hover: #54AFFF;
 
   --nav-box-shadow-color: rgb(0, 0, 0, 0.1);
-  --nav-border-bottom-color: rgb(0, 0, 0, 0.2);
+  --nav-border-bottom-color: rgb(255, 255, 255, 0.1);
   --nav-background-color: inherit;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --nav-text-color: rgb(255, 255, 255, 0.87);
-    --nav-border-bottom-color: rgb(255, 255, 255, 0.1);
-  }
 }
 
 nav {

@@ -121,8 +121,8 @@ function ChatWindow({ chat }: ChatWindowProps) {
             <div>
               <ul style={{ listStyleType: 'none' }}>
                 {
-                  currentChannel && channelMessages.length ? channelMessages.map(msg => (
-                    <Message key={msg.id} message={msg} sender={channelSenders.get(msg.senderId)} />
+                  currentChannel && channelMessages.length ? channelMessages.map((msg, index) => (
+                    <Message key={index} message={msg} sender={channelSenders.get(msg.senderId)} />
                   )) : <h4 style={{ fontWeight: 'lighter' }}>No messages yet.</h4>
                 }
               </ul>

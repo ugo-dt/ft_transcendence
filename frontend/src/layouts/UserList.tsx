@@ -88,14 +88,6 @@ function UserOptions({
     onClose();
   }
 
-  function onUnban() {
-    if (!user || !socket || !currentChannel || !currentChannel.admins.includes(user.id)) {
-      return;
-    }
-    socket.emit('unban-user', { channelId: currentChannel.id, bannedId: selectedUser.id });
-    onClose();
-  }
-
   function onSetAdmin() {
     if (!user || !socket || !currentChannel || !currentChannel.admins.includes(user.id)) {
       return;
@@ -155,8 +147,8 @@ function UserOptions({
                 </button>
                 <button
                   className="form-button"
-                  onClick={() => (currentChannel.muted.includes(selectedUser.id)) ? onUnban() : onBan()}
-                > {(currentChannel.banned.includes(selectedUser.id)) ? 'Unban' : 'Ban'}
+                  onClick={onBan}
+                > Ban
                 </button>
                 {
                   (!currentChannel.admins.includes(selectedUser.id) || (user && currentChannel.admins.indexOf(user.id) === 0))
@@ -200,9 +192,9 @@ function UserList({ chat }: UserListProps) {
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
 
   function handleUserClick(clickedUser: IUser) {
-    // if (!user || user.id === clickedUser.id) {
-    //   return;
-    // }
+    if (!user || user.id === clickedUser.id) {
+      return;
+    }
     setSelectedUser(clickedUser);
   }
 

@@ -139,17 +139,17 @@ export class UsersService {
     return this.repo.save(user);
   }
 
-  public async addChannel(userId: number, channelId: number) {
+  public async addChannel(userId: number, channel: Channel) {
     const user = await this.findOneId(userId);
     if (!user) {
       throw new NotFoundException("user not found");
     }
-    if (!user.userChannels.includes(channelId)) {
-      user.userChannels.push(channelId);
+    if (!user.userChannels.includes(channel.id)) {
+      user.userChannels.push(channel.id);
     }
     const client = Client.at(userId);
     if (client) {
-      client.addChannel(channelId);
+      client.addChannel(channel);
     }
     return this.repo.save(user);
   }

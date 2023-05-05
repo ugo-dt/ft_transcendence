@@ -45,6 +45,12 @@ export class ChatService {
       await this.usersService.addChannel(inviteId, channel.id);
       if (!channel.admins.includes(inviteId) && channel.admins.length === 0)
         channel.admins.push(inviteId);
+      if (channel.banned.includes(inviteId)) {
+        const index = channel.banned.indexOf(inviteId);
+        if (index > -1) {
+          channel.banned.splice(index, 1);
+        }
+      }
     }
     return await this.channelService.update(channel.id, channel);
   }
@@ -159,12 +165,6 @@ export class ChatService {
         return null;
       }
     }
-    if (channel.banned.includes(bannedId)) {
-      const index = channel.banned.indexOf(bannedId);
-      if (index > -1) {
-        channel.banned.splice(index, 1);
-      }
-    }
     return await this.channelService.update(channel.id, channel);
   }
 
@@ -224,9 +224,6 @@ export class ChatService {
     }
     const channel = await this.channelService.findOneId(id);
     if (!channel) {
-      return null;
-    }
-    if (channel.banned.includes(client.id)) {
       return null;
     }
     clientSocket.join(channel.room);

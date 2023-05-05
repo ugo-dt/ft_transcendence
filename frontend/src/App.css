@@ -1,13 +1,6 @@
 :root {
-  --text-color: #1a1a1a;
-  --background-color: white;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text-color: rgb(255, 255, 255, 0.87);
-    --background-color: rgb(26, 26, 26);
-  }
+  --text-color: rgb(255, 255, 255, 0.87);
+  --background-color: rgb(26, 26, 26);
 }
 
 *,

@@ -9,15 +9,10 @@
   --tennis-icon-hover-color: rgb(255, 84, 84);
   --tv-icon-hover-color: rgb(84, 113, 255);
   --people-icon-hover-color: rgb(0, 196, 26);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --modules-hover-text-color: rgb(184, 222, 255);
-    --modules-text-color: rgb(255, 255, 255, 0.87);
-    --modules-background-color: #242424;
-    --modules-hover-background-color: rgb(255, 255, 255, 0.1);
-  }
+  --modules-hover-text-color: rgb(184, 222, 255);
+  --modules-text-color: rgb(255, 255, 255, 0.87);
+  --modules-background-color: #242424;
+  --modules-hover-background-color: rgb(255, 255, 255, 0.1);
 }
 
 .playModes {

@@ -93,7 +93,7 @@ export class AuthService {
 
   async generateOtp(phoneNumber: string) {
     // set services to .env
-    const verification = await this.twilioClient.verify.v2.services('VA934d7d02a17954d850ca5cff123aea6d')
+    const verification = await this.twilioClient.verify.v2.services(this.envService.get('TWILIO_SERVICE'))
     .verifications.create({to: phoneNumber, channel: 'sms'});
     return verification;
   }
@@ -102,7 +102,7 @@ export class AuthService {
     let check;
     try {
       // set services to .env
-      check = await this.twilioClient.verify.v2.services('VA934d7d02a17954d850ca5cff123aea6d')
+      check = await this.twilioClient.verify.v2.services(this.envService.get('TWILIO_SERVICE'))
       .verificationChecks.create({to: phoneNumber, code: code});
     } catch (error) {
       throw new ForbiddenException('generation code does not exist');

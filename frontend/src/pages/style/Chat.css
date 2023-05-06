@@ -1,6 +1,7 @@
 .chat {
   display: flex;
   justify-content: center;
+  min-height: 80vh;
 }
 
 .chat-section-title {

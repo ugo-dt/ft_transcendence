@@ -183,12 +183,6 @@ function ProfileHeader({ profile }: { profile: IUser }) {
               height={120}
               alt={profile.username}
             />
-            {
-              user && profile.username === user.username &&
-              <div role="button" onClick={onClickEditAvatar} className="upload-icon-wrapper">
-                <AddPhotoAlternateOutlinedIcon className="upload-icon" fontSize="large" />
-              </div>
-            }
           </div>
         </section>
         <section className="profile-header-content">
@@ -215,6 +209,9 @@ function ProfileHeader({ profile }: { profile: IUser }) {
                   <PaddleColorBox color="#92ff0c" />
                 </section>
                 <section className="profile-buttons-container">
+                <div role="button" className="profile-header-actions-btn edit-profile-btn" onClick={onClickEditAvatar}>
+                    <AddPhotoAlternateOutlinedIcon className="profile-header-actions-icon" /> Edit avatar
+                  </div>
                   <div role="button" className="profile-header-actions-btn edit-profile-btn" onClick={onClickEditUsername}>
                     <EditIcon className="profile-header-actions-icon" /> Edit username
                   </div>

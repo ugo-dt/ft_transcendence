@@ -3,6 +3,7 @@ FROM node:latest
 WORKDIR /usr/src/app
 
 RUN apt-get -y update
+RUN mkdir -p ./public/user/
 
 COPY ["package.json", "package-lock.json*", "./"]
 RUN npm install

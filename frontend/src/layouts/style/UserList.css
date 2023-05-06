@@ -10,12 +10,17 @@
   height: 80vh;
 }
 
-.user-list-user-info {
+.user-list-member {
   margin: 10px;
-  padding: 10px;
+  padding: 5px;
   cursor: pointer;
   align-items: center;
   display: flex;
+}
+
+.user-list-member:hover {
+  border-radius: 10px;
+  background-color: #333;
 }
 
 .member-modal-buttons {

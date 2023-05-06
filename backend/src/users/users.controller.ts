@@ -56,7 +56,7 @@ export class UsersController {
 
   @Post("edit/username")
   editUsername(@CurrentUser() user: User, @MessageBody() data: { username: string }): Promise<User> {
-    return this.usersService.setUsername(user.id, data.username);
+    return this.usersService.setUsername(user.id, data.username.trim());
   }
 
   // https://docs.nestjs.com/techniques/file-upload#basic-example
@@ -69,7 +69,7 @@ export class UsersController {
         validators: [
           new MaxFileSizeValidator({ maxSize: 2000000 }), // 2 MB
           new FileTypeValidator({
-            fileType: new RegExp(/\/(jpg|jpeg|png|gif|svg)$/i),
+            fileType: new RegExp(/\/(jpg|jpeg|png|webp)$/i),
           }),
         ],
       }),
@@ -133,17 +133,22 @@ export class UsersController {
 
   @Get('edit/is-valid-username')
   async isValidUsername(@Query("username") username: string): Promise<string> {
+    username = username.trim();
     if (username.length < 3) {
-      return 'too short';
+      return 'Username is too short.';
     }
     if (username.length > 15) {
-      return 'too long';
+      return 'Username is too long.';
+    }
+    const alphaNumericRegex = /^[a-zA-Z0-9]+$/;
+    if (!(alphaNumericRegex.test(username))) {
+      return 'Username must be alphanumeric.'
     }
     const user = await this.usersService.findOneUsername(username);
     if (!user) {
       return 'ok';
     }
-    return 'already in use';
+    return 'Username is already in use.';
   }
 
   // -- Chat --
@@ -153,15 +158,15 @@ export class UsersController {
     return await this.channelService.create(data.name, data.password, user.id, data.isPrivate, this.usersService);
   }
 
-  @Post('channels/join-channel/')
-  async joinChannel(@CurrentUser() user: User, @MessageBody() data: { id: number, password: string }) {
-    return await this.channelService.addUser(data.id, user.id, data.password, this.usersService);
-  }
+  // @Post('channels/join-channel/')
+  // async joinChannel(@CurrentUser() user: User, @MessageBody() data: { id: number, password: string }) {
+  //   return await this.channelService.addUser(data.id, user.id, data.password, this.usersService);
+  // }
 
-  @Delete('channels/leave-channel/:id')
-  async leaveChannel(@CurrentUser() user: User, @Param("id") id: number) {
-    return await this.channelService.removeUser(id, user.id, this.usersService);
-  }
+  // @Delete('channels/leave-channel/:id')
+  // async leaveChannel(@CurrentUser() user: User, @Param("id") id: number) {
+  //   return await this.channelService.removeUser(id, user.id, this.usersService);
+  // }
 
   @Get('channels/user-channels')
   async getUserChannels(@CurrentUser() user: User): Promise<Channel[]> {

@@ -7,6 +7,7 @@ import { IMessage } from '../types/IMessage';
 import GameInvite from '../components/GameInvite';
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import { useNavigate } from 'react-router';
+import { IChat } from '../pages/Chat';
 
 interface UserOptionsProps {
   selectedUser: IUser,
@@ -133,7 +134,8 @@ function UserOptions({
             </button>
           </section>
           {
-            (currentChannel && user && currentChannel.admins.includes(user.id)) ?
+            (currentChannel && user && currentChannel.admins.includes(user.id))
+              && (currentChannel.admins.indexOf(user.id) === 0 || !currentChannel.admins.includes(selectedUser.id)) ?
               <section className='admin-buttons'>
                 <button
                   className="form-button"
@@ -170,25 +172,14 @@ function UserOptions({
     </div>
   )
 }
+
 interface UserListProps {
-  chat: {
-    userChannels: IChannel[],
-    getUserChannels: () => Promise<void>,
-    currentChannel: IChannel | undefined,
-    setCurrentChannel: React.Dispatch<React.SetStateAction<IChannel | undefined>>,
-    setChannel: (channel: IChannel | undefined) => void,
-    channelUsers: IUser[],
-    getChannelUsers: () => void,
-    channelMessages: IMessage[],
-    getChannelMessages: (messageIds: number[]) => void,
-    channelSenders: Map<number, IUser>,
-  }
+  chat: IChat,
 }
 
 function UserList({ chat }: UserListProps) {
-  const socket = useContext(Context).pongSocket;
   const user = useContext(UserContext).user;
-  const { getUserChannels, currentChannel, setCurrentChannel, channelUsers } = chat;
+  const { currentChannel, channelUsers } = chat;
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
 
   function handleUserClick(clickedUser: IUser) {
@@ -202,24 +193,6 @@ function UserList({ chat }: UserListProps) {
     setSelectedUser(null);
   }
 
-  function kickedFromChannel() {
-    setCurrentChannel(undefined);
-    getUserChannels();
-  }
-
-  useEffect(() => {
-    if (!socket.current) {
-      return;
-    }
-    socket.current.on('leave-channel', kickedFromChannel);
-
-    return () => {
-      if (socket.current) {
-        socket.current.off('leave-channel', kickedFromChannel);
-      }
-    }
-  }, []);
-
   return (
     <div className="UserList">
       <h2 className='chat-section-title'>Members</h2>
@@ -228,7 +201,7 @@ function UserList({ chat }: UserListProps) {
           channelUsers.map(user => (
             <div
               key={user.id}
-              className='user-list-user-info'
+              className='user-list-member'
               onClick={() => handleUserClick(user)}
             >
               <img id="chat-user-info-avatar"
@@ -238,11 +211,11 @@ function UserList({ chat }: UserListProps) {
                 alt={user.username}
                 title='See profile'
               />
-              <h4>{user.username}</h4>
-              {
-                currentChannel && currentChannel.admins.includes(user.id) &&
-                <WorkspacePremiumIcon color={currentChannel.admins.indexOf(user.id) === 0 ? 'primary' : 'secondary'} />
-              }
+              <h4 style={{display: 'flex'}}>
+                {user.username}
+                {currentChannel && currentChannel.admins.includes(user.id) &&
+                <WorkspacePremiumIcon color={currentChannel.admins.indexOf(user.id) === 0 ? 'primary' : 'secondary'} />}
+              </h4>
             </div>
           ))
         }

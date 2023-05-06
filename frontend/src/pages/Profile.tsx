@@ -22,6 +22,8 @@ function Profile() {
   async function getProfile() {
     setLoading(true);
     await Request.getProfile(profileName).then((profileData) => {
+      console.log(profileName);
+      console.log(profileData);
       if (!profileData) {
         return navigate("/home");
       };
@@ -46,7 +48,7 @@ function Profile() {
         loading ? (<h2>Loading...</h2>) : (
           profile != null && (
             <>
-              <ProfileHeader user={user} profile={profile} />
+              <ProfileHeader profile={profile} />
               <ProfileHistory history={historyList} profileId={profile.id} />
             </>
           )

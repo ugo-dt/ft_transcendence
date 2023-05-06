@@ -162,7 +162,7 @@ export class UsersService {
     user.userChannels.splice(index, 1);
     const client = Client.at(userId);
     if (client) {
-      client.leaveChannelRoom(channel);
+      await client.kickFromChannel(channel);
       client.removeChannel(channel.id);
     }
     return await this.repo.save(user);

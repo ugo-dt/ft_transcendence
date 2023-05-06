@@ -3,6 +3,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { IChannel, IUser } from "../types";
 import { Context, UserContext } from "../context";
 import { IMessage } from "../types/IMessage";
+import { IChat } from "../pages/Chat";
 
 interface MessageProps {
   message: IMessage,
@@ -37,33 +38,18 @@ function Message({ message, sender }: MessageProps) {
 }
 
 interface ChatWindowProps {
-  chat: {
-    userChannels: IChannel[],
-    getUserChannels: () => Promise<void>,
-    currentChannel: IChannel | undefined,
-    setCurrentChannel: React.Dispatch<React.SetStateAction<IChannel | undefined>>,
-    setChannel: (channel: IChannel | undefined) => void,
-    channelUsers: IUser[],
-    getChannelUsers: () => void,
-    channelMessages: IMessage[],
-    getChannelMessages: (messageIds: number[]) => void,
-    channelSenders: Map<number, IUser>,
-  }
+  chat: IChat,
 }
 
 function ChatWindow({ chat }: ChatWindowProps) {
   const user = useContext(UserContext).user;
+  const [loading, setLoading] = useState(true);
   const socket = useContext(Context).pongSocket.current;
   const messagesEndRef = useRef<HTMLSpanElement | null>(null);
   const [input, setInput] = useState<string>("");
   const {
-    userChannels,
-    getUserChannels,
     currentChannel,
-    setCurrentChannel,
     setChannel,
-    channelUsers,
-    getChannelUsers,
     channelMessages,
     getChannelMessages,
     channelSenders,
@@ -97,15 +83,36 @@ function ChatWindow({ chat }: ChatWindowProps) {
     }
   }
 
-  useEffect(() => {    
+  async function getMessages() {
+    setLoading(true);
     if (!currentChannel) {
+      setLoading(false);
+      return;
+    }
+    await getChannelMessages(currentChannel.messages);
+    scrollToBottom();
+    setLoading(false);
+  }
+
+  function onNewMessage(data: IChannel) {
+    getChannelMessages(data.messages);
+  }
+
+  useEffect(() => {
+    if (!currentChannel) {
+      setLoading(false);
       return;
     }
     if (!user || !socket || !currentChannel.users.includes(user.id)) {
-      setCurrentChannel(undefined);
+      setChannel(undefined);
       return;
     }
-    scrollToBottom();
+    // getMessages();
+    socket.on('new-message', onNewMessage);
+
+    return () => {
+      socket.off('new-message', onNewMessage);
+    }
   }, [currentChannel]);
 
   useEffect(() => {
@@ -115,36 +122,41 @@ function ChatWindow({ chat }: ChatWindowProps) {
   return (
     <div className="ChatWindow">
       <h1 className="h1-main-title">{currentChannel ? currentChannel.name : 'Chat'}</h1>
-      <section className="chat-window-messages-container">
-        {
-          currentChannel && (
-            <div>
-              <ul style={{ listStyleType: 'none' }}>
-                {
-                  currentChannel && channelMessages.length ? channelMessages.map((msg, index) => (
-                    <Message key={index} message={msg} sender={channelSenders.get(msg.senderId)} />
-                  )) : <h4 style={{ fontWeight: 'lighter' }}>No messages yet.</h4>
-                }
-              </ul>
-              <span ref={messagesEndRef}></span>
-            </div>
-          )
-        }
-      </section>
       {
-        currentChannel ?
-          <input
-            disabled={(!!user && currentChannel.muted.includes(user.id))}
-            autoComplete="off"
-            placeholder={user && currentChannel.muted.includes(user.id) ? 'You are muted.' : `Message ${currentChannel.name}`}
-            className="input-bar"
-            name="input bar"
-            type="text"
-            value={input}
-            onKeyDown={handleKeyDown}
-            onChange={handleInputChange}
-          />
-          : <h4 style={{ fontWeight: 'lighter', textAlign: 'center' }}>Find or start a conversation</h4>
+        loading ? <h2>Loading...</h2> :
+        <>
+          <section className="chat-window-messages-container">
+            {
+              currentChannel && (
+                <div>
+                  <ul style={{ listStyleType: 'none' }}>
+                    {
+                      currentChannel && channelMessages.length ? channelMessages.map((msg, index) => (
+                        <Message key={index} message={msg} sender={channelSenders.get(msg.senderId)} />
+                      )) : <h4 style={{ fontWeight: 'lighter' }}>No messages yet.</h4>
+                    }
+                  </ul>
+                  <span ref={messagesEndRef}></span>
+                </div>
+              )
+            }
+          </section>
+          {
+            currentChannel ?
+              <input
+                disabled={(!!user && currentChannel.muted.includes(user.id))}
+                autoComplete="off"
+                placeholder={user && currentChannel.muted.includes(user.id) ? 'You are muted.' : `Message ${currentChannel.name}`}
+                className="input-bar"
+                name="input bar"
+                type="text"
+                value={input}
+                onKeyDown={handleKeyDown}
+                onChange={handleInputChange}
+              />
+              : <h4 style={{ fontWeight: 'lighter', textAlign: 'center' }}>Find or start a conversation</h4>
+          }
+        </>
       }
     </div>
   )

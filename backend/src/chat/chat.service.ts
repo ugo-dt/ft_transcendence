@@ -20,6 +20,28 @@ export class ChatService {
   public isUserMuted(channel: Channel, userId: number): boolean { return channel.muted.includes(userId); }
   public isUserBanned(channel: Channel, userId: number): boolean { return channel.banned.includes(userId); }
 
+  public async handleJoinChannel(clientSocket: Socket, channelId: number, password: string): Promise<Channel | null> {
+    const client = Client.at(clientSocket);
+    if (!client) {
+      return null;
+    }
+    try {
+      return await this.channelService.addUser(channelId, client.id, password, this.usersService);
+    } catch (error) {
+      console.log(error);
+      
+      return null;
+    }
+  }
+
+  public async handleLeaveChannel(clientSocket: Socket, channelId: number) {
+    const client = Client.at(clientSocket);
+    if (!client) {
+      return null;
+    }
+    return await this.channelService.removeUser(channelId, client.id, this.usersService);
+  }
+
   public async handlePushMessageToChannel(clientSocket: Socket, channelId: number, content: string): Promise<Channel | null> {
     const client = Client.at(clientSocket);
     if (!client) {

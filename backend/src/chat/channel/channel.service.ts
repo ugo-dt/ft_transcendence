@@ -85,23 +85,21 @@ export class ChannelService {
     const index = channel.users.indexOf(userId);
     if (index > -1) {
       channel.users.splice(index, 1);
-      if (channel.admins.includes(userId)) {
-        channel.admins.splice(index, 1);
-        if (channel.admins.length === 0 && channel.users.length > 0) {
-          const newAdmin = channel.users[0];
-          if (newAdmin) {
-            channel.admins.push(newAdmin);
-          }
-        }
+      const adminIndex = channel.admins.indexOf(userId);
+      if (index > -1) {
+        channel.admins.splice(adminIndex, 1);
       }
       usersService.findOneId(userId).then(async user => {
         if (user && user.userChannels.includes(channel.id)) {
           await usersService.removeChannel(userId, channel);
         }
       });
-    }
-    if (channel.users.length === 0) {
-      return this.remove(channel.id);
+      if (channel.users.length === 0) {
+        return this.remove(channel.id);
+      }
+      if (channel.admins.length === 0) {
+        channel.admins.push(channel.users[0]);
+      }
     }
     return await this.repo.save(channel);
   }

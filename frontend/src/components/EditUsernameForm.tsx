@@ -35,16 +35,19 @@ function EditUsernameForm({
           return;
         }
         Request.isValidUsername(v).then(res => {
-          setError("");
-          if (res === 'ok') {
-            setIsValid(true);
+          if (res) {
+            if (res === 'ok') {
+              setError("");
+              setIsValid(true);
+            }
+            else {
+              setIsValid(false);
+              setError(res);
+            }
           }
           else {
             setIsValid(false);
-            setError("Username is " + res + '.');
           }
-        }).catch(err => {
-          setIsValid(false);
         });
         setEditUsernameValue(v);
       },
@@ -59,7 +62,7 @@ function EditUsernameForm({
     const res = await Request.editUsername(editUsernameValue);
     if (res) {
       setUser(res);
-      navigate("/profile/" + res.username.toLowerCase(), {state: {info: 'Username updated successfully.'}})
+      navigate("/profile/" + res.username.toLowerCase().trim(), {state: {info: 'Username updated successfully.'}})
       onClose();
     }
     setEditUsernameValue("");

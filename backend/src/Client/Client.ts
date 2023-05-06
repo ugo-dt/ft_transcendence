@@ -130,9 +130,6 @@ class Client {
     if (!this._userChannels.includes(channel.id)) {
 		  this._userChannels.push(channel.id);
     }
-    for (const s of this._sockets.values()) {
-      s.emit('new-channel', channel);
-    }
   }
 
   public removeChannel(id: number) {
@@ -142,10 +139,10 @@ class Client {
     }
   }
 
-  public leaveChannelRoom(channel: Channel) {
+  public async kickFromChannel(channel: Channel) {
     for (const s of this._sockets.values()) {
-      s.emit('leave-channel', channel);
-      s.leave(channel.room);
+      s.emit('kicked-from-channel', channel.id);
+      await s.leave(channel.room);
     }
   }
 

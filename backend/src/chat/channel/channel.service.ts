@@ -35,7 +35,7 @@ export class ChannelService {
       }
     );
     const promise = await this.repo.save(channel);
-    channel.room = 'channel-room-' + channel.id;
+    await this.update(channel.id, {room: 'channel-room-' + channel.id});
     await usersService.addChannel(userId, channel);
     return promise;
   }
@@ -51,17 +51,17 @@ export class ChannelService {
   async addUser(channelId: number, userId: number, password: string, usersService: UsersService) {
     const channel = await this.findOneId(channelId);
     if (!channel) {
-      throw new NotFoundException('channel not found');
+      return null;
     }
     if (channel.isPrivate) {
-      throw new UnauthorizedException('channel is private');
+      return null;
     }
     if (channel.banned.includes(userId)) {
-      throw new UnauthorizedException('user is banned');
+      return null;
     }
     if (!channel.users.includes(userId)) {
       if (channel.password.length && crypto.createHash('sha256').update(password).digest('hex') !== channel.password) {
-        throw new UnauthorizedException('wrong password');
+        return null;
       }
       channel.users.push(userId);
       await usersService.addChannel(userId, channel);
@@ -80,28 +80,25 @@ export class ChannelService {
   async removeUser(channelId: number, userId: number, usersService: UsersService) {
     const channel = await this.findOneId(channelId);
     if (!channel) {
-      throw new NotFoundException('channel not found');
+      return null;
     }
     const index = channel.users.indexOf(userId);
     if (index > -1) {
       channel.users.splice(index, 1);
-      if (channel.admins.includes(userId)) {
-        channel.admins.splice(index, 1);
-        if (channel.admins.length === 0 && channel.users.length > 0) {
-          const newAdmin = channel.users[0];
-          if (newAdmin) {
-            channel.admins.push(newAdmin);
-          }
-        }
+      const adminIndex = channel.admins.indexOf(userId);
+      if (index > -1) {
+        channel.admins.splice(adminIndex, 1);
       }
-      usersService.findOneId(userId).then(async user => {
-        if (user && user.userChannels.includes(channel.id)) {
-          await usersService.removeChannel(userId, channel);
-        }
-      });
-    }
-    if (channel.users.length === 0) {
-      return this.remove(channel.id);
+      const user = await usersService.findOneId(userId);
+      if (user && user.userChannels.includes(channel.id)) {
+        await usersService.removeChannel(userId, channel);
+      }
+      if (channel.users.length === 0) {
+        return await this.remove(channel.id);
+      }
+      if (channel.admins.length === 0) {
+        channel.admins.push(channel.users[0]);
+      }
     }
     return await this.repo.save(channel);
   }
@@ -163,7 +160,7 @@ export class ChannelService {
     return await this.repo.save(channel);
   }
 
-  public async update(id: number, attrs: Partial<User>): Promise<Channel> {
+  public async update(id: number, attrs: Partial<Channel>): Promise<Channel> {
     const channel = await this.findOneId(id);
     if (!channel) {
       throw new NotFoundException("channel not found");

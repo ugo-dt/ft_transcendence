@@ -1,18 +1,18 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import Form, { FormText } from "./Form";
 import { IChannel } from "../types";
-import Request from "./Request";
+import { Context } from "../context";
+import { IChat } from "../pages/Chat";
 
 interface BrowseChannelsProps {
+  chat: IChat,
   onClose: () => void,
-  submit?: () => void,
-  channel: IChannel;
-  setChannel: (channel: IChannel | undefined) => void,
-  setIsJoinPasswordOpen: React.Dispatch<React.SetStateAction<boolean>>
-  getUserChannels: () => void;
+  selectedChannel: IChannel;
 }
 
-function JoinPasswordForm({ onClose, channel, setChannel, getUserChannels, setIsJoinPasswordOpen }: BrowseChannelsProps) {
+function JoinPasswordForm({ chat, onClose, selectedChannel }: BrowseChannelsProps) {
+  const {setChannel, getUserChannels} = chat;
+  const socket = useContext(Context).pongSocket;
   const [passwordValue, setPasswordValue] = useState("");
   const [isValid, setIsValid] = useState(false);
   const [error, setError] = useState("");
@@ -40,17 +40,19 @@ function JoinPasswordForm({ onClose, channel, setChannel, getUserChannels, setIs
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    Request.joinChannel(channel.id, passwordValue).then((res) => {
-      if (res) {
-        setIsJoinPasswordOpen(false);
-        onClose();
-        setChannel(channel);
-      }
-      else {
-        setIsValid(false);
-        setError("Wrong password");
-      }
-    });
+    if (socket.current) {
+      socket.current.emit('join-channel', { id: selectedChannel.id, password: passwordValue }, (res: {data: IChannel}) => {
+        if (res.data) {
+          getUserChannels();
+          onClose();
+          setChannel(res.data);
+        }
+        else {
+          setIsValid(false);
+          setError("Wrong password");
+        }
+      });
+    }
 }
 
 return (

@@ -46,7 +46,7 @@ function Profile() {
         loading ? (<h2>Loading...</h2>) : (
           profile != null && (
             <>
-              <ProfileHeader user={user} profile={profile} />
+              <ProfileHeader profile={profile} />
               <ProfileHistory history={historyList} profileId={profile.id} />
             </>
           )

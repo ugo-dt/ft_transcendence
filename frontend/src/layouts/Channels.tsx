@@ -5,37 +5,25 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import SearchIcon from '@mui/icons-material/Search';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import LeaveChannelForm from "../components/LeaveChannelForm";
-import Request from "../components/Request";
 import ChannelNewPasswordForm from "../components/ChannelNewPasswordForm";
 import BrowseChannels from "../components/BrowseChannels";
-import { IChannel, IUser } from "../types";
+import { IChannel } from "../types";
 import { useNavigate } from "react-router";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Context, UserContext } from "../context";
 import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
 import InviteToChannel from "../components/InviteToChannel";
-import { IMessage } from "../types/IMessage";
+import { IChat } from "../pages/Chat";
 
 interface ChannelsProps {
-  chat: {
-    userChannels: IChannel[],
-    getUserChannels: () => Promise<void>,
-    currentChannel: IChannel | undefined,
-    setCurrentChannel: React.Dispatch<React.SetStateAction<IChannel | undefined>>,
-    setChannel: (channel: IChannel | undefined) => void,
-    channelUsers: IUser[],
-    getChannelUsers: () => void,
-    channelMessages: IMessage[],
-    getChannelMessages: (messageIds: number[]) => void,
-    channelSenders: Map<number, IUser>,
-  }
+  chat: IChat,
 }
 
 function Channels({chat}: ChannelsProps) {
   const navigate = useNavigate();
   const user = useContext(UserContext).user;
   const socket = useContext(Context).pongSocket.current;
-  const { userChannels, getUserChannels, currentChannel, setChannel} = chat;
+  const { userChannels, getUserChannels, currentChannel, setChannel, loadingChannel } = chat;
 
   const [isCreateChannelFormOpen, setIsCreateChannelFormOpen] = useState(false);
   const [isChannelNewPasswordFormOpen, setIsChannelNewPasswordFormOpen] = useState(false);
@@ -43,32 +31,40 @@ function Channels({chat}: ChannelsProps) {
   const [isLeaveChannelFormOpen, setIsLeaveChannelFormOpen] = useState(false);
   const [isInviteToChannelOpen, setIsInviteToChannelOpen] = useState(false);
 
-  function onClickCreateChannel() { setIsCreateChannelFormOpen(!isCreateChannelFormOpen); }
+  function onClickCreateChannel() { setIsCreateChannelFormOpen(!isCreateChannelFormOpen);}
   function onClickBrowseChannels() { setIsBrowseChannelsOpen(!isBrowseChannelsOpen); }
   function onClickChannelSettings() { setIsChannelNewPasswordFormOpen(!isChannelNewPasswordFormOpen); }
   function onClickLeaveChannel() { setIsLeaveChannelFormOpen(!isLeaveChannelFormOpen); }
   function onClickInviteToChannel() { setIsInviteToChannelOpen(!isInviteToChannelOpen); }
 
   async function leaveChannel() {
-    if (!currentChannel) {
+    if (!currentChannel || !socket) {
+      setIsLeaveChannelFormOpen(false);
       return;
     }
-    await Request.leaveChannel(currentChannel.id)
-    const currentIndex = userChannels.findIndex((channel) => channel.id === currentChannel.id);
-    const previousChannel = userChannels[currentIndex - 1];
-    const subsequentChannel = userChannels[currentIndex + 1];
-    if (previousChannel) {
-      setChannel(previousChannel);
-    }
-    else if (subsequentChannel) {
-      setChannel(subsequentChannel);
-    }
-    else {
-      setChannel(undefined);
-    }
+    socket.emit('leave-channel', currentChannel.id, (res: {data: IChannel | null}) => {
+      if (res.data) {
+        const currentIndex = userChannels.findIndex((channel) => channel.id === currentChannel.id);
+        const previousChannel = userChannels[currentIndex - 1];
+        const subsequentChannel = userChannels[currentIndex + 1];
+        if (previousChannel) {
+          setChannel(previousChannel);
+        }
+        else if (subsequentChannel) {
+          setChannel(subsequentChannel);
+        }
+        else {
+          setChannel(undefined);
+        }
+        getUserChannels();
+      }
+    });
     setIsLeaveChannelFormOpen(false);
-    getUserChannels();
   }
+
+  useEffect(() => {
+    getUserChannels();
+  }, []);
 
   return (
     <div className="Channels">
@@ -90,7 +86,13 @@ function Channels({chat}: ChannelsProps) {
           userChannels.map(channel => (
             <div className={`chat-channels ${currentChannel && channel.id === currentChannel.id ? 'selected-channel' : ''}`}
               key={channel.id}
-              onClick={() => setChannel(channel)}
+              onClick={() => {
+                if (loadingChannel.current) {
+                  return ;
+                }
+                setChannel(channel);
+                getUserChannels();
+              }}
             > {channel.name}
             </div>
           ))
@@ -100,13 +102,16 @@ function Channels({chat}: ChannelsProps) {
         {
           currentChannel &&
           <div>
-            <SettingsIcon
+            {
+              user && currentChannel.admins.includes(user.id) &&
+              <SettingsIcon
               id="channels-icon-btn"
               className="channel-options-btn"
               titleAccess="Channel settings"
               fontSize="large"
               onClick={onClickChannelSettings}
-            />
+              />
+            }
             <ExitToAppIcon
               id="channels-icon-btn"
               className="channel-options-btn"
@@ -141,14 +146,10 @@ function Channels({chat}: ChannelsProps) {
       {isCreateChannelFormOpen && <CreateChannelForm setChannel={setChannel} getUserChannels={getUserChannels} onClose={onClickCreateChannel} />}
       {isLeaveChannelFormOpen && <LeaveChannelForm onClose={onClickLeaveChannel} onSubmit={leaveChannel} />}
       {isChannelNewPasswordFormOpen && <ChannelNewPasswordForm onClose={onClickChannelSettings} currentChannel={currentChannel} />}
-      {isBrowseChannelsOpen && <BrowseChannels
-        onClose={onClickBrowseChannels}
-        getUserChannels={getUserChannels}
-        setChannel={setChannel}
-      />}
+      {isBrowseChannelsOpen && <BrowseChannels chat={chat} onClose={onClickBrowseChannels}/>}
       {isInviteToChannelOpen && <InviteToChannel currentChannel={currentChannel} onClose={onClickInviteToChannel} />}
     </div>
   )
 }
 
-export default Channels
+export default Channels;

@@ -1,8 +1,8 @@
 export interface IChannel {
   id: number;
   name: string;
-  messages: number[];
   password: string;
+  messages: number[];
   users: number[];
   admins: number[];
   muted: number[];

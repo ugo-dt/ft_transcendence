@@ -40,27 +40,3 @@ export const QueueContext = createContext<QueueContextValue>({
   setQueueTimer: () => {},
   queueInterval: {} as React.MutableRefObject<number | undefined>,
 });
-
-// interface ChatContextValue {
-//   userChannels: IChannel[],
-//   currentChannel: IChannel | undefined,
-//   setCurrentChannel: React.Dispatch<React.SetStateAction<IChannel | undefined>>,
-//   setChannel: (channel: IChannel | undefined) => void,
-//   channelUsers: IUser[],
-//   getChannelUsers: () => void,
-//   channelMessages: IMessage[],
-//   getChannelMessages: (messageIds: number[]) => void,
-//   channelSenders: Map<number, IUser>,
-// }
-
-// export const ChatContext = createContext<ChatContextValue>({
-//   userChannels: [],
-//   currentChannel: undefined,
-//   setCurrentChannel: () => {},
-//   setChannel: () => {},
-//   channelUsers: [],
-//   getChannelUsers: () => {},
-//   channelMessages: [],
-//   getChannelMessages: () => {},
-//   channelSenders: new Map(),
-// });

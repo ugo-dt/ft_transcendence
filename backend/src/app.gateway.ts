@@ -4,6 +4,7 @@ import { PongService } from "./pong/pong.service";
 import { Logger } from "@nestjs/common";
 import Queue from "./pong/Matchmaking/Queue";
 import { ChatService } from "./chat/chat.service";
+import { Channel } from "diagnostics_channel";
 
 @WebSocketGateway({
   namespace: 'app',
@@ -128,20 +129,34 @@ export class AppGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   // -- Chat --
 
-  @SubscribeMessage('join-channel-room')
-  public async joinChannelRoom(@ConnectedSocket() clientSocket: Socket, @MessageBody() id: number) {
-    const channel = await this.chatService.joinChannelRoom(clientSocket, id);
+  @SubscribeMessage('join-channel')
+  public async joinChannel(@ConnectedSocket() clientSocket: Socket, @MessageBody() data: {id: number, password: string}) {
+    const channel = await this.chatService.handleJoinChannel(clientSocket, data.id, data.password);
     if (channel) {
       this.server.to(channel.room).emit('channel-update', channel);
     }
+    return {data: channel};
+  }
+
+  @SubscribeMessage('leave-channel')
+  public async leaveChannel(@ConnectedSocket() clientSocket: Socket, @MessageBody() id: number) {
+    const channel = await this.chatService.handleLeaveChannel(clientSocket, id);
+    if (channel) {
+      this.server.to(channel.room).emit('channel-update', channel);
+    }
+    return {data: channel};
+  }
+
+  @SubscribeMessage('join-channel-room')
+  public async joinChannelRoom(@ConnectedSocket() clientSocket: Socket, @MessageBody() id: number) {
+    const channel = await this.chatService.joinChannelRoom(clientSocket, id);
+    return {data: channel};
   }
 
   @SubscribeMessage('leave-channel-room')
   public async leaveChannelRoom(@ConnectedSocket() clientSocket: Socket, @MessageBody() id: number) {
     const channel = await this.chatService.leaveChannelRoom(clientSocket, id);
-    if (channel) {
-      this.server.to(channel.room).emit('channel-update', channel);
-    }
+    return {data: channel};
   }
 
   @SubscribeMessage('send-message')

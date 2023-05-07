@@ -17,29 +17,34 @@ function EditAvatarForm({
   const [error, setError] = useState<string>('');
   const navigate = useNavigate();
   const setUser = useContext(UserContext).setUser;
+  const filenameRegex = new RegExp(/\.(jpg|jpeg|png|webp)$/i);
 
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
-      if (event.target.files[0].size <= 2000000) {
-        var url = window.URL || window.webkitURL;
-        var image = new Image();
-        image.onload = function() {
+      const selectedFile = event.target.files[0];
+      const filename = selectedFile.name.toLowerCase();
+      if (!filenameRegex.test(filename)) {
+        setIsValid(false);
+        setError('Invalid file type. Only JPG, JPEG, and PNG files are allowed.');
+      } else if (selectedFile.size > 2000000) {
+        setIsValid(false);
+        setError('File is too large. File size limit is 2MB.');
+      } else {
+        const url = window.URL || window.webkitURL;
+        const image = new Image();
+        image.onload = function () {
           setIsValid(true);
           setError('');
         };
-        image.onerror = function() {
+        image.onerror = function () {
           setIsValid(false);
           setError('This file is invalid.');
         };
-        image.src = url.createObjectURL(event.target.files[0]);
+        image.src = url.createObjectURL(selectedFile);
+        setFile(selectedFile);
       }
-      else {
-        setIsValid(false);
-        setError('File is too large. File size limit is 2MB.');
-      }
-      setFile(event.target.files[0]);
     }
-  }
+  };
 
   const resetAvatar = async () => {
     if (!user) {
@@ -48,7 +53,7 @@ function EditAvatarForm({
     const res = await Request.resetAvatar();
     if (res) {
       setUser(res);
-      navigate("/profile/" + res.username.toLowerCase(), {state: {info: 'Avatar reset to default.'}});
+      navigate("/profile/" + res.username.toLowerCase(), { state: { info: 'Avatar reset to default.' } });
       onClose();
     }
   };
@@ -81,11 +86,11 @@ function EditAvatarForm({
     const res = await Request.editAvatar(formData);
     if (res) {
       setUser(res);
-      navigate("/profile/" + res.username.toLowerCase(), {state: {info: 'Avatar updated successfully.'}});
+      navigate("/profile/" + res.username.toLowerCase(), { state: { info: 'Avatar updated successfully.' } });
       onClose();
     };
   };
-  
+
   return (
     <div className="modal-overlay">
       <Form

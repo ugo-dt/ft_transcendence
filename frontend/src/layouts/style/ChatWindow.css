@@ -54,7 +54,7 @@
 
 .input-bar {
   position: absolute;
-  bottom: 0;
+  bottom: 1%;
   min-width: 95%;
   padding: 1%;
   border-radius: 10px;
@@ -68,4 +68,9 @@
 .input-bar::placeholder {
   color: white;
   opacity: 0.5;
+}
+
+#chat-info-bar {
+  position: absolute;
+  bottom: 1%;
 }

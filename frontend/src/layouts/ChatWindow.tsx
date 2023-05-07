@@ -4,7 +4,6 @@ import { IChannel, IUser } from "../types";
 import { Context, UserContext } from "../context";
 import { IMessage } from "../types/IMessage";
 import { IChat } from "../pages/Chat";
-import Request from "../components/Request";
 
 interface MessageProps {
   message: IMessage,
@@ -91,8 +90,10 @@ function ChatWindow({ chat }: ChatWindowProps) {
   }
 
   async function onNewMessage(data: IChannel) {
+    if (!currentChannel || currentChannel.id != data.id) {
+      return ;
+    }
     await getChannelMessages(data.messages, false);
-    scrollToBottom();
   }
 
   useEffect(() => {
@@ -112,11 +113,15 @@ function ChatWindow({ chat }: ChatWindowProps) {
     }
   }, [currentChannel]);
 
+  useEffect(() => {
+    scrollToBottom();
+  }, [channelMessages])
+
   return (
     <div className="ChatWindow">
       <h1 className="h1-main-title">{currentChannel ? currentChannel.name : 'Chat'}</h1>
       {
-        loadingChannel.current ? <h2>Loading...</h2> :
+        loadingChannel.current ? <h3 style={{fontWeight: 'lighter'}}>Loading...</h3> :
         <>
           <section className="chat-window-messages-container">
             {
@@ -147,7 +152,7 @@ function ChatWindow({ chat }: ChatWindowProps) {
                 onKeyDown={handleKeyDown}
                 onChange={handleInputChange}
               />
-              : <h4 style={{ fontWeight: 'lighter', textAlign: 'center' }}>Find or start a conversation</h4>
+              : <h4 id="chat-info-bar" style={{ fontWeight: 'lighter', textAlign: 'center' }}>Find or start a conversation</h4>
           }
         </>
       }

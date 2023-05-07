@@ -51,11 +51,11 @@ export function useChat(): IChat {
   }
 
   function setChannel(channel: IChannel | undefined) {
-    if (channel && currentChannel && channel.id === currentChannel.id) {
+    if (channel && currentChannelRef.current && channel.id === currentChannelRef.current.id) {
       return;
     }
-    if (currentChannel && socket.current && inRoom.current) {
-      socket.current.emit('leave-channel-room', currentChannel.id);
+    if (currentChannelRef.current && socket.current && inRoom.current) {
+      socket.current.emit('leave-channel-room', currentChannelRef.current.id);
       inRoom.current = false;
     }
     if (channel) {
@@ -92,26 +92,28 @@ export function useChat(): IChat {
   }
 
   function onChannelUpdate(data: IChannel) {
-    if (user && !data.users.includes(user.id)) {
-      setCurrentChannel(undefined);
-      return;
+    getUserChannels();
+    if (user && data.banned.includes(user.id)) {
+      return ;
     }
-    setCurrentChannel(data);
+    if (currentChannelRef.current && currentChannelRef.current.id === data.id) {
+      if (user && !data.users.includes(user.id)) {
+        setCurrentChannel(undefined);
+        return;
+      }
+      setCurrentChannel(data);
+    }
   }
 
-  function onKickedFromChannel(channelId: number) {
-    getUserChannels();
-    if (currentChannelRef.current && currentChannelRef.current.id === channelId) {
+  async function onKickedFromChannel(data: IChannel) {
+    await getUserChannels();
+    if (currentChannelRef.current && currentChannelRef.current.id === data.id) {
       setChannel(undefined);
     }
   }
   
   function onNewChannel(channel: IChannel) {
     getUserChannels();
-    if (currentChannelRef.current && socket.current && inRoom.current) {
-      getChannelMessages(currentChannelRef.current.messages, true);
-      getChannelUsers();
-    }
   }
 
   async function initChannel() {
@@ -127,8 +129,7 @@ export function useChat(): IChat {
   }
 
   useEffect(() => {
-    console.log(currentChannel);
-    if (!currentChannel) {
+    if (!currentChannel || !currentChannelRef.current) {
       setChannelUsers([]);
       setChannelMessages([]);
       setChannelSenders(new Map());

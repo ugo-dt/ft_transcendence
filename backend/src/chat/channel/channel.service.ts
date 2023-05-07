@@ -35,7 +35,7 @@ export class ChannelService {
       }
     );
     const promise = await this.repo.save(channel);
-    channel.room = 'channel-room-' + channel.id;
+    await this.update(channel.id, {room: 'channel-room-' + channel.id});
     await usersService.addChannel(userId, channel);
     return promise;
   }
@@ -89,13 +89,12 @@ export class ChannelService {
       if (index > -1) {
         channel.admins.splice(adminIndex, 1);
       }
-      usersService.findOneId(userId).then(async user => {
-        if (user && user.userChannels.includes(channel.id)) {
-          await usersService.removeChannel(userId, channel);
-        }
-      });
+      const user = await usersService.findOneId(userId);
+      if (user && user.userChannels.includes(channel.id)) {
+        await usersService.removeChannel(userId, channel);
+      }
       if (channel.users.length === 0) {
-        return this.remove(channel.id);
+        return await this.remove(channel.id);
       }
       if (channel.admins.length === 0) {
         channel.admins.push(channel.users[0]);
@@ -161,7 +160,7 @@ export class ChannelService {
     return await this.repo.save(channel);
   }
 
-  public async update(id: number, attrs: Partial<User>): Promise<Channel> {
+  public async update(id: number, attrs: Partial<Channel>): Promise<Channel> {
     const channel = await this.findOneId(id);
     if (!channel) {
       throw new NotFoundException("channel not found");

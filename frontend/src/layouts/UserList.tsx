@@ -115,56 +115,56 @@ function UserOptions({
           <div className="modal-title">{selectedUser.username}</div>
           <div style={{ fontWeight: 'lighter' }} className="modal-title">{selectedUser.status.charAt(0).toLocaleUpperCase() + selectedUser.status.slice(1)}</div>
           <section className='member-modal-buttons'>
-          <section>
-            <button
-              className="form-button"
-              onClick={() => navigate('/profile/' + selectedUser.username.toLowerCase())}
-            > See profile
-            </button>
-            <button
-              className="form-button"
-              disabled={inQueue || !(selectedUser.status === 'online')}
-              onClick={onClickChallenge}
-            > Challenge
-            </button>
-            <button
-              className="form-button"
-              onClick={() => (user && user.blocked.includes(selectedUser.id)) ? onUnblock() : onBlock()}
-            > {(user && user.blocked.includes(selectedUser.id)) ? 'Unblock' : 'Block'}
-            </button>
-          </section>
-          {
-            (currentChannel && user && currentChannel.admins.includes(user.id))
-              && (currentChannel.admins.indexOf(user.id) === 0 || !currentChannel.admins.includes(selectedUser.id)) ?
-              <section className='admin-buttons'>
-                <button
-                  className="form-button"
-                  onClick={onKick}
-                > Kick
-                </button>
-                <button
-                  className="form-button"
-                  onClick={() => (currentChannel.muted.includes(selectedUser.id)) ? onUnmute() : onMute()}
-                > {(currentChannel.muted.includes(selectedUser.id)) ? 'Unmute' : 'Mute'}
-                </button>
-                <button
-                  className="form-button"
-                  onClick={onBan}
-                > Ban
-                </button>
-                {
-                  (!currentChannel.admins.includes(selectedUser.id) || (user && currentChannel.admins.indexOf(user.id) === 0))
-                  && currentChannel.admins.indexOf(selectedUser.id) != 0
-                  &&
+            <section>
+              <button
+                className="form-button"
+                onClick={() => navigate('/profile/' + selectedUser.username.toLowerCase())}
+              > See profile
+              </button>
+              <button
+                className="form-button"
+                disabled={inQueue || !(selectedUser.status === 'online')}
+                onClick={onClickChallenge}
+              > Challenge
+              </button>
+              <button
+                className="form-button"
+                onClick={() => (user && user.blocked.includes(selectedUser.id)) ? onUnblock() : onBlock()}
+              > {(user && user.blocked.includes(selectedUser.id)) ? 'Unblock' : 'Block'}
+              </button>
+            </section>
+            {
+              (currentChannel && user && currentChannel.admins.includes(user.id))
+                && (currentChannel.admins.indexOf(user.id) === 0 || !currentChannel.admins.includes(selectedUser.id)) ?
+                <section className='admin-buttons'>
                   <button
                     className="form-button"
-                    onClick={() => (currentChannel.admins.includes(selectedUser.id)) ? onUnsetAdmin() : onSetAdmin()}
-                  > {(currentChannel.admins.includes(selectedUser.id)) ? 'Unset admin' : 'Set admin'}
+                    onClick={onKick}
+                  > Kick
                   </button>
-                }
-              </section>
-              : <></>
-          }
+                  <button
+                    className="form-button"
+                    onClick={() => (currentChannel.muted.includes(selectedUser.id)) ? onUnmute() : onMute()}
+                  > {(currentChannel.muted.includes(selectedUser.id)) ? 'Unmute' : 'Mute'}
+                  </button>
+                  <button
+                    className="form-button"
+                    onClick={onBan}
+                  > Ban
+                  </button>
+                  {
+                    (!currentChannel.admins.includes(selectedUser.id) || (user && currentChannel.admins.indexOf(user.id) === 0))
+                    && currentChannel.admins.indexOf(selectedUser.id) != 0
+                    &&
+                    <button
+                      className="form-button"
+                      onClick={() => (currentChannel.admins.includes(selectedUser.id)) ? onUnsetAdmin() : onSetAdmin()}
+                    > {(currentChannel.admins.includes(selectedUser.id)) ? 'Unset admin' : 'Set admin'}
+                    </button>
+                  }
+                </section>
+                : <></>
+            }
           </section>
         </div>
       </div>
@@ -179,7 +179,7 @@ interface UserListProps {
 
 function UserList({ chat }: UserListProps) {
   const user = useContext(UserContext).user;
-  const { currentChannel, channelUsers } = chat;
+  const { currentChannel, channelUsers, loadingChannel } = chat;
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
 
   function handleUserClick(clickedUser: IUser) {
@@ -196,37 +196,43 @@ function UserList({ chat }: UserListProps) {
   return (
     <div className="UserList">
       <h2 className='chat-section-title'>Members</h2>
-      <section className="user-list-container">
-        {
-          channelUsers.map(user => (
-            <div
-              key={user.id}
-              className='user-list-member'
-              onClick={() => handleUserClick(user)}
-            >
-              <img id="chat-user-info-avatar"
-                src={user.avatar}
-                width={40}
-                height={40}
-                alt={user.username}
-                title='See profile'
+      {
+        loadingChannel.current ? <h4 style={{fontWeight: 'lighter'}}>Loading...</h4> :
+          <>
+
+            <section className="user-list-container">
+              {
+                channelUsers.map(user => (
+                  <div
+                    key={user.id}
+                    className='user-list-member'
+                    onClick={() => handleUserClick(user)}
+                  >
+                    <img id="chat-user-info-avatar"
+                      src={user.avatar}
+                      width={40}
+                      height={40}
+                      alt={user.username}
+                      title='See profile'
+                    />
+                    <h4 style={{ display: 'flex' }}>
+                      {user.username}
+                      {currentChannel && currentChannel.admins.includes(user.id) &&
+                        <WorkspacePremiumIcon color={currentChannel.admins.indexOf(user.id) === 0 ? 'primary' : 'secondary'} />}
+                    </h4>
+                  </div>
+                ))
+              }
+            </section>
+            {selectedUser && (
+              <UserOptions
+                selectedUser={selectedUser}
+                onClose={closeSettings}
+                currentChannel={currentChannel}
               />
-              <h4 style={{display: 'flex'}}>
-                {user.username}
-                {currentChannel && currentChannel.admins.includes(user.id) &&
-                <WorkspacePremiumIcon color={currentChannel.admins.indexOf(user.id) === 0 ? 'primary' : 'secondary'} />}
-              </h4>
-            </div>
-          ))
-        }
-      </section>
-      {selectedUser && (
-        <UserOptions
-          selectedUser={selectedUser}
-          onClose={closeSettings}
-          currentChannel={currentChannel}
-        />
-      )}
+            )}
+          </>
+      }
     </div>
   )
 }

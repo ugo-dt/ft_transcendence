@@ -9,7 +9,7 @@ import ChannelNewPasswordForm from "../components/ChannelNewPasswordForm";
 import BrowseChannels from "../components/BrowseChannels";
 import { IChannel } from "../types";
 import { useNavigate } from "react-router";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Context, UserContext } from "../context";
 import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
 import InviteToChannel from "../components/InviteToChannel";
@@ -61,6 +61,10 @@ function Channels({chat}: ChannelsProps) {
     });
     setIsLeaveChannelFormOpen(false);
   }
+
+  useEffect(() => {
+    getUserChannels();
+  }, []);
 
   return (
     <div className="Channels">

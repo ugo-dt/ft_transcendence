@@ -78,7 +78,6 @@ function CreateChannelForm({
     Request.createChannel(channelNameValue, channelPasswordValue, isPrivate).then((res) => {
       if (res) {
         getUserChannels();
-        setChannel(res);
         onClose();
       }
     });

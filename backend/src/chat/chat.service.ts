@@ -28,8 +28,6 @@ export class ChatService {
     try {
       return await this.channelService.addUser(channelId, client.id, password, this.usersService);
     } catch (error) {
-      console.log(error);
-      
       return null;
     }
   }

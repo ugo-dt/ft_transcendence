@@ -47,10 +47,12 @@ function JoinPasswordForm({ chat, onClose, selectedChannel }: BrowseChannelsProp
           onClose();
           setChannel(res.data);
         }
+        else {
+          setIsValid(false);
+          setError("Wrong password");
+        }
       });
     }
-    setIsValid(false);
-    setError("Wrong password");
 }
 
 return (

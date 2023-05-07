@@ -124,8 +124,6 @@ function FriendRow({ friendId }: { friendId: number }) {
 function Friends() {
   document.title = "ft_transcendence - Friends";
   const state = useLocation().state;
-  const navigate = useNavigate();
-  const context = useContext(Context);
   const socket = useContext(Context).pongSocket;
   const user = useContext(UserContext).user;
   const [friendList, setFriendList] = useState<number[]>([]);
@@ -196,11 +194,7 @@ function Friends() {
     if (state) {
       setInfo(state.info);
     }
-  }, [context]);
-
-  if (!user) {
-    navigate("/home");
-  }
+  }, []);
 
   return (
     <div className="Friends">

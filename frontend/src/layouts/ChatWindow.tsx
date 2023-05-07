@@ -4,6 +4,7 @@ import { IChannel, IUser } from "../types";
 import { Context, UserContext } from "../context";
 import { IMessage } from "../types/IMessage";
 import { IChat } from "../pages/Chat";
+import Request from "../components/Request";
 
 interface MessageProps {
   message: IMessage,
@@ -43,7 +44,6 @@ interface ChatWindowProps {
 
 function ChatWindow({ chat }: ChatWindowProps) {
   const user = useContext(UserContext).user;
-  const [loading, setLoading] = useState(true);
   const socket = useContext(Context).pongSocket.current;
   const messagesEndRef = useRef<HTMLSpanElement | null>(null);
   const [input, setInput] = useState<string>("");
@@ -52,6 +52,7 @@ function ChatWindow({ chat }: ChatWindowProps) {
     setChannel,
     channelMessages,
     getChannelMessages,
+    loadingChannel,
     channelSenders,
   } = chat;
 
@@ -74,7 +75,6 @@ function ChatWindow({ chat }: ChatWindowProps) {
     }
     socket.emit('send-message', { message: message, currentChannelId: currentChannel.id });
     setInput("");
-    scrollToBottom();
   }
 
   function scrollToBottom(): void {
@@ -84,46 +84,39 @@ function ChatWindow({ chat }: ChatWindowProps) {
   }
 
   async function getMessages() {
-    setLoading(true);
     if (!currentChannel) {
-      setLoading(false);
       return;
     }
-    await getChannelMessages(currentChannel.messages);
-    scrollToBottom();
-    setLoading(false);
+    await getChannelMessages(currentChannel.messages, false);
   }
 
-  function onNewMessage(data: IChannel) {
-    getChannelMessages(data.messages);
+  async function onNewMessage(data: IChannel) {
+    await getChannelMessages(data.messages, false);
+    scrollToBottom();
   }
 
   useEffect(() => {
     if (!currentChannel) {
-      setLoading(false);
+      loadingChannel.current = false;
       return;
     }
     if (!user || !socket || !currentChannel.users.includes(user.id)) {
       setChannel(undefined);
       return;
     }
-    // getMessages();
     socket.on('new-message', onNewMessage);
+    getMessages();
 
     return () => {
       socket.off('new-message', onNewMessage);
     }
   }, [currentChannel]);
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [channelMessages]);
-
   return (
     <div className="ChatWindow">
       <h1 className="h1-main-title">{currentChannel ? currentChannel.name : 'Chat'}</h1>
       {
-        loading ? <h2>Loading...</h2> :
+        loadingChannel.current ? <h2>Loading...</h2> :
         <>
           <section className="chat-window-messages-container">
             {

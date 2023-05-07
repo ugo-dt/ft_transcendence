@@ -17,7 +17,8 @@ export interface IChat {
   channelUsers: IUser[],
   getChannelUsers: () => Promise<void>,
   channelMessages: IMessage[],
-  getChannelMessages: (messageIds: number[]) => Promise<void>,
+  getChannelMessages: (messageIds: number[], showLoading: boolean) => Promise<void>,
+  loadingChannel: React.MutableRefObject<boolean>,
   channelSenders: Map<number, IUser>,
 }
 
@@ -31,6 +32,7 @@ export function useChat(): IChat {
   const [channelMessages, setChannelMessages] = useState<IMessage[]>([]);
   const [channelSenders, setChannelSenders] = useState<Map<number, IUser>>(new Map());
   const inRoom = useRef<boolean>(false);
+  const loadingChannel = useRef<boolean>(false);
 
   async function getChannelUsers() {
     if (!currentChannel) {
@@ -56,11 +58,20 @@ export function useChat(): IChat {
       socket.current.emit('leave-channel-room', currentChannel.id);
       inRoom.current = false;
     }
+    if (channel) {
+      loadingChannel.current = true;
+    }
     currentChannelRef.current = channel;
     setCurrentChannel(channel);
   }
 
-  async function getChannelMessages(messageIds: number[]) {
+  async function getChannelMessages(messageIds: number[], showLoading: boolean) {
+    if (messageIds == undefined) {
+      return ;
+    }
+    if (showLoading) {
+      loadingChannel.current = true;
+    }
     const messagesData: IMessage[] = [];
     for (const id of messageIds.values()) {
       const message = await Request.getMessage(id);
@@ -77,6 +88,7 @@ export function useChat(): IChat {
       }
     }
     setChannelSenders(senders);
+    loadingChannel.current = false;
   }
 
   function onChannelUpdate(data: IChannel) {
@@ -97,12 +109,25 @@ export function useChat(): IChat {
   function onNewChannel(channel: IChannel) {
     getUserChannels();
     if (currentChannelRef.current && socket.current && inRoom.current) {
-      getChannelMessages(currentChannelRef.current.messages);
+      getChannelMessages(currentChannelRef.current.messages, true);
       getChannelUsers();
     }
   }
 
+  async function initChannel() {
+    if (!currentChannel) {
+      return ;
+    }
+    await getChannelMessages(currentChannel.messages, false);
+    await getChannelUsers();
+    if (socket.current && !inRoom.current) {
+      socket.current.emit('join-channel-room', currentChannel.id);
+      inRoom.current = true;
+    }
+  }
+
   useEffect(() => {
+    console.log(currentChannel);
     if (!currentChannel) {
       setChannelUsers([]);
       setChannelMessages([]);
@@ -110,18 +135,15 @@ export function useChat(): IChat {
       if (inRoom.current) {
         inRoom.current = false;
       }
+      loadingChannel.current = false;
       return ;
     }
-    getChannelUsers();
-    getChannelMessages(currentChannel.messages);
-    if (socket.current && !inRoom.current) {
-      socket.current.emit('join-channel-room', currentChannel.id);
-      inRoom.current = true;
-    }
+    initChannel();
   }, [currentChannel]);
 
   useEffect(() => {
     if (!socket.current) {
+      loadingChannel.current = false;
       return ;
     }
     getUserChannels();
@@ -148,6 +170,7 @@ export function useChat(): IChat {
     getChannelUsers,
     channelMessages,
     getChannelMessages,
+    loadingChannel,
     channelSenders,
   })
 }

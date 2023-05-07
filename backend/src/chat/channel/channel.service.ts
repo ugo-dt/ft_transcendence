@@ -51,17 +51,17 @@ export class ChannelService {
   async addUser(channelId: number, userId: number, password: string, usersService: UsersService) {
     const channel = await this.findOneId(channelId);
     if (!channel) {
-      throw new NotFoundException('channel not found');
+      return null;
     }
     if (channel.isPrivate) {
-      throw new UnauthorizedException('channel is private');
+      return null;
     }
     if (channel.banned.includes(userId)) {
-      throw new UnauthorizedException('user is banned');
+      return null;
     }
     if (!channel.users.includes(userId)) {
       if (channel.password.length && crypto.createHash('sha256').update(password).digest('hex') !== channel.password) {
-        throw new UnauthorizedException('wrong password');
+        return null;
       }
       channel.users.push(userId);
       await usersService.addChannel(userId, channel);
@@ -80,7 +80,7 @@ export class ChannelService {
   async removeUser(channelId: number, userId: number, usersService: UsersService) {
     const channel = await this.findOneId(channelId);
     if (!channel) {
-      throw new NotFoundException('channel not found');
+      return null;
     }
     const index = channel.users.indexOf(userId);
     if (index > -1) {

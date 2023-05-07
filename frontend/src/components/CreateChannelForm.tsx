@@ -76,11 +76,11 @@ function CreateChannelForm({
   async function submitChannel(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     Request.createChannel(channelNameValue, channelPasswordValue, isPrivate).then((res) => {
-      if (!res)
-        return;
-      setChannel(res);
-      getUserChannels();
-      onClose();
+      if (res) {
+        getUserChannels();
+        setChannel(res);
+        onClose();
+      }
     });
   }
 

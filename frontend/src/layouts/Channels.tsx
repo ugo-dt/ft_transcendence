@@ -23,7 +23,7 @@ function Channels({chat}: ChannelsProps) {
   const navigate = useNavigate();
   const user = useContext(UserContext).user;
   const socket = useContext(Context).pongSocket.current;
-  const { userChannels, getUserChannels, currentChannel, setChannel} = chat;
+  const { userChannels, getUserChannels, currentChannel, setChannel, loadingChannel } = chat;
 
   const [isCreateChannelFormOpen, setIsCreateChannelFormOpen] = useState(false);
   const [isChannelNewPasswordFormOpen, setIsChannelNewPasswordFormOpen] = useState(false);
@@ -31,7 +31,7 @@ function Channels({chat}: ChannelsProps) {
   const [isLeaveChannelFormOpen, setIsLeaveChannelFormOpen] = useState(false);
   const [isInviteToChannelOpen, setIsInviteToChannelOpen] = useState(false);
 
-  function onClickCreateChannel() { setIsCreateChannelFormOpen(!isCreateChannelFormOpen); }
+  function onClickCreateChannel() { setIsCreateChannelFormOpen(!isCreateChannelFormOpen);}
   function onClickBrowseChannels() { setIsBrowseChannelsOpen(!isBrowseChannelsOpen); }
   function onClickChannelSettings() { setIsChannelNewPasswordFormOpen(!isChannelNewPasswordFormOpen); }
   function onClickLeaveChannel() { setIsLeaveChannelFormOpen(!isLeaveChannelFormOpen); }
@@ -82,7 +82,13 @@ function Channels({chat}: ChannelsProps) {
           userChannels.map(channel => (
             <div className={`chat-channels ${currentChannel && channel.id === currentChannel.id ? 'selected-channel' : ''}`}
               key={channel.id}
-              onClick={() => setChannel(channel)}
+              onClick={() => {
+                if (loadingChannel.current) {
+                  return ;
+                }
+                setChannel(channel);
+                getUserChannels();
+              }}
             > {channel.name}
             </div>
           ))
@@ -142,4 +148,4 @@ function Channels({chat}: ChannelsProps) {
   )
 }
 
-export default Channels
+export default Channels;

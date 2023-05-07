@@ -38,7 +38,7 @@ export class PongService {
     if (!user) {
       return;
     }
-    if (!(await this.usersService.isInGame(user.id))) {
+    if (await this.usersService.isOffline(user.id)) {
       await this.usersService.setOnline(user.id);
     }
     const client = Client.at(user.id);
@@ -58,7 +58,9 @@ export class PongService {
     }
     this.cancelChallenge(clientSocket);
     client.removeSocket(clientSocket);
-    this.usersService.setOffline(client.id);
+    if (client.sockets.length === 0) {
+      this.usersService.setOffline(client.id);
+    }
     this.removeClientFromQueue(clientSocket);
   }
 

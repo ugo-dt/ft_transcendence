@@ -89,10 +89,7 @@ export class ChannelService {
       if (index > -1) {
         channel.admins.splice(adminIndex, 1);
       }
-      const user = await usersService.findOneId(userId);
-      if (user && user.userChannels.includes(channel.id)) {
-        await usersService.removeChannel(userId, channel);
-      }
+      await usersService.removeChannel(userId, channel);
       if (channel.users.length === 0) {
         return await this.remove(channel.id);
       }
@@ -148,8 +145,8 @@ export class ChannelService {
     if (!channel) {
       throw new NotFoundException('channel not found');
     }
-    if (!channel.admins.includes(userId)) {
-      throw new UnauthorizedException('not an admin');
+    if (channel.admins.indexOf(userId) != 0) {
+      throw new UnauthorizedException('only the channel owner can set edit the password');
     }
     if (newPassword.length) {
       channel.password = crypto.createHash('sha256').update(newPassword).digest('hex');

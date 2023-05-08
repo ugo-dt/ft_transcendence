@@ -21,14 +21,13 @@ function Profile() {
 
   async function getProfile() {
     setLoading(true);
-    await Request.getProfile(profileName).then((profileData) => {
-      if (!profileData) {
-        return navigate("/home");
-      };
-      setProfile(profileData);
-      Request.getUserMatchHistory(profileData.id).then((historyData) => {
-        setHistoryList(historyData);
-      });
+    const profileData = await Request.getProfile(profileName);
+    if (!profileData) {
+      return navigate("/home");
+    };
+    setProfile(profileData);
+    Request.getUserMatchHistory(profileData.id).then((historyData) => {
+      setHistoryList(historyData);
     });
     setLoading(false);
   }

@@ -105,6 +105,9 @@ function ChatWindow({ chat }: ChatWindowProps) {
       setChannel(undefined);
       return;
     }
+    if (currentChannel.muted.includes(user.id)) {
+      setInput("");
+    }
     socket.on('new-message', onNewMessage);
     getMessages();
 

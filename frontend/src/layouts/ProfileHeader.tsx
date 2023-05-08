@@ -55,7 +55,7 @@ function PaddleColorBox({ color }: { color: string }) {
 
 function ProfileHeader({ profile }: { profile: IUser }) {
   const inQueue = useContext(QueueContext).inQueue;
-  const {user, setUser} = useContext(UserContext);
+  const { user, setUser } = useContext(UserContext);
   const navigate = useNavigate();
   const [isFriend, setIsFriend] = useState(false);
   const [isAvatarFormOpen, setIsAvatarFormOpen] = useState(false);
@@ -91,24 +91,24 @@ function ProfileHeader({ profile }: { profile: IUser }) {
     if (!user) {
       return;
     }
-    await Request.addFriend(profile.id).then(res => {
-      if (res) {
-        setIsFriend(true);
-      }
-    });
-    setInfo('Friend added successfully.');
+    const add = await Request.addFriend(profile.id);
+    if (add) {
+      setIsFriend(true);
+      setUser(await Request.me());
+      setInfo('Friend added successfully.');
+    }
   }
 
   async function onClickRemoveFriend() {
     if (!user) {
       return;
     }
-    await Request.removeFriend(profile.id).then(res => {
-      if (res) {
-        setIsFriend(false);
-      }
-    });
-    setInfo('Friend removed successfully.');
+    const remove = await Request.removeFriend(profile.id);
+    if (remove) {
+      setIsFriend(false);
+      setUser(await Request.me());
+      setInfo('Friend removed successfully.');
+    }
   }
 
   async function onClickWatch() {
@@ -138,7 +138,7 @@ function ProfileHeader({ profile }: { profile: IUser }) {
       if (res !== null) {
         // set user 2fa to true with call to backend
         // display success message
-        if (user) setUser({...user, has2fa: true});
+        if (user) setUser({ ...user, has2fa: true });
         setOtpMessageState(1);
       } else {
         setOtpMessageState(2);
@@ -149,7 +149,7 @@ function ProfileHeader({ profile }: { profile: IUser }) {
 
   async function onClickDisable2fa() {
     const res = await Request.disable2fa();
-    if (res && user) setUser({...user, has2fa: false});
+    if (res && user) setUser({ ...user, has2fa: false });
   }
 
   function onChangeSMSCode(event: ChangeEvent<HTMLInputElement>) {
@@ -165,10 +165,8 @@ function ProfileHeader({ profile }: { profile: IUser }) {
         setUserRanking(res);
       }
     });
-    if (user) {
-      if (user.friends.includes(profile.id)) {
-        setIsFriend(true);
-      }
+    if (user && user.friends.includes(profile.id)) {
+      setIsFriend(true);
     }
   }, [user]);
 
@@ -209,7 +207,7 @@ function ProfileHeader({ profile }: { profile: IUser }) {
                   <PaddleColorBox color="#92ff0c" />
                 </section>
                 <section className="profile-buttons-container">
-                <div role="button" className="profile-header-actions-btn edit-profile-btn" onClick={onClickEditAvatar}>
+                  <div role="button" className="profile-header-actions-btn edit-profile-btn" onClick={onClickEditAvatar}>
                     <AddPhotoAlternateOutlinedIcon className="profile-header-actions-icon" /> Edit avatar
                   </div>
                   <div role="button" className="profile-header-actions-btn edit-profile-btn" onClick={onClickEditUsername}>
@@ -217,7 +215,7 @@ function ProfileHeader({ profile }: { profile: IUser }) {
                   </div>
                   {user.has2fa ?
                     <Button variant="contained" size="small" color="error" onClick={onClickDisable2fa}>Disable 2FA</Button>
-                  :
+                    :
                     <div role="button" className="profile-header-actions-btn edit-profile-btn"
                       onClick={handle2faOpen}
                     >
@@ -239,10 +237,10 @@ function ProfileHeader({ profile }: { profile: IUser }) {
                           <Button variant="contained" endIcon={<SendIcon />} onClick={onClickSendSMS} disabled={isSendSMSButtonDisabled}>Send SMS</Button>
                         </Grid>
                         <Grid xs={8} display="flex" justifyContent="center">
-                          <TextField id="outlined-size-small" label="SMS Code" variant="outlined" size="small" onChange={onChangeSMSCode} value={otp}/>
+                          <TextField id="outlined-size-small" label="SMS Code" variant="outlined" size="small" onChange={onChangeSMSCode} value={otp} />
                         </Grid>
                         <Grid xs={4}>
-                        <Button variant="contained" disabled={isConfirmButtonDisabled} onClick={onClickConfirmSMS}>Confirm code</Button>
+                          <Button variant="contained" disabled={isConfirmButtonDisabled} onClick={onClickConfirmSMS}>Confirm code</Button>
                         </Grid>
                       </Grid>
                     </DialogContent>

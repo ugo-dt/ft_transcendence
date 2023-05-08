@@ -161,11 +161,12 @@ export class UsersService {
     }
     user.userChannels.splice(index, 1);
     const client = Client.at(userId);
+    const promise = await this.repo.save(user);
     if (client) {
-      await client.kickFromChannel(channel);
       client.removeChannel(channel.id);
+      await client.kickFromChannel(channel);
     }
-    return await this.repo.save(user);
+    return promise;
   }
 
   public async update(id: number, attrs: Partial<User>): Promise<User> {

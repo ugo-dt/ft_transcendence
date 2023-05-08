@@ -103,7 +103,7 @@ function Channels({chat}: ChannelsProps) {
           currentChannel &&
           <div>
             {
-              user && currentChannel.admins.includes(user.id) &&
+              user && currentChannel.admins.indexOf(user.id) === 0 &&
               <SettingsIcon
               id="channels-icon-btn"
               className="channel-options-btn"

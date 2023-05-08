@@ -43,11 +43,8 @@ export function useChat(): IChat {
   }
 
   async function getUserChannels() {
-    Request.getUserChannels().then(res => {
-      if (res) {
-        setUserChannels(res);
-      }
-    });
+    const res = await Request.getUserChannels();
+    setUserChannels([...res]);
   }
 
   function setChannel(channel: IChannel | undefined) {
@@ -106,10 +103,10 @@ export function useChat(): IChat {
   }
 
   async function onKickedFromChannel(data: IChannel) {
-    await getUserChannels();
     if (currentChannelRef.current && currentChannelRef.current.id === data.id) {
       setChannel(undefined);
     }
+    getUserChannels();
   }
   
   function onNewChannel(channel: IChannel) {

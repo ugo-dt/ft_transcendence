@@ -168,11 +168,8 @@ export class ChatService {
         return null;
       }
     }
-    if (!channel.banned.includes(bannedId)) {
-      await this.channelService.removeUser(channelId, bannedId, this.usersService);
-      return await this.channelService.banUser(channelId, bannedId);
-    }
-    return null;
+    await this.channelService.removeUser(channelId, bannedId, this.usersService);
+    return await this.channelService.banUser(channelId, bannedId);
   }
 
   public async handleUnbanUser(clientSocket: Socket, channelId: number, bannedId: number): Promise<Channel | null> {
